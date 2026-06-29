@@ -15,6 +15,20 @@ Nano Banana系（Gemini画像）は**キャラクターの一貫性**と**参照
 `dna/` のキャラ設定を保ったまま複数表情・複数メンバーを揃えるのに向く。`generate_image` は
 `referenceImagePaths` を渡せるので、確定した1枚を参照に他の差分を生成して一貫性をさらに高められる。
 
+## どこで動かすか（重要）
+`image-gen` サーバは `.mcp.json` 経由でClaude Codeが起動するので、**Claude Codeを動かしている環境**に
+`GEMINI_API_KEY` が必要。
+
+- **クラウド（Claude Code on web）で生成する場合** → リモート環境の**環境変数**に `GEMINI_API_KEY` を設定する。
+  1. [AI Studio](https://aistudio.google.com/apikey) でキー発行。
+  2. このセッションの**環境設定（Environment → 環境変数 / Secrets）**に `GEMINI_API_KEY=<キー>` を追加。
+     （必要なら `IMAGE_MODEL=<Nano Banana 2 の正確なID>` も）
+  3. セッションを再起動 → `image-gen` が新しい鍵で再接続される。
+  4. 「RYOのnormalを生成して」と頼めば、私がこの環境内で生成→保存→マニフェスト更新まで実行。
+  > 未設定だと「API key not valid」または「GEMINI_API_KEY is not set」で失敗する。
+
+- **ローカルのClaude Codeで生成する場合** → 下記。
+
 ## セットアップ手順（ローカル）
 1. **APIキー取得**: [Google AI Studio](https://aistudio.google.com/apikey) で `GEMINI_API_KEY` を発行。
 2. **依存インストール**:

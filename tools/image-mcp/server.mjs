@@ -21,7 +21,10 @@ import {
 import { GoogleGenAI } from "@google/genai";
 
 const MODEL = process.env.IMAGE_MODEL || "gemini-3-pro-image-preview";
-const API_KEY = process.env.GEMINI_API_KEY;
+// Treat empty / whitespace / an unexpanded "${GEMINI_API_KEY}" placeholder as
+// "not set", so the user gets a clear message instead of a confusing 400.
+const RAW_KEY = process.env.GEMINI_API_KEY || "";
+const API_KEY = /^\s*$/.test(RAW_KEY) || RAW_KEY.includes("${") ? "" : RAW_KEY.trim();
 
 const MIME = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp" };
 
@@ -96,7 +99,15 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
     return { isError: true, content: [{ type: "text", text: `Unknown tool: ${req.params.name}` }] };
   }
   if (!API_KEY) {
-    return { isError: true, content: [{ type: "text", text: "GEMINI_API_KEY is not set." }] };
+    return {
+      isError: true,
+      content: [
+        {
+          type: "text",
+          text: "GEMINI_API_KEY is not set (or is an unexpanded ${GEMINI_API_KEY} placeholder). Set a valid key in the environment that launches this MCP server, then restart.",
+        },
+      ],
+    };
   }
   try {
     const ai = new GoogleGenAI({ apiKey: API_KEY });
