@@ -44,8 +44,9 @@ body {
 .stat .k { font-size: 11px; color: var(--muted); }
 
 /* ---- Layout ---- */
-.layout { display: grid; grid-template-columns: 360px 1fr; gap: 14px; margin-top: 14px; }
-@media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+.stage { display: grid; grid-template-columns: 1fr 300px; gap: 14px; margin-top: 14px; }
+@media (max-width: 860px) { .stage { grid-template-columns: 1fr; } }
+.boardpanel { min-height: 420px; }
 
 .panel {
   background: var(--panel); border: 1px solid var(--line);
@@ -71,13 +72,16 @@ body {
 .stamina .bar > span { background: linear-gradient(90deg, var(--green), #7bf0a8); }
 
 /* ---- Board ---- */
-.board { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
+.board { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; position: relative; }
 .space {
   aspect-ratio: 1 / 1; border-radius: 8px; display: flex; flex-direction: column;
   align-items: center; justify-content: center; font-size: 10px; font-weight: 700;
   background: var(--panel-2); border: 1px solid var(--line); position: relative; color: var(--ink);
+  transition: transform 0.12s ease;
 }
-.space .ico { font-size: 16px; }
+.space .ico { font-size: 18px; }
+.space.hidden { background: #11203a; border-color: #2b3f63; color: #5e76a0; }
+.space.hidden .ico { font-size: 22px; font-weight: 900; }
 .space.practice { background: #173a2c; border-color: #2fbf71; }
 .space.rest { background: #143049; border-color: var(--blue); }
 .space.money { background: #3a3214; border-color: var(--accent); }
@@ -85,18 +89,59 @@ body {
 .space.event { background: #2a1a3a; border-color: #a06bff; }
 .space.live { background: linear-gradient(180deg, #5a0f1f, #2a0f1a); border-color: var(--accent-2); color: var(--accent); }
 .space.here { outline: 3px solid var(--accent); outline-offset: 1px; box-shadow: 0 0 14px var(--accent); }
-.space .pin { position: absolute; top: -10px; font-size: 16px; }
+.space .pin { position: absolute; top: -12px; font-size: 18px; animation: bob 0.8s ease-in-out infinite; }
 
-/* ---- Cards / actions ---- */
-.hand { display: flex; gap: 10px; margin-top: 12px; }
-.card {
-  flex: 1; padding: 14px 8px; border-radius: 10px; border: 2px solid var(--accent);
-  background: linear-gradient(180deg, #2a2410, #1a1608); color: var(--accent);
-  font-weight: 900; font-size: 13px; cursor: pointer; text-align: center; box-shadow: var(--shadow);
+/* board animations */
+.space.hop { animation: hop 0.17s ease; z-index: 3; }
+.space.flip { animation: flip 0.36s ease; z-index: 4; }
+.space.pulse { animation: pulse 0.5s ease 2; z-index: 3; }
+@keyframes hop { 0% { transform: translateY(0); } 50% { transform: translateY(-10px) scale(1.08); } 100% { transform: translateY(0); } }
+@keyframes flip { 0% { transform: rotateY(0); } 50% { transform: rotateY(90deg) scale(1.1); } 100% { transform: rotateY(0); } }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.14); box-shadow: 0 0 18px var(--accent); } }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+/* floating stat deltas */
+.float {
+  position: absolute; transform: translate(-50%, -50%); pointer-events: none; z-index: 6;
+  font-weight: 900; font-size: 14px; white-space: nowrap; padding: 3px 8px; border-radius: 8px;
+  background: #0009; animation: floatUp 1.3s ease forwards;
 }
-.card:hover { transform: translateY(-2px); }
-.card .steps { font-size: 26px; display: block; }
-.card:disabled { opacity: 0.4; cursor: default; transform: none; }
+.float.up { color: #7bf0a8; } .float.down { color: #ff8aa3; } .float.info { color: #ffe08a; }
+@keyframes floatUp {
+  0% { opacity: 0; transform: translate(-50%, -10%) scale(0.8); }
+  20% { opacity: 1; transform: translate(-50%, -60%) scale(1.05); }
+  100% { opacity: 0; transform: translate(-50%, -200%) scale(1); }
+}
+
+/* event banner over the board */
+.event-banner {
+  position: absolute; left: 50%; top: 8px; transform: translateX(-50%); z-index: 7;
+  display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 12px;
+  background: linear-gradient(180deg, #2a0f1a, #14101a); border: 2px solid var(--accent);
+  color: var(--accent); font-weight: 900; font-size: 15px; box-shadow: var(--shadow);
+  animation: bannerIn 0.3s ease;
+}
+.event-banner .bi { font-size: 20px; }
+@keyframes bannerIn { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* ---- Dice bar ---- */
+.dicebar { display: flex; align-items: center; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
+.dice {
+  width: 64px; height: 64px; border-radius: 14px; background: linear-gradient(180deg, #fff, #d7dcea);
+  color: #1a2238; font-weight: 900; font-size: 34px; display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow); border: 2px solid #fff;
+}
+.dice.rolling { animation: shake 0.18s linear infinite; }
+.dice.settle { animation: settle 0.28s ease; }
+@keyframes shake { 0% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } 100% { transform: rotate(-8deg); } }
+@keyframes settle { 0% { transform: scale(1.3); } 100% { transform: scale(1); } }
+.roll { font-size: 16px; }
+.navbtns { margin-left: auto; display: flex; gap: 8px; }
+.iconbtn {
+  border: 1px solid var(--line); background: var(--panel-2); color: var(--ink);
+  border-radius: 10px; padding: 10px 12px; font-weight: 700; cursor: pointer; font-size: 13px;
+}
+.iconbtn:hover { border-color: var(--accent); color: var(--accent); }
 
 .btn {
   border: none; border-radius: 10px; padding: 12px 18px; font-weight: 800; cursor: pointer;
@@ -104,9 +149,10 @@ body {
 }
 .btn.secondary { background: linear-gradient(180deg, var(--blue), #1b6fd0); }
 .btn:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: 0.45; cursor: default; filter: none; }
 
 /* ---- Log ---- */
-.log { max-height: 150px; overflow: auto; font-size: 12px; color: var(--muted); margin-top: 12px; }
+.log { max-height: 360px; overflow: auto; font-size: 12px; color: var(--muted); }
 .log div { padding: 2px 0; border-bottom: 1px dashed #ffffff10; }
 
 /* ---- Modal ---- */

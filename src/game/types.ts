@@ -63,6 +63,10 @@ export interface Space {
   kind: SpaceKind;
   param?: Param; // for practice spaces
   label: string;
+  /** Fixed events (e.g. LIVE) are always visible and fire on pass-through. */
+  fixed: boolean;
+  /** Hidden spaces show "?" until the band lands on them and they fire. */
+  revealed: boolean;
 }
 
 export interface GameState {
@@ -76,8 +80,22 @@ export interface GameState {
   fame: number; // 0–100
   board: Space[];
   pos: number; // index on board
-  hand: number[]; // progress cards (steps to advance)
   log: string[];
+}
+
+/** One stat change to surface in the landing animation. */
+export interface EventDelta {
+  label: string;
+  value: string; // pre-formatted, e.g. "+1" / "+¥20,000" / "UP"
+  dir: "up" | "down" | "info";
+}
+
+/** Result of landing on (or passing through) a space. */
+export interface EventOutcome {
+  icon: string;
+  title: string;
+  deltas: EventDelta[];
+  reachedLive: boolean;
 }
 
 /** Player choices for a live. */

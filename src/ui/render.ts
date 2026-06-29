@@ -1,5 +1,6 @@
-// DOM rendering for the prototype. Pure-ish: given state + UI mode + handlers,
-// it rebuilds #app and wires event listeners.
+// DOM rendering for the prototype. The board is the focus; member stats and
+// the segment-appeal profile live behind buttons (overlays). During a turn,
+// anim.ts animates directly on this DOM, then render() re-syncs.
 
 import { appealProfile } from "../game/coreLoop";
 import type { GameState, LiveDecision, LiveResult, Member, Space } from "../game/types";
@@ -7,12 +8,17 @@ import { PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS } from "../game/types";
 
 export interface UiState {
   mode: "board" | "live" | "result";
+  panel: "none" | "members" | "appeal";
+  rolling: boolean;
+  lastRoll: number;
   liveDecision: LiveDecision;
   liveResult?: LiveResult;
 }
 
 export interface Handlers {
-  onPlayCard: (index: number) => void;
+  onRoll: () => void;
+  onOpenPanel: (panel: UiState["panel"]) => void;
+  onClosePanel: () => void;
   onLiveChange: (patch: Partial<LiveDecision>) => void;
   onConfirmLive: () => void;
   onNextMonth: () => void;
@@ -58,6 +64,51 @@ function gaugeRow(label: string, value: number, cls = ""): string {
     </div>`;
 }
 
+function topbar(state: GameState): string {
+  return `
+    <div class="topbar">
+      <div class="logo">Metal Road<small>~ SUCCESS! ~</small></div>
+      <div class="stats">
+        <div class="stat"><div class="v">${state.month}</div><div class="k">ヶ月目</div></div>
+        <div class="stat"><div class="v">${state.totalFans.toLocaleString()}</div><div class="k">ファン</div></div>
+        <div class="stat"><div class="v">${state.fame}</div><div class="k">知名度</div></div>
+        <div class="stat"><div class="v">¥${state.funds.toLocaleString()}</div><div class="k">資金</div></div>
+      </div>
+    </div>`;
+}
+
+function spaceView(sp: Space, i: number, pos: number): string {
+  const hidden = !sp.fixed && !sp.revealed;
+  const here = i === pos ? "here" : "";
+  const pin = i === pos ? `<span class="pin">📍</span>` : "";
+  if (hidden) {
+    return `<div class="space hidden ${here}">${pin}<span class="ico">？</span></div>`;
+  }
+  return `<div class="space ${sp.kind} ${here}">
+    ${pin}<span class="ico">${SPACE_ICON[sp.kind]}</span><span>${esc(sp.label)}</span>
+  </div>`;
+}
+
+function boardView(state: GameState): string {
+  const spaces = state.board.map((sp, i) => spaceView(sp, i, state.pos)).join("");
+  return `<div class="board">${spaces}</div>`;
+}
+
+function diceBar(ui: UiState, atLive: boolean): string {
+  const disabled = ui.rolling || atLive || ui.mode !== "board";
+  return `
+    <div class="dicebar">
+      <div class="dice">${ui.lastRoll || "🎲"}</div>
+      <button class="btn roll" id="roll" ${disabled ? "disabled" : ""}>
+        ${ui.rolling ? "進行中…" : "サイコロを振る"}
+      </button>
+      <div class="navbtns">
+        <button class="iconbtn" id="open-members">🎸 メンバー</button>
+        <button class="iconbtn" id="open-appeal">📊 アピール</button>
+      </div>
+    </div>`;
+}
+
 function memberCard(m: Member): string {
   const color = PART_COLOR[m.part] ?? "#888";
   return `
@@ -77,43 +128,13 @@ function memberCard(m: Member): string {
     </div>`;
 }
 
-function boardView(state: GameState): string {
-  const spaces = state.board
-    .map((sp, i) => {
-      const here = i === state.pos ? "here" : "";
-      const pin = i === state.pos ? `<span class="pin">📍</span>` : "";
-      return `<div class="space ${sp.kind} ${here}">
-        ${pin}<span class="ico">${SPACE_ICON[sp.kind]}</span><span>${esc(sp.label)}</span>
-      </div>`;
-    })
-    .join("");
-  return `<div class="board">${spaces}</div>`;
-}
-
-function handView(state: GameState): string {
-  const atLive = state.pos >= 0 && state.board[state.pos]?.kind === "live";
-  const cards = state.hand
-    .map(
-      (steps, i) =>
-        `<button class="card" data-card="${i}" ${atLive ? "disabled" : ""}>
-           <span class="steps">${steps}</span>進む
-         </button>`,
-    )
-    .join("");
-  return `<div class="hand">${cards}</div>`;
-}
-
-function topbar(state: GameState): string {
+function membersPanel(state: GameState): string {
   return `
-    <div class="topbar">
-      <div class="logo">Metal Road<small>~ SUCCESS! ~</small></div>
-      <div class="stats">
-        <div class="stat"><div class="v">${state.month}</div><div class="k">ヶ月目</div></div>
-        <div class="stat"><div class="v">${state.totalFans.toLocaleString()}</div><div class="k">ファン</div></div>
-        <div class="stat"><div class="v">${state.fame}</div><div class="k">知名度</div></div>
-        <div class="stat"><div class="v">¥${state.funds.toLocaleString()}</div><div class="k">資金</div></div>
-      </div>
-    </div>`;
+    <div class="overlay"><div class="panel modal">
+      <h2>🎸 メンバー</h2>
+      ${state.members.map(memberCard).join("")}
+      <div class="center"><button class="btn secondary" id="close-panel">閉じる</button></div>
+    </div></div>`;
 }
 
 function appealPanel(state: GameState): string {
@@ -124,21 +145,23 @@ function appealPanel(state: GameState): string {
         <span class="grade">${grade(prof[s])}</span>
         <span class="bar"><span style="width:${prof[s]}%"></span></span></div>`,
   ).join("");
-  return `<div class="panel"><h2>セグメント別アピール</h2>${rows}</div>`;
+  return `
+    <div class="overlay"><div class="panel modal">
+      <h2>📊 セグメント別アピール</h2>
+      <div class="hint">バンドの強みがどのファン層に刺さるか（ライブのターゲット選びの参考に）</div>
+      ${rows}
+      <div class="center"><button class="btn secondary" id="close-panel">閉じる</button></div>
+    </div></div>`;
 }
 
 function liveModal(state: GameState, ui: UiState): string {
   const d = ui.liveDecision;
   const caps = [300, 600, 1200];
   const capOpts = caps
-    .map(
-      (c) =>
-        `<button class="opt ${d.cap === c ? "sel" : ""}" data-cap="${c}">${c}人</button>`,
-    )
+    .map((c) => `<button class="opt ${d.cap === c ? "sel" : ""}" data-cap="${c}">${c}人</button>`)
     .join("");
   const segOpts = SEGMENTS.map(
-    (s) =>
-      `<button class="opt ${d.target === s ? "sel" : ""}" data-target="${s}">${SEGMENT_LABEL[s]}</button>`,
+    (s) => `<button class="opt ${d.target === s ? "sel" : ""}" data-target="${s}">${SEGMENT_LABEL[s]}</button>`,
   ).join("");
   const songOpts = state.songs
     .map(
@@ -179,37 +202,35 @@ function resultModal(state: GameState, ui: UiState): string {
 }
 
 export function render(root: HTMLElement, state: GameState, ui: UiState, h: Handlers): void {
+  const atLive = state.pos >= 0 && state.board[state.pos]?.kind === "live";
   root.innerHTML = `
     ${topbar(state)}
-    <div class="layout">
-      <div>
-        <div class="panel"><h2>メンバー</h2>${state.members.map(memberCard).join("")}</div>
-        ${appealPanel(state)}
+    <div class="stage">
+      <div class="panel boardpanel">
+        <h2>進行ボード（${state.month}ヶ月目）</h2>
+        ${boardView(state)}
+        ${diceBar(ui, atLive)}
       </div>
-      <div>
-        <div class="panel">
-          <h2>進行ボード（${state.month}ヶ月目）</h2>
-          ${boardView(state)}
-          ${handView(state)}
-          <div class="log">${state.log.map((l) => `<div>${esc(l)}</div>`).join("")}</div>
-        </div>
+      <div class="panel logpanel">
+        <h2>ログ</h2>
+        <div class="log">${state.log.map((l) => `<div>${esc(l)}</div>`).join("")}</div>
       </div>
     </div>
+    ${ui.panel === "members" ? membersPanel(state) : ""}
+    ${ui.panel === "appeal" ? appealPanel(state) : ""}
     ${ui.mode === "live" ? liveModal(state, ui) : ""}
     ${ui.mode === "result" ? resultModal(state, ui) : ""}
   `;
 
-  // wire events
-  root.querySelectorAll<HTMLButtonElement>("[data-card]").forEach((el) =>
-    el.addEventListener("click", () => h.onPlayCard(Number(el.dataset.card))),
-  );
+  root.querySelector("#roll")?.addEventListener("click", () => h.onRoll());
+  root.querySelector("#open-members")?.addEventListener("click", () => h.onOpenPanel("members"));
+  root.querySelector("#open-appeal")?.addEventListener("click", () => h.onOpenPanel("appeal"));
+  root.querySelector("#close-panel")?.addEventListener("click", () => h.onClosePanel());
   root.querySelectorAll<HTMLButtonElement>("[data-cap]").forEach((el) =>
     el.addEventListener("click", () => h.onLiveChange({ cap: Number(el.dataset.cap) })),
   );
   root.querySelectorAll<HTMLButtonElement>("[data-target]").forEach((el) =>
-    el.addEventListener("click", () =>
-      h.onLiveChange({ target: el.dataset.target as LiveDecision["target"] }),
-    ),
+    el.addEventListener("click", () => h.onLiveChange({ target: el.dataset.target as LiveDecision["target"] })),
   );
   root.querySelectorAll<HTMLButtonElement>("[data-song]").forEach((el) =>
     el.addEventListener("click", () => h.onLiveChange({ songIndex: Number(el.dataset.song) })),
