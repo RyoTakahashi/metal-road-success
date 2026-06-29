@@ -186,24 +186,54 @@ body {
 .train .tname { font-weight: 900; font-size: 15px; color: var(--accent); }
 .train .tdesc { font-size: 11px; color: var(--muted); }
 
-/* ---- Slideshow (紙芝居) ---- */
-.slideshow { width: min(520px, 94vw); text-align: center; }
-.slide-art {
-  font-size: 72px; line-height: 1.2; padding: 26px 0; border-radius: 14px; margin-bottom: 12px;
-  background: radial-gradient(120% 100% at 50% 0%, #24344f, #101a2c);
-  border: 1px solid var(--line); animation: slideIn 0.28s ease;
-  letter-spacing: 6px;
+/* ---- VN scene (パワプロ風イベント画面) ---- */
+.scene-overlay { padding: 0; }
+.scene {
+  position: relative; width: min(960px, 100vw); aspect-ratio: 16 / 9; max-height: 100vh;
+  background-size: cover; background-position: center; overflow: hidden;
+  border: 2px solid #000; box-shadow: 0 0 40px #000;
 }
-.slide-speaker {
-  display: inline-block; margin-bottom: 6px; padding: 2px 12px; border-radius: 999px;
-  background: var(--accent-2); color: #fff; font-weight: 900; font-size: 13px;
+.sc-stage { position: absolute; inset: 0; }
+.sc-char {
+  position: absolute; bottom: -2%; height: 86%; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.5));
+  animation: charIn 0.34s cubic-bezier(.2,.9,.3,1.2) both, idleBob 3.2s ease-in-out 0.4s infinite;
 }
-.slide-text {
-  min-height: 60px; font-size: 16px; line-height: 1.7; white-space: pre-wrap;
-  font-weight: 700; animation: slideIn 0.28s ease;
+.sc-char.left { left: 4%; }
+.sc-char.center { left: 50%; transform: translateX(-50%); }
+.sc-char.right { right: 4%; }
+.sc-char.center { animation: charInC 0.34s cubic-bezier(.2,.9,.3,1.2) both, idleBobC 3.2s ease-in-out 0.4s infinite; }
+.sc-char.mood-fired { filter: drop-shadow(0 0 16px var(--accent-2)) brightness(1.08); animation: charIn 0.34s both, fired 0.32s ease-in-out infinite; }
+.sc-char.center.mood-fired { animation: charInC 0.34s both, firedC 0.32s ease-in-out infinite; }
+.sc-char.mood-happy { animation: charIn 0.34s both, hop2 0.7s ease-in-out infinite; }
+.sc-char.mood-sad { filter: grayscale(0.4) brightness(0.8); }
+
+@keyframes charIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes charInC { from { opacity: 0; transform: translateX(-50%) translateY(30px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes idleBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes idleBobC { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-6px); } }
+@keyframes fired { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-4px) rotate(1deg); } }
+@keyframes firedC { 0%,100% { transform: translateX(-50%) translateY(0) rotate(-1deg); } 50% { transform: translateX(-50%) translateY(-4px) rotate(1deg); } }
+@keyframes hop2 { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-14px); } }
+
+.scene.shake { animation: sceneShake 0.4s ease 1; }
+@keyframes sceneShake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+
+.sc-flash { position: absolute; inset: 0; background: radial-gradient(circle at 50% 45%, #fff8, transparent 60%); animation: flash 0.5s ease forwards; pointer-events: none; }
+@keyframes flash { from { opacity: 0.9; } to { opacity: 0; } }
+
+.sc-textbox {
+  position: absolute; left: 3%; right: 3%; bottom: 3%;
+  background: linear-gradient(180deg, rgba(20,12,24,0.92), rgba(10,8,14,0.96));
+  border: 2px solid var(--accent); border-radius: 14px; padding: 16px 18px 12px;
+  box-shadow: 0 6px 24px #000a; animation: boxIn 0.25s ease;
 }
-.slide-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+@keyframes boxIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.sc-speaker {
+  position: absolute; top: -14px; left: 16px; padding: 3px 14px; border-radius: 999px;
+  background: var(--accent-2); color: #fff; font-weight: 900; font-size: 13px; box-shadow: var(--shadow);
+}
+.sc-text { min-height: 56px; font-size: 17px; line-height: 1.7; font-weight: 700; white-space: pre-wrap; color: var(--ink); }
+.sc-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
 .dots { display: flex; gap: 6px; }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #ffffff33; }
 .dot.on { background: var(--accent); }
-@keyframes slideIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }

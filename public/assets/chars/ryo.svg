@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="560" viewBox="0 0 360 560">
+  <!-- RYO / Vocal — pink, mic, spiky hair -->
+  <g stroke="#1a1320" stroke-width="3" stroke-linejoin="round">
+    <!-- legs -->
+    <path d="M150 400 L138 540 L172 540 L178 410 Z" fill="#15131c"/>
+    <path d="M210 400 L196 410 L200 540 L232 540 L224 400 Z" fill="#15131c"/>
+    <rect x="132" y="536" width="46" height="16" rx="4" fill="#000"/>
+    <rect x="196" y="536" width="46" height="16" rx="4" fill="#000"/>
+    <!-- torso jacket -->
+    <path d="M120 250 Q180 230 240 250 L252 410 L108 410 Z" fill="#26222e"/>
+    <path d="M168 248 L180 410 L192 248 Z" fill="#ff5577"/>
+    <!-- arms -->
+    <path d="M120 255 L86 360 L112 372 L140 280 Z" fill="#26222e"/>
+    <path d="M240 255 L286 340 L262 356 L220 282 Z" fill="#26222e"/>
+    <!-- hands -->
+    <circle cx="99" cy="368" r="15" fill="#ffe0c0"/>
+    <circle cx="276" cy="350" r="15" fill="#ffe0c0"/>
+    <!-- mic -->
+    <line x1="99" y1="368" x2="99" y2="300" stroke="#0a0a0a" stroke-width="8"/>
+    <circle cx="99" cy="292" r="16" fill="#3a3a44"/>
+    <!-- neck + head -->
+    <rect x="166" y="214" width="28" height="34" fill="#ffd2ad"/>
+    <circle cx="180" cy="150" r="74" fill="#ffe0c0"/>
+    <!-- face -->
+    <g stroke="none">
+      <ellipse cx="156" cy="156" rx="9" ry="13" fill="#2a1320"/>
+      <ellipse cx="206" cy="156" rx="9" ry="13" fill="#2a1320"/>
+      <circle cx="159" cy="152" r="3" fill="#fff"/><circle cx="209" cy="152" r="3" fill="#fff"/>
+      <path d="M164 188 Q180 200 198 188" stroke="#a3324f" stroke-width="4" fill="none"/>
+    </g>
+    <!-- spiky hair -->
+    <path d="M104 150 Q96 78 150 70 Q140 40 180 48 Q220 36 214 72 Q268 78 256 150
+             L240 120 L232 150 L214 116 L204 150 L188 110 L176 150 L160 112 L150 150 L132 118 L122 150 Z"
+          fill="#15121a"/>
+    <path d="M214 72 L226 96 L236 74 Z" fill="#ff5577" stroke="none"/>
+  </g>
+</svg>

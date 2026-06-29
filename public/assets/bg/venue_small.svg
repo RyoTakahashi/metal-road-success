@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <defs>
+    <radialGradient id="spot" cx="0.5" cy="0.1" r="0.9">
+      <stop offset="0" stop-color="#3a2a4f"/><stop offset="1" stop-color="#0c0a14"/>
+    </radialGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#spot)"/>
+  <!-- spotlights -->
+  <g opacity="0.35">
+    <polygon points="300,0 200,540 420,540" fill="#ff5577"/>
+    <polygon points="660,0 540,540 760,540" fill="#3aa0ff"/>
+  </g>
+  <!-- stage -->
+  <rect y="430" width="960" height="110" fill="#15101c"/>
+  <rect y="425" width="960" height="10" fill="#2a1f38"/>
+  <!-- crowd silhouette -->
+  <g fill="#0a0710">
+    <circle cx="120" cy="500" r="34"/><circle cx="220" cy="510" r="38"/><circle cx="330" cy="500" r="34"/>
+    <circle cx="620" cy="505" r="36"/><circle cx="740" cy="510" r="40"/><circle cx="850" cy="500" r="34"/>
+  </g>
+</svg>

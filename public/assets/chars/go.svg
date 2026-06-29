@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="560" viewBox="0 0 360 560">
+  <!-- GO / Drums — green, cap, drumsticks -->
+  <g stroke="#101a12" stroke-width="3" stroke-linejoin="round">
+    <path d="M150 400 L138 540 L172 540 L178 410 Z" fill="#10160f"/>
+    <path d="M210 400 L196 410 L200 540 L232 540 L224 400 Z" fill="#10160f"/>
+    <rect x="132" y="536" width="46" height="16" rx="4" fill="#000"/>
+    <rect x="196" y="536" width="46" height="16" rx="4" fill="#000"/>
+    <!-- torso (sleeveless) -->
+    <path d="M126 252 Q180 234 234 252 L246 410 L114 410 Z" fill="#1d3324"/>
+    <path d="M160 246 Q180 240 200 246 L200 410 L160 410 Z" fill="#2fbf71"/>
+    <!-- bare arms raised with sticks -->
+    <path d="M128 256 L92 200 L112 188 L150 270 Z" fill="#ffe0c0"/>
+    <path d="M232 256 L268 196 L248 184 L210 270 Z" fill="#ffe0c0"/>
+    <circle cx="100" cy="194" r="13" fill="#ffe0c0"/>
+    <circle cx="260" cy="190" r="13" fill="#ffe0c0"/>
+    <line x1="100" y1="194" x2="64" y2="140" stroke="#caa46a" stroke-width="7"/>
+    <line x1="260" y1="190" x2="298" y2="138" stroke="#caa46a" stroke-width="7"/>
+    <!-- neck + head -->
+    <rect x="166" y="216" width="28" height="32" fill="#ffd2ad"/>
+    <circle cx="180" cy="152" r="72" fill="#ffe0c0"/>
+    <g stroke="none">
+      <path d="M150 156 L168 158" stroke="#1a2018" stroke-width="5"/>
+      <path d="M210 158 L192 156" stroke="#1a2018" stroke-width="5"/>
+      <ellipse cx="159" cy="164" rx="8" ry="11" fill="#1a2018"/>
+      <ellipse cx="201" cy="164" rx="8" ry="11" fill="#1a2018"/>
+      <path d="M162 192 Q180 204 198 192" stroke="#7a2a1a" stroke-width="4" fill="none"/>
+    </g>
+    <!-- short hair + cap -->
+    <path d="M110 156 Q104 96 180 92 Q256 96 250 156 L240 150 Q180 128 120 150 Z" fill="#22301c"/>
+    <path d="M104 118 Q180 78 256 118 L256 132 Q180 104 104 132 Z" fill="#2fbf71"/>
+    <path d="M104 124 Q70 126 64 140 L120 132 Z" fill="#27a862"/>
+  </g>
+</svg>

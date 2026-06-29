@@ -1,7 +1,7 @@
 // Initial game state, board generation, and per-space / per-turn mechanics.
 // Effects scale with the dice value that landed the band on the space (栄冠式 ×出目).
 
-import { buildPracticeSlides } from "./narrative";
+import { buildPracticeScenes } from "./narrative";
 import type { EventOutcome, GameState, Member, Param, PracticeResult, Space } from "./types";
 import { PARAM_LABEL } from "./types";
 
@@ -120,7 +120,7 @@ export function doPractice(state: GameState, param: Param, mult: number): Practi
     ],
     reachedLive: false,
   };
-  return { outcome, slides: buildPracticeSlides(param, mult, gain) };
+  return { outcome, scenes: buildPracticeScenes(param, mult, gain) };
 }
 
 /**

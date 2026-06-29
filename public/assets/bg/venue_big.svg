@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <defs>
+    <radialGradient id="big" cx="0.5" cy="0.0" r="1.1">
+      <stop offset="0" stop-color="#52306b"/><stop offset="1" stop-color="#0a0812"/>
+    </radialGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#big)"/>
+  <!-- light rays -->
+  <g opacity="0.4">
+    <polygon points="200,-20 60,400 340,400" fill="#ffcf3a"/>
+    <polygon points="480,-20 360,420 600,420" fill="#ff5577"/>
+    <polygon points="760,-20 620,400 900,400" fill="#3aa0ff"/>
+  </g>
+  <!-- truss lights -->
+  <g fill="#ffe08a"><circle cx="160" cy="40" r="9"/><circle cx="320" cy="40" r="9"/><circle cx="480" cy="40" r="9"/><circle cx="640" cy="40" r="9"/><circle cx="800" cy="40" r="9"/></g>
+  <rect y="420" width="960" height="120" fill="#100b18"/>
+  <!-- big crowd -->
+  <g fill="#070510" opacity="0.95">
+    <circle cx="90" cy="500" r="40"/><circle cx="190" cy="515" r="44"/><circle cx="300" cy="500" r="40"/><circle cx="410" cy="515" r="44"/>
+    <circle cx="540" cy="510" r="42"/><circle cx="650" cy="520" r="46"/><circle cx="770" cy="505" r="42"/><circle cx="880" cy="515" r="44"/>
+  </g>
+  <!-- raised hands -->
+  <g stroke="#0a0710" stroke-width="6" stroke-linecap="round">
+    <line x1="120" y1="500" x2="110" y2="450"/><line x1="250" y1="510" x2="262" y2="455"/>
+    <line x1="600" y1="510" x2="592" y2="455"/><line x1="800" y1="505" x2="812" y2="455"/></g>
+</svg>

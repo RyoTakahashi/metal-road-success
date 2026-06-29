@@ -4,8 +4,9 @@
 
 import { appealProfile } from "../game/coreLoop";
 import { TRAININGS } from "../game/narrative";
-import type { GameState, LiveDecision, LiveResult, Member, Param, Slide, Space } from "../game/types";
+import type { GameState, LiveDecision, LiveResult, Member, Param, Scene, Space } from "../game/types";
 import { PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS } from "../game/types";
+import { bgSrc, charSrc } from "./assets";
 
 export interface UiState {
   mode: "board" | "practiceChoice" | "slides" | "live" | "result";
@@ -13,8 +14,8 @@ export interface UiState {
   rolling: boolean;
   lastRoll: number;
   pendingMult: number; // dice multiplier awaiting a practice choice
-  slideSeq: Slide[];
-  slideIndex: number;
+  sceneSeq: Scene[];
+  sceneIndex: number;
   liveDecision: LiveDecision;
   liveResult?: LiveResult;
 }
@@ -160,12 +161,14 @@ function appealPanel(state: GameState): string {
     </div></div>`;
 }
 
+const TRAIN_ICON: Record<Param, string> = { T: "🥁", P: "🎤", S: "🎼", V: "🖤" };
+
 function practiceChoiceModal(ui: UiState): string {
   const opts = PARAMS.map((p) => {
     const t = TRAININGS[p];
     const gain = 2 * ui.pendingMult;
     return `<button class="train" data-train="${p}">
-        <span class="tart">${t.art}</span>
+        <span class="tart">${TRAIN_ICON[p]}</span>
         <span class="tname">${PARAM_LABEL[p]}</span>
         <span class="tdesc">${esc(t.name)} ／ +${gain}</span>
       </button>`;
@@ -178,23 +181,35 @@ function practiceChoiceModal(ui: UiState): string {
     </div></div>`;
 }
 
-function slidesModal(ui: UiState): string {
-  const s = ui.slideSeq[ui.slideIndex];
-  const last = ui.slideIndex === ui.slideSeq.length - 1;
-  const dots = ui.slideSeq
-    .map((_, i) => `<span class="dot ${i === ui.slideIndex ? "on" : ""}"></span>`)
+function sceneModal(ui: UiState): string {
+  const s = ui.sceneSeq[ui.sceneIndex];
+  const last = ui.sceneIndex === ui.sceneSeq.length - 1;
+  const dots = ui.sceneSeq
+    .map((_, i) => `<span class="dot ${i === ui.sceneIndex ? "on" : ""}"></span>`)
     .join("");
-  const speaker = s.speaker ? `<div class="slide-speaker">${esc(s.speaker)}</div>` : "";
+  const chars = s.chars
+    .map(
+      (c) =>
+        `<img class="sc-char ${c.pos} mood-${c.mood ?? "normal"}" src="${charSrc(c.member)}" alt="${esc(c.member)}" />`,
+    )
+    .join("");
+  const speaker = s.speaker ? `<div class="sc-speaker">${esc(s.speaker)}</div>` : "";
+  const fx = s.fx === "flash" ? `<div class="sc-flash"></div>` : "";
   return `
-    <div class="overlay"><div class="panel modal slideshow">
-      <div class="slide-art">${s.art}</div>
-      ${speaker}
-      <div class="slide-text">${esc(s.text)}</div>
-      <div class="slide-foot">
-        <div class="dots">${dots}</div>
-        <button class="btn" id="slide-next">${last ? "完了" : "次へ ▶"}</button>
+    <div class="overlay scene-overlay">
+      <div class="scene ${s.fx === "shake" ? "shake" : ""}" style="background-image:url('${bgSrc(s.bg)}')">
+        <div class="sc-stage">${chars}</div>
+        ${fx}
+        <div class="sc-textbox">
+          ${speaker}
+          <div class="sc-text">${esc(s.text)}</div>
+          <div class="sc-foot">
+            <div class="dots">${dots}</div>
+            <button class="btn" id="scene-next">${last ? "完了" : "次へ ▶"}</button>
+          </div>
+        </div>
       </div>
-    </div></div>`;
+    </div>`;
 }
 
 function liveModal(state: GameState, ui: UiState): string {
@@ -262,7 +277,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
     ${ui.panel === "members" ? membersPanel(state) : ""}
     ${ui.panel === "appeal" ? appealPanel(state) : ""}
     ${ui.mode === "practiceChoice" ? practiceChoiceModal(ui) : ""}
-    ${ui.mode === "slides" ? slidesModal(ui) : ""}
+    ${ui.mode === "slides" ? sceneModal(ui) : ""}
     ${ui.mode === "live" ? liveModal(state, ui) : ""}
     ${ui.mode === "result" ? resultModal(state, ui) : ""}
   `;
@@ -274,7 +289,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   root.querySelectorAll<HTMLButtonElement>("[data-train]").forEach((el) =>
     el.addEventListener("click", () => h.onChooseTraining(el.dataset.train as Param)),
   );
-  root.querySelector("#slide-next")?.addEventListener("click", () => h.onSlideNext());
+  root.querySelector("#scene-next")?.addEventListener("click", () => h.onSlideNext());
   root.querySelectorAll<HTMLButtonElement>("[data-cap]").forEach((el) =>
     el.addEventListener("click", () => h.onLiveChange({ cap: Number(el.dataset.cap) })),
   );

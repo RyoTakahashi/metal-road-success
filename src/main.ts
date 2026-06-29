@@ -6,7 +6,7 @@
 // Effects scale with the dice value that landed the band (栄冠式 ×出目).
 
 import { applyLiveResult, resolveLive } from "./game/coreLoop";
-import { buildLiveSlides } from "./game/narrative";
+import { buildLiveScenes } from "./game/narrative";
 import {
   computeTarget,
   doPractice,
@@ -29,8 +29,8 @@ const ui: UiState = {
   rolling: false,
   lastRoll: 0,
   pendingMult: 1,
-  slideSeq: [],
-  slideIndex: 0,
+  sceneSeq: [],
+  sceneIndex: 0,
   liveDecision: { cap: 600, target: "core", songIndex: 0 },
 };
 
@@ -119,17 +119,17 @@ const handlers: Handlers = {
     redraw();
   },
   onChooseTraining(param: Param) {
-    const { outcome, slides } = doPractice(state, param, ui.pendingMult);
+    const { outcome, scenes } = doPractice(state, param, ui.pendingMult);
     floatAfter = { index: state.pos, outcome };
     afterSlides = "board";
-    ui.slideSeq = slides;
-    ui.slideIndex = 0;
+    ui.sceneSeq = scenes;
+    ui.sceneIndex = 0;
     ui.mode = "slides";
     redraw();
   },
   onSlideNext() {
-    if (ui.slideIndex < ui.slideSeq.length - 1) {
-      ui.slideIndex += 1;
+    if (ui.sceneIndex < ui.sceneSeq.length - 1) {
+      ui.sceneIndex += 1;
       redraw();
       return;
     }
@@ -145,8 +145,8 @@ const handlers: Handlers = {
     ui.liveResult = result;
     pushLog(state, `ライブ実施：動員${result.draw} / 満足度${result.satisfaction} / 新規ファン+${result.newFans}`);
     afterSlides = "result";
-    ui.slideSeq = buildLiveSlides(state, ui.liveDecision, result);
-    ui.slideIndex = 0;
+    ui.sceneSeq = buildLiveScenes(state, ui.liveDecision, result);
+    ui.sceneIndex = 0;
     ui.mode = "slides";
     redraw();
   },

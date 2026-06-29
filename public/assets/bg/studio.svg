@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b2a3f"/><stop offset="1" stop-color="#0c121d"/>
+    </linearGradient>
+    <pattern id="foam" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="40" height="40" fill="#1d3047"/>
+      <rect width="20" height="20" fill="#24405e"/>
+      <rect x="20" y="20" width="20" height="20" fill="#24405e"/>
+    </pattern>
+  </defs>
+  <rect width="960" height="540" fill="url(#g)"/>
+  <rect width="960" height="300" fill="url(#foam)" opacity="0.5"/>
+  <rect y="430" width="960" height="110" fill="#0a0f17"/>
+  <!-- amp stacks -->
+  <g fill="#10161f" stroke="#2b3f5c" stroke-width="3">
+    <rect x="80" y="300" width="150" height="130" rx="6"/>
+    <rect x="730" y="300" width="150" height="130" rx="6"/>
+  </g>
+  <g fill="#1a2536"><circle cx="155" cy="345" r="26"/><circle cx="155" cy="390" r="26"/>
+    <circle cx="805" cy="345" r="26"/><circle cx="805" cy="390" r="26"/></g>
+</svg>

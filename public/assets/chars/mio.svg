@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="560" viewBox="0 0 360 560">
+  <!-- MIO / Bass — blue, calm, long hair, bass guitar -->
+  <g stroke="#121622" stroke-width="3" stroke-linejoin="round">
+    <path d="M150 400 L138 540 L172 540 L178 410 Z" fill="#11141d"/>
+    <path d="M210 400 L196 410 L200 540 L232 540 L224 400 Z" fill="#11141d"/>
+    <rect x="132" y="536" width="46" height="16" rx="4" fill="#000"/>
+    <rect x="196" y="536" width="46" height="16" rx="4" fill="#000"/>
+    <!-- torso -->
+    <path d="M120 250 Q180 232 240 250 L250 410 L110 410 Z" fill="#1c2740"/>
+    <path d="M150 246 Q180 240 210 246 L210 410 L150 410 Z" fill="#3aa0ff"/>
+    <!-- arms -->
+    <path d="M122 256 L100 352 L126 360 L146 282 Z" fill="#1c2740"/>
+    <path d="M238 256 L260 346 L236 356 L214 282 Z" fill="#1c2740"/>
+    <circle cx="114" cy="356" r="14" fill="#ffe0c0"/>
+    <circle cx="248" cy="352" r="14" fill="#ffe0c0"/>
+    <!-- bass -->
+    <g stroke="#0a0a0a" stroke-width="3">
+      <ellipse cx="176" cy="380" rx="50" ry="36" fill="#24426b"/>
+      <line x1="208" y1="362" x2="306" y2="262" stroke="#2a2418" stroke-width="10"/>
+      <rect x="300" y="248" width="20" height="34" rx="3" fill="#15110c"/>
+    </g>
+    <!-- neck + head -->
+    <rect x="166" y="214" width="28" height="34" fill="#ffd2ad"/>
+    <circle cx="180" cy="150" r="74" fill="#ffe0c0"/>
+    <g stroke="none">
+      <ellipse cx="158" cy="158" rx="8" ry="12" fill="#1a2030"/>
+      <ellipse cx="204" cy="158" rx="8" ry="12" fill="#1a2030"/>
+      <circle cx="160" cy="154" r="2.5" fill="#fff"/><circle cx="206" cy="154" r="2.5" fill="#fff"/>
+      <path d="M168 190 L194 190" stroke="#7a2a1a" stroke-width="4"/>
+    </g>
+    <!-- long straight hair -->
+    <path d="M104 150 Q96 72 180 62 Q264 72 256 150 L262 300 L236 300 L230 150
+             Q180 118 130 150 L124 300 L98 300 Z" fill="#243a5e"/>
+    <path d="M106 150 Q180 116 254 150 L240 150 Q180 126 120 150 Z" fill="#3aa0ff" opacity="0.5"/>
+  </g>
+</svg>

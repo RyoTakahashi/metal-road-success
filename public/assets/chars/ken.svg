@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="560" viewBox="0 0 360 560">
+  <!-- KEN / Guitar — gold, headband, flying-V guitar -->
+  <g stroke="#1a1320" stroke-width="3" stroke-linejoin="round">
+    <path d="M150 400 L138 540 L172 540 L178 410 Z" fill="#1a1712"/>
+    <path d="M210 400 L196 410 L200 540 L232 540 L224 400 Z" fill="#1a1712"/>
+    <rect x="132" y="536" width="46" height="16" rx="4" fill="#000"/>
+    <rect x="196" y="536" width="46" height="16" rx="4" fill="#000"/>
+    <!-- torso -->
+    <path d="M120 250 Q180 232 240 250 L250 410 L110 410 Z" fill="#2c2418"/>
+    <path d="M150 246 Q180 240 210 246 L210 410 L150 410 Z" fill="#1d1810"/>
+    <!-- arms down toward guitar -->
+    <path d="M122 256 L96 350 L122 360 L146 282 Z" fill="#2c2418"/>
+    <path d="M238 256 L262 348 L238 358 L214 282 Z" fill="#2c2418"/>
+    <circle cx="110" cy="356" r="14" fill="#ffe0c0"/>
+    <circle cx="250" cy="354" r="14" fill="#ffe0c0"/>
+    <!-- flying-V guitar -->
+    <g stroke="#0a0a0a" stroke-width="3">
+      <polygon points="150,330 196,318 132,452 116,418" fill="#ffcf3a"/>
+      <polygon points="196,318 244,330 240,418 220,452" fill="#ffcf3a"/>
+      <line x1="196" y1="318" x2="300" y2="250" stroke="#3a2c14" stroke-width="10"/>
+      <rect x="296" y="236" width="22" height="30" rx="3" fill="#1a1610"/>
+    </g>
+    <!-- neck + head -->
+    <rect x="166" y="214" width="28" height="34" fill="#ffd2ad"/>
+    <circle cx="180" cy="150" r="74" fill="#ffe0c0"/>
+    <g stroke="none">
+      <path d="M148 158 L166 152" stroke="#2a1320" stroke-width="5"/>
+      <path d="M212 152 L194 158" stroke="#2a1320" stroke-width="5"/>
+      <ellipse cx="158" cy="160" rx="8" ry="11" fill="#2a1320"/>
+      <ellipse cx="204" cy="160" rx="8" ry="11" fill="#2a1320"/>
+      <path d="M166 190 Q180 196 196 190" stroke="#7a2a1a" stroke-width="4" fill="none"/>
+    </g>
+    <!-- long wild hair -->
+    <path d="M104 156 Q92 70 180 60 Q268 70 256 156 L250 240 L228 150 Q180 120 132 150 L110 240 Z" fill="#3a2a14"/>
+    <!-- headband -->
+    <rect x="104" y="120" width="152" height="18" rx="4" fill="#ffcf3a"/>
+  </g>
+</svg>

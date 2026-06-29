@@ -97,17 +97,29 @@ export interface EventOutcome {
   reachedLive: boolean;
 }
 
-/** One panel of a story slideshow (event narration). */
-export interface Slide {
-  art: string; // big emoji / illustration for the scene
-  text: string;
-  speaker?: string; // member name when it's a line of dialogue
+/** Background scene keys (mapped to images in the asset manifest). */
+export type BgKey = "studio" | "street" | "venueSmall" | "venueBig" | "backstage";
+
+/** A character placed in a scene. */
+export interface SceneChar {
+  member: string; // member name -> standing art
+  pos: "left" | "center" | "right";
+  mood?: "normal" | "fired" | "happy" | "sad";
 }
 
-/** Practice outcome = stat changes (for the board floats) + a slideshow. */
+/** One panel of a VN-style story scene (event narration). */
+export interface Scene {
+  bg: BgKey;
+  chars: SceneChar[];
+  text: string;
+  speaker?: string; // name shown on the textbox tag (dialogue)
+  fx?: "shake" | "flash"; // optional punch-up effect
+}
+
+/** Practice outcome = stat changes (for the board floats) + a scene sequence. */
 export interface PracticeResult {
   outcome: EventOutcome;
-  slides: Slide[];
+  scenes: Scene[];
 }
 
 /** Player choices for a live. */
