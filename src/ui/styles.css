@@ -1,0 +1,129 @@
+/* Metal Road ~Success!~ — Powerpro-flavored prototype UI */
+:root {
+  --bg: #0e1726;
+  --panel: #16233a;
+  --panel-2: #1d2f4d;
+  --ink: #eaf1ff;
+  --muted: #8aa0c4;
+  --accent: #ffcf3a; /* gold */
+  --accent-2: #ff5577; /* hot pink */
+  --green: #2fbf71;
+  --blue: #3aa0ff;
+  --line: #2b3f63;
+  --shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", system-ui, sans-serif;
+  background: radial-gradient(120% 100% at 50% 0%, #1a2a45 0%, var(--bg) 70%);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app { max-width: 1080px; margin: 0 auto; padding: 14px; }
+
+/* ---- Header ---- */
+.topbar {
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(180deg, #20120f, #2a0f1a);
+  border: 2px solid var(--accent-2);
+  border-radius: 12px; padding: 10px 16px; box-shadow: var(--shadow);
+}
+.logo {
+  font-weight: 900; font-size: 22px; letter-spacing: 0.5px;
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(255, 85, 119, 0.6);
+}
+.logo small { color: var(--accent-2); font-size: 12px; display: block; letter-spacing: 3px; }
+.stats { margin-left: auto; display: flex; gap: 18px; }
+.stat { text-align: center; }
+.stat .v { font-weight: 800; font-size: 18px; }
+.stat .k { font-size: 11px; color: var(--muted); }
+
+/* ---- Layout ---- */
+.layout { display: grid; grid-template-columns: 360px 1fr; gap: 14px; margin-top: 14px; }
+@media (max-width: 860px) { .layout { grid-template-columns: 1fr; } }
+
+.panel {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 12px; padding: 12px; box-shadow: var(--shadow);
+}
+.panel h2 { margin: 0 0 10px; font-size: 13px; color: var(--accent); letter-spacing: 1px; }
+
+/* ---- Member cards ---- */
+.member { display: flex; gap: 10px; padding: 8px; border-radius: 10px; background: var(--panel-2); margin-bottom: 8px; }
+.avatar { width: 52px; flex: none; display: flex; flex-direction: column; align-items: center; }
+.head { width: 38px; height: 38px; border-radius: 50%; background: #ffe0bd; border: 2px solid #00000033; position: relative; }
+.head::after { content: ""; position: absolute; left: 7px; top: 14px; width: 24px; height: 8px; border-radius: 0 0 12px 12px; background: #3a2a20; }
+.body { width: 26px; height: 16px; border-radius: 6px 6px 3px 3px; margin-top: -3px; }
+.part { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.minfo { flex: 1; }
+.mname { font-weight: 800; font-size: 14px; }
+.gauges { margin-top: 4px; }
+.gauge { display: flex; align-items: center; gap: 6px; font-size: 11px; margin: 2px 0; }
+.gauge .lbl { width: 78px; color: var(--muted); }
+.bar { flex: 1; height: 8px; background: #0c1422; border-radius: 5px; overflow: hidden; }
+.bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--blue), #66d0ff); }
+.grade { width: 16px; font-weight: 900; text-align: center; }
+.stamina .bar > span { background: linear-gradient(90deg, var(--green), #7bf0a8); }
+
+/* ---- Board ---- */
+.board { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
+.space {
+  aspect-ratio: 1 / 1; border-radius: 8px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; font-size: 10px; font-weight: 700;
+  background: var(--panel-2); border: 1px solid var(--line); position: relative; color: var(--ink);
+}
+.space .ico { font-size: 16px; }
+.space.practice { background: #173a2c; border-color: #2fbf71; }
+.space.rest { background: #143049; border-color: var(--blue); }
+.space.money { background: #3a3214; border-color: var(--accent); }
+.space.fan { background: #3a1430; border-color: var(--accent-2); }
+.space.event { background: #2a1a3a; border-color: #a06bff; }
+.space.live { background: linear-gradient(180deg, #5a0f1f, #2a0f1a); border-color: var(--accent-2); color: var(--accent); }
+.space.here { outline: 3px solid var(--accent); outline-offset: 1px; box-shadow: 0 0 14px var(--accent); }
+.space .pin { position: absolute; top: -10px; font-size: 16px; }
+
+/* ---- Cards / actions ---- */
+.hand { display: flex; gap: 10px; margin-top: 12px; }
+.card {
+  flex: 1; padding: 14px 8px; border-radius: 10px; border: 2px solid var(--accent);
+  background: linear-gradient(180deg, #2a2410, #1a1608); color: var(--accent);
+  font-weight: 900; font-size: 13px; cursor: pointer; text-align: center; box-shadow: var(--shadow);
+}
+.card:hover { transform: translateY(-2px); }
+.card .steps { font-size: 26px; display: block; }
+.card:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+.btn {
+  border: none; border-radius: 10px; padding: 12px 18px; font-weight: 800; cursor: pointer;
+  background: linear-gradient(180deg, var(--accent-2), #c81e46); color: #fff; box-shadow: var(--shadow);
+}
+.btn.secondary { background: linear-gradient(180deg, var(--blue), #1b6fd0); }
+.btn:hover { filter: brightness(1.08); }
+
+/* ---- Log ---- */
+.log { max-height: 150px; overflow: auto; font-size: 12px; color: var(--muted); margin-top: 12px; }
+.log div { padding: 2px 0; border-bottom: 1px dashed #ffffff10; }
+
+/* ---- Modal ---- */
+.overlay { position: fixed; inset: 0; background: #000a; display: flex; align-items: center; justify-content: center; z-index: 10; }
+.modal { width: min(560px, 92vw); }
+.field { margin: 12px 0; }
+.field > label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.opts { display: flex; gap: 8px; flex-wrap: wrap; }
+.opt {
+  padding: 8px 12px; border-radius: 8px; border: 2px solid var(--line); background: var(--panel-2);
+  color: var(--ink); cursor: pointer; font-weight: 700; font-size: 13px;
+}
+.opt.sel { border-color: var(--accent); color: var(--accent); }
+.kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; }
+.kpi { background: var(--panel-2); border-radius: 10px; padding: 10px; text-align: center; }
+.kpi .v { font-size: 24px; font-weight: 900; color: var(--accent); }
+.kpi .k { font-size: 11px; color: var(--muted); }
+.money.pos { color: var(--green); } .money.neg { color: var(--accent-2); }
+.center { text-align: center; margin-top: 14px; }
+.hint { font-size: 11px; color: var(--muted); margin-top: 4px; }

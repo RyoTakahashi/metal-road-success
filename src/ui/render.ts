@@ -1,0 +1,219 @@
+// DOM rendering for the prototype. Pure-ish: given state + UI mode + handlers,
+// it rebuilds #app and wires event listeners.
+
+import { appealProfile } from "../game/coreLoop";
+import type { GameState, LiveDecision, LiveResult, Member, Space } from "../game/types";
+import { PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS } from "../game/types";
+
+export interface UiState {
+  mode: "board" | "live" | "result";
+  liveDecision: LiveDecision;
+  liveResult?: LiveResult;
+}
+
+export interface Handlers {
+  onPlayCard: (index: number) => void;
+  onLiveChange: (patch: Partial<LiveDecision>) => void;
+  onConfirmLive: () => void;
+  onNextMonth: () => void;
+}
+
+const PART_COLOR: Record<string, string> = {
+  Vo: "#ff5577",
+  Gt: "#ffcf3a",
+  Ba: "#3aa0ff",
+  Dr: "#2fbf71",
+  Key: "#a06bff",
+};
+
+const SPACE_ICON: Record<Space["kind"], string> = {
+  practice: "🎸",
+  rest: "💤",
+  money: "💴",
+  fan: "🔥",
+  event: "❗",
+  live: "🎤",
+};
+
+function grade(v: number): string {
+  if (v >= 90) return "S";
+  if (v >= 80) return "A";
+  if (v >= 70) return "B";
+  if (v >= 60) return "C";
+  if (v >= 50) return "D";
+  if (v >= 40) return "E";
+  if (v >= 30) return "F";
+  return "G";
+}
+
+const esc = (s: string) =>
+  s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!);
+
+function gaugeRow(label: string, value: number, cls = ""): string {
+  return `
+    <div class="gauge ${cls}">
+      <span class="lbl">${label}</span>
+      <span class="grade">${grade(value)}</span>
+      <span class="bar"><span style="width:${Math.min(100, value)}%"></span></span>
+    </div>`;
+}
+
+function memberCard(m: Member): string {
+  const color = PART_COLOR[m.part] ?? "#888";
+  return `
+    <div class="member">
+      <div class="avatar">
+        <div class="head"></div>
+        <div class="body" style="background:${color}"></div>
+        <div class="part">${esc(m.part)}</div>
+      </div>
+      <div class="minfo">
+        <div class="mname">${esc(m.name)}</div>
+        <div class="gauges">
+          ${PARAMS.map((p) => gaugeRow(PARAM_LABEL[p], m[p])).join("")}
+          ${gaugeRow("体力", m.stamina, "stamina")}
+        </div>
+      </div>
+    </div>`;
+}
+
+function boardView(state: GameState): string {
+  const spaces = state.board
+    .map((sp, i) => {
+      const here = i === state.pos ? "here" : "";
+      const pin = i === state.pos ? `<span class="pin">📍</span>` : "";
+      return `<div class="space ${sp.kind} ${here}">
+        ${pin}<span class="ico">${SPACE_ICON[sp.kind]}</span><span>${esc(sp.label)}</span>
+      </div>`;
+    })
+    .join("");
+  return `<div class="board">${spaces}</div>`;
+}
+
+function handView(state: GameState): string {
+  const atLive = state.pos >= 0 && state.board[state.pos]?.kind === "live";
+  const cards = state.hand
+    .map(
+      (steps, i) =>
+        `<button class="card" data-card="${i}" ${atLive ? "disabled" : ""}>
+           <span class="steps">${steps}</span>進む
+         </button>`,
+    )
+    .join("");
+  return `<div class="hand">${cards}</div>`;
+}
+
+function topbar(state: GameState): string {
+  return `
+    <div class="topbar">
+      <div class="logo">Metal Road<small>~ SUCCESS! ~</small></div>
+      <div class="stats">
+        <div class="stat"><div class="v">${state.month}</div><div class="k">ヶ月目</div></div>
+        <div class="stat"><div class="v">${state.totalFans.toLocaleString()}</div><div class="k">ファン</div></div>
+        <div class="stat"><div class="v">${state.fame}</div><div class="k">知名度</div></div>
+        <div class="stat"><div class="v">¥${state.funds.toLocaleString()}</div><div class="k">資金</div></div>
+      </div>
+    </div>`;
+}
+
+function appealPanel(state: GameState): string {
+  const prof = appealProfile(state);
+  const rows = SEGMENTS.map(
+    (s) =>
+      `<div class="gauge"><span class="lbl">${SEGMENT_LABEL[s]}</span>
+        <span class="grade">${grade(prof[s])}</span>
+        <span class="bar"><span style="width:${prof[s]}%"></span></span></div>`,
+  ).join("");
+  return `<div class="panel"><h2>セグメント別アピール</h2>${rows}</div>`;
+}
+
+function liveModal(state: GameState, ui: UiState): string {
+  const d = ui.liveDecision;
+  const caps = [300, 600, 1200];
+  const capOpts = caps
+    .map(
+      (c) =>
+        `<button class="opt ${d.cap === c ? "sel" : ""}" data-cap="${c}">${c}人</button>`,
+    )
+    .join("");
+  const segOpts = SEGMENTS.map(
+    (s) =>
+      `<button class="opt ${d.target === s ? "sel" : ""}" data-target="${s}">${SEGMENT_LABEL[s]}</button>`,
+  ).join("");
+  const songOpts = state.songs
+    .map(
+      (sg, i) =>
+        `<button class="opt ${d.songIndex === i ? "sel" : ""}" data-song="${i}">${esc(sg.name)} (Q${sg.Q})</button>`,
+    )
+    .join("");
+  return `
+    <div class="overlay"><div class="panel modal">
+      <h2>🎤 月末ライブ — 意思決定</h2>
+      <div class="field"><label>会場キャパ（背伸び ⇄ 手堅さ）</label><div class="opts">${capOpts}</div>
+        <div class="hint">大きいほど新規リーチ大／空席・会場費のリスク大</div></div>
+      <div class="field"><label>ターゲットとするファン層</label><div class="opts">${segOpts}</div></div>
+      <div class="field"><label>セットリスト（楽曲）</label><div class="opts">${songOpts}</div></div>
+      <div class="center"><button class="btn" id="confirm-live">この方針でライブ実施！</button></div>
+    </div></div>`;
+}
+
+function resultModal(state: GameState, ui: UiState): string {
+  const r = ui.liveResult!;
+  const money = r.profit >= 0 ? "pos" : "neg";
+  const sign = r.profit >= 0 ? "+" : "−";
+  return `
+    <div class="overlay"><div class="panel modal">
+      <h2>ライブ結果 — ${state.month}ヶ月目</h2>
+      <div class="kpis">
+        <div class="kpi"><div class="v">${r.draw.toLocaleString()}/${r.capacity}</div><div class="k">動員数 ${r.soldOut ? "🎉SOLD OUT" : `(${Math.round(r.occupancy * 100)}%)`}</div></div>
+        <div class="kpi"><div class="v">${r.satisfaction}</div><div class="k">観客満足度</div></div>
+        <div class="kpi"><div class="v">+${r.newFans.toLocaleString()}</div><div class="k">新規ファン</div></div>
+        <div class="kpi"><div class="v">${r.streams.toLocaleString()}</div><div class="k">ストリーミング再生</div></div>
+      </div>
+      <div class="kpi">
+        <div class="v money ${money}">${sign}¥${Math.abs(Math.round(r.profit)).toLocaleString()}</div>
+        <div class="k">収支（売上¥${Math.round(r.revenue).toLocaleString()} − 経費¥${Math.round(r.cost).toLocaleString()}）</div>
+      </div>
+      <div class="center"><button class="btn secondary" id="next-month">次の月へ →</button></div>
+    </div></div>`;
+}
+
+export function render(root: HTMLElement, state: GameState, ui: UiState, h: Handlers): void {
+  root.innerHTML = `
+    ${topbar(state)}
+    <div class="layout">
+      <div>
+        <div class="panel"><h2>メンバー</h2>${state.members.map(memberCard).join("")}</div>
+        ${appealPanel(state)}
+      </div>
+      <div>
+        <div class="panel">
+          <h2>進行ボード（${state.month}ヶ月目）</h2>
+          ${boardView(state)}
+          ${handView(state)}
+          <div class="log">${state.log.map((l) => `<div>${esc(l)}</div>`).join("")}</div>
+        </div>
+      </div>
+    </div>
+    ${ui.mode === "live" ? liveModal(state, ui) : ""}
+    ${ui.mode === "result" ? resultModal(state, ui) : ""}
+  `;
+
+  // wire events
+  root.querySelectorAll<HTMLButtonElement>("[data-card]").forEach((el) =>
+    el.addEventListener("click", () => h.onPlayCard(Number(el.dataset.card))),
+  );
+  root.querySelectorAll<HTMLButtonElement>("[data-cap]").forEach((el) =>
+    el.addEventListener("click", () => h.onLiveChange({ cap: Number(el.dataset.cap) })),
+  );
+  root.querySelectorAll<HTMLButtonElement>("[data-target]").forEach((el) =>
+    el.addEventListener("click", () =>
+      h.onLiveChange({ target: el.dataset.target as LiveDecision["target"] }),
+    ),
+  );
+  root.querySelectorAll<HTMLButtonElement>("[data-song]").forEach((el) =>
+    el.addEventListener("click", () => h.onLiveChange({ songIndex: Number(el.dataset.song) })),
+  );
+  root.querySelector("#confirm-live")?.addEventListener("click", () => h.onConfirmLive());
+  root.querySelector("#next-month")?.addEventListener("click", () => h.onNextMonth());
+}
