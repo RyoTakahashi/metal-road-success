@@ -1,0 +1,40 @@
+id: GO
+display_name: GO
+part: Dr
+
+version: 1
+changelog:
+  - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠）" }
+
+generation:
+  model: ""
+  seed: 0
+  sampler: ""
+  steps: 0
+  cfg: 0
+
+identity:
+  - "short hair under a green cap"
+  - "energetic friendly face, athletic build"
+
+outfit:
+  - "green tank top"
+  - "bare muscular arms"
+
+props:
+  - "holding a pair of drumsticks raised up"
+
+color_palette:
+  - "green (#2fbf71)"
+  - "dark green (#1d3324)"
+
+personality_vibe: "energetic powerhouse drummer, cheerful"
+
+expressions:
+  normal: "bright friendly expression"
+  fired: "drumming furiously, big open-mouthed yell, sweat flying"
+  happy: "huge cheerful grin, thumbs up energy"
+  sad: "deflated tired look"
+
+negatives:
+  - "long hair, sluggish pose"

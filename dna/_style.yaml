@@ -1,0 +1,32 @@
+# 全キャラ共通のスタイルDNA。
+# ここを変えると全員の画風が一括で変わる（＝統一感の担保）。
+# 各配列の要素は英語のプロンプト断片。コンパイラが ", " で連結する。
+
+# 画風・構図（立ち絵の前提）
+style:
+  - "2.5-head chibi anime character"
+  - "full body standing pose, front view, feet at bottom edge"
+  - "flat color cel shading, thick clean outline"
+  - "transparent background"
+  - "centered composition, single character"
+  - "video game character sprite"
+
+# 品質ワード（末尾に付与）
+quality:
+  - "high quality"
+  - "clean lineart"
+  - "consistent character design"
+
+# 全キャラ共通のネガティブ
+negatives_global:
+  - "realistic photo, 3d render"
+  - "text, watermark, signature, logo"
+  - "cropped, out of frame, multiple views"
+  - "extra limbs, extra fingers, deformed hands"
+  - "blurry, low quality, jpeg artifacts"
+
+# 出力スペック（差し替え先の前提）
+output:
+  size: "720x1120"
+  format: "png with transparent background"
+  naming: "{id}.v{version}.{expression}.png" # 例: ryo.v1.fired.png

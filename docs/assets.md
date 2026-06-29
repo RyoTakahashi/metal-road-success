@@ -42,7 +42,30 @@
 | `venueBig` | 大規模ライブ/フェス | 同上 |
 | `backstage` | 開演前 | 同上 |
 
-## AI生成プロンプト雛形（立ち絵）
+## キャラDNA & プロンプト生成（推奨ワークフロー）
+キャラの一貫性とバージョン管理は **`dna/` 配下のYAML** で行う。
+
+```
+dna/
+  _style.yaml      # 全キャラ共通の画風・品質・ネガティブ・出力スペック
+  _template.yaml   # 新キャラ用テンプレート（コピー元）
+  ryo.yaml ...     # 各キャラのDNA（不変の核 identity ＋ 衣装/小物/表情差分）
+  prompts.generated.md / .json   # 自動生成（編集禁止）
+```
+
+- DNAの各フィールドは **そのままプロンプトに組み込まれる英語断片**。
+- `npm run prompts` で `dna/*.yaml` → 完成プロンプト（＋ネガティブ＋出力ファイル名）を再生成。
+- **一貫性**: `identity` は不変の核。`generation.seed`/`model` を固定して再生成すれば同じキャラが出る。
+- **バージョニング**: 見た目を変えたら `version` を上げる。出力名は `{id}.v{version}.{expression}.png`（例 `ryo.v2.fired.png`）。過去verの画像を残せばロールバック可能。
+- 生成した画像を `public/assets/chars/` に置き、`src/ui/assets.ts` のパスをそのファイル名に更新（バージョン付きを指す）。
+
+### 例（`npm run prompts` の出力）
+`dna/ryo.yaml` の identity/outfit/props/expressions が、共通styleと連結されて
+`ryo.v1.fired.png` 用のプロンプト1本に組み上がる。全文は `dna/prompts.generated.md` を参照。
+
+---
+
+## AI生成プロンプト雛形（手動で書く場合の参考）
 キャラの一貫性を保つため、**同一の画風・体型指定**を共通プレフィックスにし、メンバー固有部分だけ差し替える。
 
 > 共通: `2.5-head chibi anime character, full body standing pose, front view, flat color cel shading, thick clean outline, transparent background, centered, game character sprite, metal band member`

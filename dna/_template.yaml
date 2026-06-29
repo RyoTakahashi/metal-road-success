@@ -1,0 +1,56 @@
+# =====================================================================
+# キャラクターDNA テンプレート
+# ---------------------------------------------------------------------
+# このファイルをコピーして dna/<id>.yaml を作る（_ 始まりは共通設定扱い）。
+# 各フィールドは「そのままプロンプトに組み込まれる英語断片」で書く。
+# 連結順は scripts/build-prompts.mjs を参照（style→identity→outfit→
+# props→part→personality_vibe→expression→quality）。
+# =====================================================================
+
+id: TEMPLATE            # 一意なID（大文字）。ファイル名・出力名に使う
+display_name: テンプレ   # 表示名（日本語可）
+part: Vo                # Vo / Gt / Ba / Dr / Key
+
+# --- バージョニング ---------------------------------------------------
+# 見た目の正史を変えたら version を上げる。出力PNGは {id}.v{version}...
+# 過去verの画像を残せば、いつでも前の絵に戻せる（＝ロールバック可能）。
+version: 1
+changelog:
+  - { version: 1, date: "YYYY-MM-DD", note: "初版" }
+
+# --- 生成メタデータ（再現性のため固定）-------------------------------
+# 同じ seed + 同じ DNA で再生成すれば、ほぼ同じキャラが出る。
+generation:
+  model: ""            # 例: "SDXL 1.0" / "NovelAI Diffusion V3" / "Midjourney v6"
+  seed: 0              # 固定シード（0=未設定）
+  sampler: ""
+  steps: 0
+  cfg: 0
+
+# --- DNA本体（プロンプト断片）---------------------------------------
+# identity = 不変の核。version を上げる時以外は触らない（一貫性の要）。
+identity:
+  - "core visual trait A"
+  - "core visual trait B"
+
+outfit:                # 衣装
+  - "outfit piece"
+
+props:                 # 手持ち楽器・小物
+  - "holding an instrument"
+
+color_palette:         # 参考用（プロンプトにも付与される）
+  - "color name (#hex)"
+
+personality_vibe: "one short phrase describing the character's vibe"
+
+# --- 表情/ポーズ差分 -------------------------------------------------
+# シーンの mood (normal/fired/happy/sad) に対応。キーはコードと揃える。
+expressions:
+  normal: "calm neutral expression"
+  fired: "shouting passionately, intense eyes"
+  happy: "big joyful grin"
+  sad: "downcast disappointed look"
+
+# --- このキャラ固有のネガティブ（任意）------------------------------
+negatives: []

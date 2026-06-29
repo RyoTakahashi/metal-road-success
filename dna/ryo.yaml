@@ -1,0 +1,42 @@
+id: RYO
+display_name: RYO
+part: Vo
+
+version: 1
+changelog:
+  - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠）" }
+
+generation:
+  model: ""
+  seed: 0
+  sampler: ""
+  steps: 0
+  cfg: 0
+
+identity:
+  - "spiky black hair with a single hot-pink streak"
+  - "sharp confident eyes, slim tall build"
+
+outfit:
+  - "black studded leather jacket"
+  - "hot-pink band t-shirt underneath"
+  - "silver chain accessories"
+
+props:
+  - "holding a vocal microphone"
+
+color_palette:
+  - "black"
+  - "hot pink (#ff5577)"
+  - "skin (#ffe0c0)"
+
+personality_vibe: "charismatic metal frontman, cocky grin"
+
+expressions:
+  normal: "calm confident expression"
+  fired: "screaming into the mic, mouth wide open, fierce eyes"
+  happy: "big triumphant grin, sparkling eyes"
+  sad: "frustrated downcast look"
+
+negatives:
+  - "blonde hair, glasses"
