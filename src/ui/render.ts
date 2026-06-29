@@ -3,14 +3,18 @@
 // anim.ts animates directly on this DOM, then render() re-syncs.
 
 import { appealProfile } from "../game/coreLoop";
-import type { GameState, LiveDecision, LiveResult, Member, Space } from "../game/types";
+import { TRAININGS } from "../game/narrative";
+import type { GameState, LiveDecision, LiveResult, Member, Param, Slide, Space } from "../game/types";
 import { PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS } from "../game/types";
 
 export interface UiState {
-  mode: "board" | "live" | "result";
+  mode: "board" | "practiceChoice" | "slides" | "live" | "result";
   panel: "none" | "members" | "appeal";
   rolling: boolean;
   lastRoll: number;
+  pendingMult: number; // dice multiplier awaiting a practice choice
+  slideSeq: Slide[];
+  slideIndex: number;
   liveDecision: LiveDecision;
   liveResult?: LiveResult;
 }
@@ -19,6 +23,8 @@ export interface Handlers {
   onRoll: () => void;
   onOpenPanel: (panel: UiState["panel"]) => void;
   onClosePanel: () => void;
+  onChooseTraining: (param: Param) => void;
+  onSlideNext: () => void;
   onLiveChange: (patch: Partial<LiveDecision>) => void;
   onConfirmLive: () => void;
   onNextMonth: () => void;
@@ -154,6 +160,43 @@ function appealPanel(state: GameState): string {
     </div></div>`;
 }
 
+function practiceChoiceModal(ui: UiState): string {
+  const opts = PARAMS.map((p) => {
+    const t = TRAININGS[p];
+    const gain = 2 * ui.pendingMult;
+    return `<button class="train" data-train="${p}">
+        <span class="tart">${t.art}</span>
+        <span class="tname">${PARAM_LABEL[p]}</span>
+        <span class="tdesc">${esc(t.name)} ／ +${gain}</span>
+      </button>`;
+  }).join("");
+  return `
+    <div class="overlay"><div class="panel modal">
+      <h2>🎸 練習メニューを選択（出目 ×${ui.pendingMult}）</h2>
+      <div class="hint">どの能力を伸ばす？ 出目が大きいほど効果も大きい。</div>
+      <div class="traingrid">${opts}</div>
+    </div></div>`;
+}
+
+function slidesModal(ui: UiState): string {
+  const s = ui.slideSeq[ui.slideIndex];
+  const last = ui.slideIndex === ui.slideSeq.length - 1;
+  const dots = ui.slideSeq
+    .map((_, i) => `<span class="dot ${i === ui.slideIndex ? "on" : ""}"></span>`)
+    .join("");
+  const speaker = s.speaker ? `<div class="slide-speaker">${esc(s.speaker)}</div>` : "";
+  return `
+    <div class="overlay"><div class="panel modal slideshow">
+      <div class="slide-art">${s.art}</div>
+      ${speaker}
+      <div class="slide-text">${esc(s.text)}</div>
+      <div class="slide-foot">
+        <div class="dots">${dots}</div>
+        <button class="btn" id="slide-next">${last ? "完了" : "次へ ▶"}</button>
+      </div>
+    </div></div>`;
+}
+
 function liveModal(state: GameState, ui: UiState): string {
   const d = ui.liveDecision;
   const caps = [300, 600, 1200];
@@ -218,6 +261,8 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
     </div>
     ${ui.panel === "members" ? membersPanel(state) : ""}
     ${ui.panel === "appeal" ? appealPanel(state) : ""}
+    ${ui.mode === "practiceChoice" ? practiceChoiceModal(ui) : ""}
+    ${ui.mode === "slides" ? slidesModal(ui) : ""}
     ${ui.mode === "live" ? liveModal(state, ui) : ""}
     ${ui.mode === "result" ? resultModal(state, ui) : ""}
   `;
@@ -226,6 +271,10 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   root.querySelector("#open-members")?.addEventListener("click", () => h.onOpenPanel("members"));
   root.querySelector("#open-appeal")?.addEventListener("click", () => h.onOpenPanel("appeal"));
   root.querySelector("#close-panel")?.addEventListener("click", () => h.onClosePanel());
+  root.querySelectorAll<HTMLButtonElement>("[data-train]").forEach((el) =>
+    el.addEventListener("click", () => h.onChooseTraining(el.dataset.train as Param)),
+  );
+  root.querySelector("#slide-next")?.addEventListener("click", () => h.onSlideNext());
   root.querySelectorAll<HTMLButtonElement>("[data-cap]").forEach((el) =>
     el.addEventListener("click", () => h.onLiveChange({ cap: Number(el.dataset.cap) })),
   );

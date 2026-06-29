@@ -34,7 +34,6 @@ export interface Member {
   S: number;
   V: number;
   stamina: number; // 0–100
-  exp: number; // accumulated experience toward next param bump
 }
 
 /** Support staff effects, pre-aggregated for the slice. See core-loop.md §2.4. */
@@ -96,6 +95,19 @@ export interface EventOutcome {
   title: string;
   deltas: EventDelta[];
   reachedLive: boolean;
+}
+
+/** One panel of a story slideshow (event narration). */
+export interface Slide {
+  art: string; // big emoji / illustration for the scene
+  text: string;
+  speaker?: string; // member name when it's a line of dialogue
+}
+
+/** Practice outcome = stat changes (for the board floats) + a slideshow. */
+export interface PracticeResult {
+  outcome: EventOutcome;
+  slides: Slide[];
 }
 
 /** Player choices for a live. */

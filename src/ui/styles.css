@@ -173,3 +173,37 @@ body {
 .money.pos { color: var(--green); } .money.neg { color: var(--accent-2); }
 .center { text-align: center; margin-top: 14px; }
 .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ---- Practice choice ---- */
+.traingrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
+.train {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px;
+  border-radius: 12px; border: 2px solid var(--line); background: var(--panel-2); color: var(--ink);
+  cursor: pointer; transition: transform 0.1s ease;
+}
+.train:hover { transform: translateY(-2px); border-color: var(--accent); }
+.train .tart { font-size: 30px; }
+.train .tname { font-weight: 900; font-size: 15px; color: var(--accent); }
+.train .tdesc { font-size: 11px; color: var(--muted); }
+
+/* ---- Slideshow (紙芝居) ---- */
+.slideshow { width: min(520px, 94vw); text-align: center; }
+.slide-art {
+  font-size: 72px; line-height: 1.2; padding: 26px 0; border-radius: 14px; margin-bottom: 12px;
+  background: radial-gradient(120% 100% at 50% 0%, #24344f, #101a2c);
+  border: 1px solid var(--line); animation: slideIn 0.28s ease;
+  letter-spacing: 6px;
+}
+.slide-speaker {
+  display: inline-block; margin-bottom: 6px; padding: 2px 12px; border-radius: 999px;
+  background: var(--accent-2); color: #fff; font-weight: 900; font-size: 13px;
+}
+.slide-text {
+  min-height: 60px; font-size: 16px; line-height: 1.7; white-space: pre-wrap;
+  font-weight: 700; animation: slideIn 0.28s ease;
+}
+.slide-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+.dots { display: flex; gap: 6px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.dot.on { background: var(--accent); }
+@keyframes slideIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
