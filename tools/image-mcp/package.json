@@ -1,0 +1,12 @@
+{
+  "name": "metal-road-image-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local MCP server: generate character art via Google Gemini (Nano Banana) image models",
+  "bin": { "metal-road-image-mcp": "server.mjs" },
+  "dependencies": {
+    "@google/genai": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}

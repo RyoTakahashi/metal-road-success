@@ -5,6 +5,7 @@
 - 設計仕様: [`docs/design.md`](docs/design.md)
 - コアループ（意思決定→4KPI）の数式モデル: [`docs/core-loop.md`](docs/core-loop.md)
 - イベント画面のアセット差し替え（AI生成PNG）: [`docs/assets.md`](docs/assets.md)
+- 画像生成MCP（Nano Banana / Gemini）で一気通貫生成: [`docs/image-mcp.md`](docs/image-mcp.md)
 
 ## 現在の状態：縦切りプロトタイプ (v0.1)
 
