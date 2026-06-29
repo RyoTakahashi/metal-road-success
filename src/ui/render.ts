@@ -190,7 +190,7 @@ function sceneModal(ui: UiState): string {
   const chars = s.chars
     .map(
       (c) =>
-        `<img class="sc-char ${c.pos} mood-${c.mood ?? "normal"}" src="${charSrc(c.member)}" alt="${esc(c.member)}" />`,
+        `<img class="sc-char ${c.pos} mood-${c.mood ?? "normal"}" src="${charSrc(c.member, c.mood ?? "normal")}" alt="${esc(c.member)}" />`,
     )
     .join("");
   const speaker = s.speaker ? `<div class="sc-speaker">${esc(s.speaker)}</div>` : "";

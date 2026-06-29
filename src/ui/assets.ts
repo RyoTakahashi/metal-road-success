@@ -13,13 +13,27 @@ export const BG_SRC: Record<BgKey, string> = {
   backstage: `${base}assets/bg/backstage.svg`,
 };
 
-/** Character standing art, keyed by member name. */
-export const CHAR_SRC: Record<string, string> = {
-  RYO: `${base}assets/chars/ryo.svg`,
-  KEN: `${base}assets/chars/ken.svg`,
-  MIO: `${base}assets/chars/mio.svg`,
-  GO: `${base}assets/chars/go.svg`,
-};
+export type Mood = "normal" | "fired" | "happy" | "sad";
+const MOODS: Mood[] = ["normal", "fired", "happy", "sad"];
+
+// Character version per member. Bump when the look changes (see docs/assets.md);
+// the filename is `{id}.v{version}.{mood}.png`, so old versions stay on disk.
+const CHAR_VER: Record<string, number> = { RYO: 1, KEN: 1, MIO: 1, GO: 1 };
+
+/** Standing art per member, with one image per mood. */
+export const CHAR_SRC: Record<string, Record<Mood, string>> = Object.fromEntries(
+  Object.entries(CHAR_VER).map(([member, v]) => [
+    member,
+    Object.fromEntries(
+      MOODS.map((m) => [m, `${base}assets/chars/${member.toLowerCase()}.v${v}.${m}.png`]),
+    ) as Record<Mood, string>,
+  ]),
+);
 
 export const bgSrc = (k: BgKey): string => BG_SRC[k] ?? BG_SRC.studio;
-export const charSrc = (member: string): string => CHAR_SRC[member] ?? CHAR_SRC.RYO;
+
+/** Resolve a member's standing art for a mood, falling back to normal / RYO. */
+export const charSrc = (member: string, mood: Mood = "normal"): string => {
+  const set = CHAR_SRC[member] ?? CHAR_SRC.RYO;
+  return set[mood] ?? set.normal;
+};
