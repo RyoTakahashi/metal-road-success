@@ -9,7 +9,7 @@ import { PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS } from "../game/types";
 import { bgSrc, charSrc } from "./assets";
 
 export interface UiState {
-  mode: "board" | "practiceChoice" | "slides" | "live" | "result";
+  mode: "title" | "board" | "practiceChoice" | "slides" | "live" | "result";
   panel: "none" | "members" | "appeal";
   rolling: boolean;
   lastRoll: number;
@@ -21,6 +21,7 @@ export interface UiState {
 }
 
 export interface Handlers {
+  onStart: () => void;
   onRoll: () => void;
   onOpenPanel: (panel: UiState["panel"]) => void;
   onClosePanel: () => void;
@@ -238,28 +239,91 @@ function liveModal(state: GameState, ui: UiState): string {
     </div></div>`;
 }
 
+/** Satisfaction -> headline + grade tone for the result screen. */
+function liveVerdict(sat: number): { rank: string; tone: string; line: string } {
+  if (sat >= 80) return { rank: "S", tone: "great", line: "伝説のライブ！会場が一つになった！" };
+  if (sat >= 70) return { rank: "A", tone: "great", line: "最高のステージ！確かな手応え！" };
+  if (sat >= 60) return { rank: "B", tone: "good", line: "良いライブだった。爪痕を残した。" };
+  if (sat >= 50) return { rank: "C", tone: "good", line: "悪くない。次につながる出来。" };
+  if (sat >= 40) return { rank: "D", tone: "poor", line: "盛り上がりは今ひとつ…。" };
+  return { rank: "E", tone: "poor", line: "課題の残るライブになった…。" };
+}
+
 function resultModal(state: GameState, ui: UiState): string {
   const r = ui.liveResult!;
   const money = r.profit >= 0 ? "pos" : "neg";
   const sign = r.profit >= 0 ? "+" : "−";
+  const v = liveVerdict(r.satisfaction);
+  const bg = ui.liveDecision.cap >= 1000 ? "venueBig" : "venueSmall";
+  // data-count values are animated up from 0 by render()'s countUp pass.
   return `
-    <div class="overlay"><div class="panel modal">
-      <h2>ライブ結果 — ${state.month}ヶ月目</h2>
-      <div class="kpis">
-        <div class="kpi"><div class="v">${r.draw.toLocaleString()}/${r.capacity}</div><div class="k">動員数 ${r.soldOut ? "🎉SOLD OUT" : `(${Math.round(r.occupancy * 100)}%)`}</div></div>
-        <div class="kpi"><div class="v">${r.satisfaction}</div><div class="k">観客満足度</div></div>
-        <div class="kpi"><div class="v">+${r.newFans.toLocaleString()}</div><div class="k">新規ファン</div></div>
-        <div class="kpi"><div class="v">${r.streams.toLocaleString()}</div><div class="k">ストリーミング再生</div></div>
+    <div class="overlay result-overlay" style="background-image:url('${bgSrc(bg)}')">
+      <div class="result-scrim"></div>
+      ${r.satisfaction >= 70 ? '<div class="sc-flash"></div>' : ""}
+      <div class="panel modal resultcard tone-${v.tone}">
+        <div class="result-head">
+          <div class="rank rank-${v.tone}">${v.rank}</div>
+          <div class="result-title"><h2>ライブ結果 — ${state.month}ヶ月目</h2><div class="verdict">${v.line}</div></div>
+          ${r.soldOut ? '<div class="soldout">SOLD<br>OUT</div>' : ""}
+        </div>
+        <div class="kpis">
+          <div class="kpi"><div class="v" data-count="${r.draw}">0</div><div class="sub">/${r.capacity.toLocaleString()}</div><div class="k">動員数 ${r.soldOut ? "🎉" : `${Math.round(r.occupancy * 100)}%`}</div></div>
+          <div class="kpi"><div class="v" data-count="${r.satisfaction}">0</div><div class="k">観客満足度</div></div>
+          <div class="kpi"><div class="v pos" data-count="${r.newFans}" data-prefix="+">0</div><div class="k">新規ファン</div></div>
+          <div class="kpi"><div class="v" data-count="${r.streams}">0</div><div class="k">ストリーミング再生</div></div>
+        </div>
+        <div class="kpi money-row">
+          <div class="v money ${money}">${sign}¥${Math.abs(Math.round(r.profit)).toLocaleString()}</div>
+          <div class="k">収支（売上¥${Math.round(r.revenue).toLocaleString()} − 経費¥${Math.round(r.cost).toLocaleString()}）</div>
+        </div>
+        <div class="center"><button class="btn" id="next-month">次の月へ →</button></div>
       </div>
-      <div class="kpi">
-        <div class="v money ${money}">${sign}¥${Math.abs(Math.round(r.profit)).toLocaleString()}</div>
-        <div class="k">収支（売上¥${Math.round(r.revenue).toLocaleString()} − 経費¥${Math.round(r.cost).toLocaleString()}）</div>
+    </div>`;
+}
+
+/** Title screen: band lineup on the main stage + logo + start button. */
+function titleScreen(state: GameState): string {
+  const roster = ["RYO", "KEN", "MIO", "GO"];
+  const known = new Set(state.members.map((m) => m.name));
+  const chars = roster
+    .filter((m) => known.has(m))
+    .map((m, i) => `<img class="title-char" style="--i:${i}" src="${charSrc(m, "normal")}" alt="${esc(m)}" />`)
+    .join("");
+  return `
+    <div class="title-screen" style="background-image:url('${bgSrc("venueBig")}')">
+      <div class="title-scrim"></div>
+      <div class="title-band">${chars}</div>
+      <div class="title-copy">
+        <div class="title-logo">Metal Road<span>~ SUCCESS! ~</span></div>
+        <div class="title-tag">社会人メタルバンド育成シミュレーション</div>
+        <button class="btn title-start" id="start">▶ はじめる</button>
       </div>
-      <div class="center"><button class="btn secondary" id="next-month">次の月へ →</button></div>
-    </div></div>`;
+    </div>`;
+}
+
+/** Tween every [data-count] element from 0 to its target for a lively reveal. */
+function countUp(root: HTMLElement): void {
+  root.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
+    const target = Number(el.dataset.count) || 0;
+    const prefix = el.dataset.prefix ?? "";
+    const dur = 650;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const p = Math.min(1, (now - t0) / dur);
+      const eased = 1 - (1 - p) * (1 - p);
+      el.textContent = prefix + Math.round(target * eased).toLocaleString();
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
 }
 
 export function render(root: HTMLElement, state: GameState, ui: UiState, h: Handlers): void {
+  if (ui.mode === "title") {
+    root.innerHTML = titleScreen(state);
+    root.querySelector("#start")?.addEventListener("click", () => h.onStart());
+    return;
+  }
   const atLive = state.pos >= 0 && state.board[state.pos]?.kind === "live";
   root.innerHTML = `
     ${topbar(state)}
@@ -301,4 +365,6 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   );
   root.querySelector("#confirm-live")?.addEventListener("click", () => h.onConfirmLive());
   root.querySelector("#next-month")?.addEventListener("click", () => h.onNextMonth());
+
+  if (ui.mode === "result") countUp(root);
 }

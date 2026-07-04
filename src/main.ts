@@ -24,7 +24,7 @@ const root = document.getElementById("app")!;
 
 let state: GameState = newGame();
 const ui: UiState = {
-  mode: "board",
+  mode: "title",
   panel: "none",
   rolling: false,
   lastRoll: 0,
@@ -106,6 +106,10 @@ async function finishSlides(): Promise<void> {
 }
 
 const handlers: Handlers = {
+  onStart() {
+    ui.mode = "board";
+    redraw();
+  },
   onRoll() {
     void playTurn();
   },

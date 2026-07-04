@@ -193,26 +193,25 @@ body {
   background-size: cover; background-position: center; overflow: hidden;
   border: 2px solid #000; box-shadow: 0 0 40px #000;
 }
-.sc-stage { position: absolute; inset: 0; }
+.sc-stage {
+  position: absolute; inset: 0;
+  display: flex; align-items: flex-end; justify-content: center;
+}
 .sc-char {
-  position: absolute; bottom: -2%; height: 86%; filter: drop-shadow(0 8px 10px rgba(0,0,0,0.5));
+  height: 86%; align-self: flex-end; margin: 0 -2%; object-fit: contain;
+  filter: drop-shadow(0 8px 10px rgba(0,0,0,0.5));
   animation: charIn 0.34s cubic-bezier(.2,.9,.3,1.2) both, idleBob 3.2s ease-in-out 0.4s infinite;
 }
-.sc-char.left { left: 4%; }
-.sc-char.center { left: 50%; transform: translateX(-50%); }
-.sc-char.right { right: 4%; }
-.sc-char.center { animation: charInC 0.34s cubic-bezier(.2,.9,.3,1.2) both, idleBobC 3.2s ease-in-out 0.4s infinite; }
-.sc-char.mood-fired { filter: drop-shadow(0 0 16px var(--accent-2)) brightness(1.08); animation: charIn 0.34s both, fired 0.32s ease-in-out infinite; }
-.sc-char.center.mood-fired { animation: charInC 0.34s both, firedC 0.32s ease-in-out infinite; }
+/* pos now only nudges depth/scale so the "lead" reads front-and-center */
+.sc-char.center { z-index: 2; height: 90%; }
+.sc-char.left, .sc-char.right { z-index: 1; }
+.sc-char.mood-fired { filter: drop-shadow(0 0 16px var(--accent-2)) brightness(1.08); animation: charIn 0.34s both, fired 0.32s ease-in-out infinite; z-index: 3; }
 .sc-char.mood-happy { animation: charIn 0.34s both, hop2 0.7s ease-in-out infinite; }
 .sc-char.mood-sad { filter: grayscale(0.4) brightness(0.8); }
 
 @keyframes charIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes charInC { from { opacity: 0; transform: translateX(-50%) translateY(30px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 @keyframes idleBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-@keyframes idleBobC { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-6px); } }
 @keyframes fired { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-4px) rotate(1deg); } }
-@keyframes firedC { 0%,100% { transform: translateX(-50%) translateY(0) rotate(-1deg); } 50% { transform: translateX(-50%) translateY(-4px) rotate(1deg); } }
 @keyframes hop2 { 0%,100% { transform: translateY(0); } 40% { transform: translateY(-14px); } }
 
 .scene.shake { animation: sceneShake 0.4s ease 1; }
@@ -237,3 +236,65 @@ body {
 .dots { display: flex; gap: 6px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffffff33; }
 .dot.on { background: var(--accent); }
+
+/* ---- Title screen ---- */
+.title-screen {
+  position: fixed; inset: 0; z-index: 20; overflow: hidden;
+  background-size: cover; background-position: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+}
+.title-scrim {
+  position: absolute; inset: 0;
+  background: radial-gradient(120% 80% at 50% 20%, transparent 30%, #050a12 100%),
+              linear-gradient(180deg, rgba(5,10,18,0.55), rgba(5,10,18,0.15) 40%, rgba(5,10,18,0.9));
+}
+.title-band {
+  position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: center;
+  height: 66%; margin-bottom: -1%;
+}
+.title-char {
+  height: 100%; margin: 0 -2.2%; object-fit: contain;
+  filter: drop-shadow(0 10px 14px rgba(0,0,0,0.6));
+  animation: titleIn 0.5s cubic-bezier(.2,.9,.3,1.2) both, idleBob 3.4s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 0.09s), calc(0.5s + var(--i) * 0.12s);
+}
+.title-char:nth-child(odd) { animation-duration: 0.5s, 3.8s; }
+@keyframes titleIn { from { opacity: 0; transform: translateY(40px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.title-copy { position: relative; z-index: 2; text-align: center; padding: 0 16px 6vh; }
+.title-logo {
+  font-size: clamp(40px, 9vw, 92px); font-weight: 900; letter-spacing: 2px; line-height: 0.98;
+  color: var(--accent); text-shadow: 0 0 28px rgba(255,85,119,0.5), 0 4px 0 #000;
+  font-style: italic;
+}
+.title-logo span { display: block; font-size: 0.32em; letter-spacing: 10px; color: var(--accent-2); font-style: normal; margin-top: 6px; }
+.title-tag { color: var(--ink); font-size: clamp(12px, 2.4vw, 15px); margin: 12px 0 22px; opacity: 0.9; }
+.title-start { font-size: 20px; padding: 14px 40px; border-radius: 12px; animation: pulseStart 1.6s ease-in-out infinite; }
+@keyframes pulseStart { 0%,100% { transform: translateY(0); box-shadow: var(--shadow); } 50% { transform: translateY(-3px); box-shadow: 0 8px 26px rgba(255,85,119,0.55); } }
+
+/* ---- Live result production ---- */
+.result-overlay { background-size: cover; background-position: center; }
+.result-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,8,16,0.72), rgba(5,8,16,0.9)); }
+.resultcard { position: relative; z-index: 1; width: min(600px, 94vw); border-width: 2px; background: rgba(18,24,40,0.94); backdrop-filter: blur(2px); animation: boxIn 0.3s ease; }
+.result-head { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+.result-head h2 { margin: 0; }
+.result-title { flex: 1; }
+.verdict { font-size: 14px; font-weight: 800; color: var(--ink); margin-top: 4px; }
+.rank {
+  flex: none; width: 58px; height: 58px; border-radius: 12px; display: grid; place-items: center;
+  font-size: 34px; font-weight: 900; font-style: italic; color: #fff;
+  animation: rankPop 0.4s cubic-bezier(.2,1.2,.3,1.2) both;
+}
+.rank-great { background: linear-gradient(160deg, var(--accent), #d99a00); box-shadow: 0 0 22px rgba(255,207,58,0.6); color: #201400; }
+.rank-good { background: linear-gradient(160deg, var(--blue), #1b6fd0); }
+.rank-poor { background: linear-gradient(160deg, #64748b, #3d4757); }
+@keyframes rankPop { from { opacity: 0; transform: scale(0.4) rotate(-12deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+.soldout {
+  flex: none; padding: 6px 12px; border-radius: 8px; text-align: center; line-height: 1; font-weight: 900;
+  font-size: 15px; color: #fff; background: linear-gradient(160deg, var(--accent-2), #c81e46);
+  box-shadow: 0 0 18px rgba(255,85,119,0.6); transform: rotate(6deg); animation: rankPop 0.5s ease both;
+}
+.resultcard .kpi { position: relative; }
+.resultcard .kpi .v.pos { color: var(--green); }
+.resultcard .kpi .sub { font-size: 12px; color: var(--muted); margin-top: -2px; }
+.money-row { margin-top: 4px; }
+.money-row .v { font-size: 22px; }

@@ -55,7 +55,8 @@ export function buildPracticeScenes(param: Param, mult: number, gain: number): S
       chars: [
         { member: "KEN", pos: "left" },
         { member: "RYO", pos: "center" },
-        { member: "MIO", pos: "right" },
+        { member: "MIO", pos: "center" },
+        { member: "GO", pos: "right" },
       ],
       text: `メンバー全員で集まり、${t.name}に取り組んだ。出目${mult}、${intensity(mult)}。`,
     },
