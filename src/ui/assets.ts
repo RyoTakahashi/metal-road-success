@@ -6,11 +6,11 @@ import type { BgKey } from "../game/types";
 const base = import.meta.env.BASE_URL; // honors vite `base`
 
 export const BG_SRC: Record<BgKey, string> = {
-  studio: `${base}assets/bg/studio.svg`,
-  street: `${base}assets/bg/street.svg`,
-  venueSmall: `${base}assets/bg/venue_small.svg`,
-  venueBig: `${base}assets/bg/venue_big.svg`,
-  backstage: `${base}assets/bg/backstage.svg`,
+  studio: `${base}assets/bg/studio.v1.png`,
+  street: `${base}assets/bg/street.v1.png`,
+  venueSmall: `${base}assets/bg/venue_small.v1.png`,
+  venueBig: `${base}assets/bg/venue_big.v1.png`,
+  backstage: `${base}assets/bg/backstage.v1.png`,
 };
 
 export type Mood = "normal" | "fired" | "happy" | "sad";
