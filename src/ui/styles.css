@@ -43,6 +43,29 @@ body {
 .stat .v { font-weight: 800; font-size: 18px; }
 .stat .k { font-size: 11px; color: var(--muted); }
 
+/* ---- Home hero (band in the studio) ---- */
+.home-hero {
+  position: relative; margin-top: 14px; height: clamp(200px, 28vw, 290px);
+  border-radius: 12px; overflow: hidden; border: 1px solid var(--line);
+  background-size: cover; background-position: center 32%; box-shadow: var(--shadow);
+}
+.hero-scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(14,23,38,0.1) 30%, rgba(14,23,38,0.8));
+}
+.hero-band { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; }
+.hero-char {
+  height: 94%; align-self: flex-end; margin: 0 1.2%; object-fit: contain;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,0.55));
+  animation: idleBob 3.6s ease-in-out infinite; animation-delay: calc(var(--i) * 0.28s);
+}
+.hero-char.tired { filter: grayscale(0.4) brightness(0.82) drop-shadow(0 6px 8px rgba(0,0,0,0.55)); animation-duration: 4.6s; }
+.hero-cap {
+  position: absolute; left: 12px; bottom: 8px; font-size: 12px; font-weight: 800;
+  color: var(--ink); opacity: 0.9; text-shadow: 0 1px 3px #000;
+}
+@media (max-width: 560px) { .home-hero { height: clamp(150px, 42vw, 200px); } }
+
 /* ---- Layout ---- */
 .stage { display: grid; grid-template-columns: 1fr 300px; gap: 14px; margin-top: 14px; }
 @media (max-width: 860px) { .stage { grid-template-columns: 1fr; } }

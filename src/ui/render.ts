@@ -318,6 +318,28 @@ function countUp(root: HTMLElement): void {
   });
 }
 
+/** Board-screen banner: the band hanging out in the studio, tired when spent. */
+function homeHero(state: GameState): string {
+  const order = ["RYO", "KEN", "MIO", "GO"];
+  const byName = new Map(state.members.map((m) => [m.name, m]));
+  const avg = state.members.reduce((s, m) => s + m.stamina, 0) / (state.members.length || 1);
+  const chars = order
+    .filter((n) => byName.has(n))
+    .map((n, i) => {
+      const m = byName.get(n)!;
+      const tired = m.stamina <= 35;
+      return `<img class="hero-char ${tired ? "tired" : ""}" style="--i:${i}" src="${charSrc(n, tired ? "sad" : "normal")}" alt="${esc(n)}" />`;
+    })
+    .join("");
+  const caption = avg <= 40 ? "🎸 練習スタジオ — 少しお疲れ気味…" : "🎸 練習スタジオ — バンドの日常";
+  return `
+    <div class="home-hero" style="background-image:url('${bgSrc("studio")}')">
+      <div class="hero-scrim"></div>
+      <div class="hero-band">${chars}</div>
+      <div class="hero-cap">${caption}</div>
+    </div>`;
+}
+
 export function render(root: HTMLElement, state: GameState, ui: UiState, h: Handlers): void {
   if (ui.mode === "title") {
     root.innerHTML = titleScreen(state);
@@ -327,6 +349,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   const atLive = state.pos >= 0 && state.board[state.pos]?.kind === "live";
   root.innerHTML = `
     ${topbar(state)}
+    ${homeHero(state)}
     <div class="stage">
       <div class="panel boardpanel">
         <h2>進行ボード（${state.month}ヶ月目）</h2>
