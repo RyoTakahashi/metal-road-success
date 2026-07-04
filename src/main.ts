@@ -32,7 +32,40 @@ const ui: UiState = {
   sceneSeq: [],
   sceneIndex: 0,
   liveDecision: { cap: 600, target: "core", songIndex: 0 },
+  auto: false,
 };
+
+const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+// Test-play auto mode. Advances everything hands-free EXCEPT choices
+// (practice menu, live decision), which still wait for the player.
+let autoRunning = false;
+async function autoLoop(): Promise<void> {
+  if (autoRunning) return;
+  autoRunning = true;
+  try {
+    while (ui.auto) {
+      switch (ui.mode) {
+        case "board":
+          if (ui.rolling) await wait(120);
+          else await playTurn();
+          break;
+        case "slides":
+          handlers.onSlideNext();
+          await wait(650);
+          break;
+        case "result":
+          await wait(800);
+          handlers.onNextMonth();
+          break;
+        default: // practiceChoice / live / title: wait for the player
+          await wait(300);
+      }
+    }
+  } finally {
+    autoRunning = false;
+  }
+}
 
 // What to do once the current slideshow finishes.
 let afterSlides: "board" | "result" = "board";
@@ -160,6 +193,11 @@ const handlers: Handlers = {
     ui.lastRoll = 0;
     ui.liveResult = undefined;
     redraw();
+  },
+  onToggleAuto() {
+    ui.auto = !ui.auto;
+    redraw();
+    if (ui.auto) void autoLoop();
   },
 };
 

@@ -18,6 +18,7 @@ export interface UiState {
   sceneIndex: number;
   liveDecision: LiveDecision;
   liveResult?: LiveResult;
+  auto: boolean; // test-play auto mode: auto-advance everything except choices
 }
 
 export interface Handlers {
@@ -30,6 +31,7 @@ export interface Handlers {
   onLiveChange: (patch: Partial<LiveDecision>) => void;
   onConfirmLive: () => void;
   onNextMonth: () => void;
+  onToggleAuto: () => void;
 }
 
 const PART_COLOR: Record<string, string> = {
@@ -111,6 +113,7 @@ function diceBar(ui: UiState, atLive: boolean): string {
         ${ui.rolling ? "進行中…" : "サイコロを振る"}
       </button>
       <div class="navbtns">
+        <button class="iconbtn auto ${ui.auto ? "on" : ""}" id="toggle-auto">${ui.auto ? "⏸ オート中" : "▶ オート"}</button>
         <button class="iconbtn" id="open-members">🎸 メンバー</button>
         <button class="iconbtn" id="open-appeal">📊 アピール</button>
       </div>
@@ -388,6 +391,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   );
   root.querySelector("#confirm-live")?.addEventListener("click", () => h.onConfirmLive());
   root.querySelector("#next-month")?.addEventListener("click", () => h.onNextMonth());
+  root.querySelector("#toggle-auto")?.addEventListener("click", () => h.onToggleAuto());
 
   if (ui.mode === "result") countUp(root);
 }

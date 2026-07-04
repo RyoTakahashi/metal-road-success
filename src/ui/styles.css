@@ -165,6 +165,7 @@ body {
   border-radius: 10px; padding: 10px 12px; font-weight: 700; cursor: pointer; font-size: 13px;
 }
 .iconbtn:hover { border-color: var(--accent); color: var(--accent); }
+.iconbtn.auto.on { border-color: var(--green); color: var(--green); box-shadow: 0 0 10px rgba(47,191,113,0.45); }
 
 .btn {
   border: none; border-radius: 10px; padding: 12px 18px; font-weight: 800; cursor: pointer;
@@ -244,7 +245,7 @@ body {
 @keyframes flash { from { opacity: 0.9; } to { opacity: 0; } }
 
 .sc-textbox {
-  position: absolute; left: 3%; right: 3%; bottom: 3%;
+  position: absolute; left: 3%; right: 3%; bottom: 3%; z-index: 10;
   background: linear-gradient(180deg, rgba(20,12,24,0.92), rgba(10,8,14,0.96));
   border: 2px solid var(--accent); border-radius: 14px; padding: 16px 18px 12px;
   box-shadow: 0 6px 24px #000a; animation: boxIn 0.25s ease;
