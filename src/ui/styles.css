@@ -75,6 +75,14 @@ body {
 .ac-ico { font-size: 34px; line-height: 1; }
 .ac-name { font-weight: 900; font-size: 16px; color: var(--accent); }
 .ac-hint { font-size: 11px; color: var(--muted); text-align: center; }
+.ac-sta { font-size: 10px; color: var(--muted); opacity: 0.85; }
+.actcard.locked { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.5); }
+.actcard.locked:hover { transform: none; border-color: var(--line); box-shadow: none; }
+.actcard.locked .ac-hint { color: var(--accent-2); }
+.fatigue-note {
+  margin-bottom: 10px; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700;
+  color: var(--accent-2); background: rgba(255,85,119,0.12); border: 1px solid var(--accent-2);
+}
 .leadtag { font-size: 10px; background: var(--accent-2); color: #fff; padding: 1px 7px; border-radius: 999px; }
 .opt.locked { opacity: 0.45; cursor: not-allowed; }
 .opt .capn { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }

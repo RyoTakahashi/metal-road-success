@@ -87,6 +87,8 @@ export interface GameState {
   support: Support;
   songs: Song[];
   practiceFreshness: number; // 0–100, decays monthly; low = worse live
+  contacts: number; // 人脈ポイント: gates support staff / better deals (P2)
+  bond: number; // 0–100 バンドの結束: boosts recovery, eases friction (P2)
   funds: number;
   totalFans: number;
   segFans: Record<Segment, number>;

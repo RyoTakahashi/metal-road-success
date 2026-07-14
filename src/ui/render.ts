@@ -4,7 +4,7 @@
 
 import { appealProfile, K } from "../game/coreLoop";
 import { TRAININGS } from "../game/narrative";
-import { PARTS, nameOf } from "../game/state";
+import { FATIGUE_FLOOR, PARTS, bandStamina, isCardLocked, nameOf, staminaTag } from "../game/state";
 import type {
   ActionKind,
   GameState,
@@ -146,25 +146,34 @@ const CARD_HINT: Record<ActionKind, string> = {
 
 function handView(state: GameState): string {
   const cards = state.hand
-    .map(
-      (c) => `
-      <button class="actcard ${c.kind}" data-card="${c.kind}">
+    .map((c) => {
+      const locked = isCardLocked(state, c.kind);
+      return `
+      <button class="actcard ${c.kind} ${locked ? "locked" : ""}" data-card="${c.kind}" ${locked ? "disabled" : ""}>
         <span class="ac-ico">${ACTION_ICON[c.kind]}</span>
         <span class="ac-name">${ACTION_LABEL[c.kind]}</span>
-        <span class="ac-hint">${CARD_HINT[c.kind]}</span>
-      </button>`,
-    )
+        <span class="ac-hint">${locked ? "疲労で行動不可" : CARD_HINT[c.kind]}</span>
+        <span class="ac-sta">${staminaTag(c.kind)}</span>
+      </button>`;
+    })
     .join("");
   const freshTone = state.practiceFreshness >= 60 ? "" : state.practiceFreshness >= 30 ? "warn" : "bad";
   const newest = state.songs.reduce((a, s) => Math.min(a, s.age), 99);
   const songTone = newest <= 1 ? "" : newest <= 3 ? "warn" : "bad";
+  const sta = Math.round(bandStamina(state));
+  const staTone = sta < FATIGUE_FLOOR ? "bad" : sta < 50 ? "warn" : "";
+  const fatigued = sta < FATIGUE_FLOOR;
   return `
     <div class="panel boardpanel">
       <h2>${state.month}ヶ月目 ・ ターン ${state.turn}/${state.turnsPerMonth} — 行動を選択</h2>
       <div class="handbar">
+        <span class="meter ${staTone}">体力(平均) ${sta}</span>
         <span class="meter ${freshTone}">練習の鮮度 ${Math.round(state.practiceFreshness)}</span>
         <span class="meter ${songTone}">最新曲 ${newest === 0 ? "NEW" : `${newest}ヶ月前`}</span>
+        <span class="meter">🤝 人脈 ${state.contacts}</span>
+        <span class="meter">🔥 結束 ${Math.round(state.bond)}</span>
       </div>
+      ${fatigued ? '<div class="fatigue-note">メンバーは疲労困憊…「休息」でしか動けない。しっかり休もう。</div>' : ""}
       <div class="hand">${cards}</div>
       <div class="dicebar">
         <div class="navbtns">

@@ -6,6 +6,7 @@ import { applyLiveResult, resolveLive } from "./game/coreLoop";
 import { buildLiveScenes } from "./game/narrative";
 import {
   advanceTurn,
+  isCardLocked,
   newGame,
   pushLog,
   resolveAction,
@@ -103,6 +104,7 @@ const handlers: Handlers = {
     redraw();
   },
   onPlayCard(kind) {
+    if (isCardLocked(state, kind)) return; // exhausted: only 休息 is allowed
     const card = state.hand.find((c) => c.kind === kind);
     if (card?.subs && card.subs.length > 0) {
       ui.pendingCard = kind;
