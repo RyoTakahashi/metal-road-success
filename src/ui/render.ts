@@ -1,33 +1,42 @@
-// DOM rendering for the prototype. The board is the focus; member stats and
-// the segment-appeal profile live behind buttons (overlays). During a turn,
-// anim.ts animates directly on this DOM, then render() re-syncs.
+// DOM rendering. The board is now a per-turn hand of action cards; member
+// stats and the appeal profile live behind buttons (overlays). Scenes and the
+// live result are VN-style overlays.
 
-import { appealProfile } from "../game/coreLoop";
+import { appealProfile, K } from "../game/coreLoop";
 import { TRAININGS } from "../game/narrative";
-import type { GameState, LiveDecision, LiveResult, Member, Param, Scene, Space } from "../game/types";
-import { PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS } from "../game/types";
+import { PARTS, nameOf } from "../game/state";
+import type {
+  ActionKind,
+  GameState,
+  LiveDecision,
+  LiveResult,
+  Member,
+  Param,
+  Scene,
+} from "../game/types";
+import { ACTION_ICON, ACTION_LABEL, PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS } from "../game/types";
 import { bgSrc, charSrc } from "./assets";
 
 export interface UiState {
-  mode: "title" | "board" | "practiceChoice" | "slides" | "live" | "result";
+  mode: "title" | "partSelect" | "board" | "cardSub" | "practiceChoice" | "slides" | "live" | "result";
   panel: "none" | "members" | "appeal";
-  rolling: boolean;
-  lastRoll: number;
-  pendingMult: number; // dice multiplier awaiting a practice choice
+  pendingCard?: ActionKind; // card whose sub-option is being chosen
   sceneSeq: Scene[];
   sceneIndex: number;
   liveDecision: LiveDecision;
   liveResult?: LiveResult;
-  auto: boolean; // test-play auto mode: auto-advance everything except choices
+  auto: boolean;
 }
 
 export interface Handlers {
   onStart: () => void;
-  onRoll: () => void;
-  onOpenPanel: (panel: UiState["panel"]) => void;
-  onClosePanel: () => void;
+  onChoosePart: (part: string, name: string) => void;
+  onPlayCard: (kind: ActionKind) => void;
+  onChooseSub: (subId: string) => void;
   onChooseTraining: (param: Param) => void;
   onSlideNext: () => void;
+  onOpenPanel: (panel: UiState["panel"]) => void;
+  onClosePanel: () => void;
   onLiveChange: (patch: Partial<LiveDecision>) => void;
   onConfirmLive: () => void;
   onNextMonth: () => void;
@@ -42,14 +51,7 @@ const PART_COLOR: Record<string, string> = {
   Key: "#a06bff",
 };
 
-const SPACE_ICON: Record<Space["kind"], string> = {
-  practice: "🎸",
-  rest: "💤",
-  money: "💴",
-  fan: "🔥",
-  event: "❗",
-  live: "🎤",
-};
+const ROSTER = ["RYO", "KEN", "MIO", "GO"];
 
 function grade(v: number): string {
   if (v >= 90) return "S";
@@ -79,43 +81,10 @@ function topbar(state: GameState): string {
     <div class="topbar">
       <div class="logo">Metal Road<small>~ SUCCESS! ~</small></div>
       <div class="stats">
-        <div class="stat"><div class="v">${state.month}</div><div class="k">ヶ月目</div></div>
+        <div class="stat"><div class="v">${state.month}<span class="turn">·${state.turn}/${state.turnsPerMonth}</span></div><div class="k">月・ターン</div></div>
         <div class="stat"><div class="v">${state.totalFans.toLocaleString()}</div><div class="k">ファン</div></div>
         <div class="stat"><div class="v">${state.fame}</div><div class="k">知名度</div></div>
         <div class="stat"><div class="v">¥${state.funds.toLocaleString()}</div><div class="k">資金</div></div>
-      </div>
-    </div>`;
-}
-
-function spaceView(sp: Space, i: number, pos: number): string {
-  const hidden = !sp.fixed && !sp.revealed;
-  const here = i === pos ? "here" : "";
-  const pin = i === pos ? `<span class="pin">📍</span>` : "";
-  if (hidden) {
-    return `<div class="space hidden ${here}">${pin}<span class="ico">？</span></div>`;
-  }
-  return `<div class="space ${sp.kind} ${here}">
-    ${pin}<span class="ico">${SPACE_ICON[sp.kind]}</span><span>${esc(sp.label)}</span>
-  </div>`;
-}
-
-function boardView(state: GameState): string {
-  const spaces = state.board.map((sp, i) => spaceView(sp, i, state.pos)).join("");
-  return `<div class="board">${spaces}</div>`;
-}
-
-function diceBar(ui: UiState, atLive: boolean): string {
-  const disabled = ui.rolling || atLive || ui.mode !== "board";
-  return `
-    <div class="dicebar">
-      <div class="dice">${ui.lastRoll || "🎲"}</div>
-      <button class="btn roll" id="roll" ${disabled ? "disabled" : ""}>
-        ${ui.rolling ? "進行中…" : "サイコロを振る"}
-      </button>
-      <div class="navbtns">
-        <button class="iconbtn auto ${ui.auto ? "on" : ""}" id="toggle-auto">${ui.auto ? "⏸ オート中" : "▶ オート"}</button>
-        <button class="iconbtn" id="open-members">🎸 メンバー</button>
-        <button class="iconbtn" id="open-appeal">📊 アピール</button>
       </div>
     </div>`;
 }
@@ -130,7 +99,7 @@ function memberCard(m: Member): string {
         <div class="part">${esc(m.part)}</div>
       </div>
       <div class="minfo">
-        <div class="mname">${esc(m.name)}</div>
+        <div class="mname">${esc(m.name)}${m.isLeader ? ' <span class="leadtag">YOU</span>' : ""}</div>
         <div class="gauges">
           ${PARAMS.map((p) => gaugeRow(PARAM_LABEL[p], m[p])).join("")}
           ${gaugeRow("体力", m.stamina, "stamina")}
@@ -165,27 +134,89 @@ function appealPanel(state: GameState): string {
     </div></div>`;
 }
 
+// --- Hand of action cards (the main board) ---------------------------------
+
+const CARD_HINT: Record<ActionKind, string> = {
+  rest: "完全休養／社会勉強／趣味",
+  music: "作曲／練習／パフォーマンス",
+  promo: "宣伝で知名度・ファン↑",
+  network: "バンド／新たな人脈",
+  money: "バイトで資金を稼ぐ",
+};
+
+function handView(state: GameState): string {
+  const cards = state.hand
+    .map(
+      (c) => `
+      <button class="actcard ${c.kind}" data-card="${c.kind}">
+        <span class="ac-ico">${ACTION_ICON[c.kind]}</span>
+        <span class="ac-name">${ACTION_LABEL[c.kind]}</span>
+        <span class="ac-hint">${CARD_HINT[c.kind]}</span>
+      </button>`,
+    )
+    .join("");
+  const freshTone = state.practiceFreshness >= 60 ? "" : state.practiceFreshness >= 30 ? "warn" : "bad";
+  const newest = state.songs.reduce((a, s) => Math.min(a, s.age), 99);
+  const songTone = newest <= 1 ? "" : newest <= 3 ? "warn" : "bad";
+  return `
+    <div class="panel boardpanel">
+      <h2>${state.month}ヶ月目 ・ ターン ${state.turn}/${state.turnsPerMonth} — 行動を選択</h2>
+      <div class="handbar">
+        <span class="meter ${freshTone}">練習の鮮度 ${Math.round(state.practiceFreshness)}</span>
+        <span class="meter ${songTone}">最新曲 ${newest === 0 ? "NEW" : `${newest}ヶ月前`}</span>
+      </div>
+      <div class="hand">${cards}</div>
+      <div class="dicebar">
+        <div class="navbtns">
+          <button class="iconbtn auto" id="toggle-auto">▶ オート</button>
+          <button class="iconbtn" id="open-members">🎸 メンバー</button>
+          <button class="iconbtn" id="open-appeal">📊 アピール</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function cardSubModal(state: GameState, ui: UiState): string {
+  const kind = ui.pendingCard!;
+  const card = state.hand.find((c) => c.kind === kind);
+  const subs = card?.subs ?? [];
+  const opts = subs
+    .map(
+      (s) => `<button class="train" data-sub="${s.id}">
+        <span class="tname">${s.label}</span>
+        <span class="tdesc">${esc(s.desc)}</span>
+      </button>`,
+    )
+    .join("");
+  return `
+    <div class="overlay"><div class="panel modal">
+      <h2>${ACTION_ICON[kind]} ${ACTION_LABEL[kind]} — 内容を選択</h2>
+      <div class="traingrid">${opts}</div>
+      <div class="center"><button class="btn secondary" id="close-panel">やめる</button></div>
+    </div></div>`;
+}
+
 const TRAIN_ICON: Record<Param, string> = { T: "🥁", P: "🎤", S: "🎼", V: "🖤" };
 
-function practiceChoiceModal(ui: UiState): string {
+function practiceChoiceModal(): string {
   const opts = PARAMS.map((p) => {
     const t = TRAININGS[p];
-    const gain = 2 * ui.pendingMult;
     return `<button class="train" data-train="${p}">
         <span class="tart">${TRAIN_ICON[p]}</span>
         <span class="tname">${PARAM_LABEL[p]}</span>
-        <span class="tdesc">${esc(t.name)} ／ +${gain}</span>
+        <span class="tdesc">${esc(t.name)} ／ +6</span>
       </button>`;
   }).join("");
   return `
     <div class="overlay"><div class="panel modal">
-      <h2>🎸 練習メニューを選択（出目 ×${ui.pendingMult}）</h2>
-      <div class="hint">どの能力を伸ばす？ 出目が大きいほど効果も大きい。</div>
+      <h2>🎸 練習メニューを選択</h2>
+      <div class="hint">どの能力を伸ばす？ 全員に効果。</div>
       <div class="traingrid">${opts}</div>
+      <div class="center"><button class="btn secondary" id="close-panel">やめる</button></div>
     </div></div>`;
 }
 
-function sceneModal(ui: UiState): string {
+function sceneModal(state: GameState, ui: UiState): string {
   const s = ui.sceneSeq[ui.sceneIndex];
   const last = ui.sceneIndex === ui.sceneSeq.length - 1;
   const dots = ui.sceneSeq
@@ -194,10 +225,10 @@ function sceneModal(ui: UiState): string {
   const chars = s.chars
     .map(
       (c) =>
-        `<img class="sc-char ${c.pos} mood-${c.mood ?? "normal"}" src="${charSrc(c.member, c.mood ?? "normal")}" alt="${esc(c.member)}" />`,
+        `<img class="sc-char ${c.pos} mood-${c.mood ?? "normal"}" src="${charSrc(c.member, c.mood ?? "normal")}" alt="${esc(nameOf(state, c.member))}" />`,
     )
     .join("");
-  const speaker = s.speaker ? `<div class="sc-speaker">${esc(s.speaker)}</div>` : "";
+  const speaker = s.speaker ? `<div class="sc-speaker">${esc(nameOf(state, s.speaker))}</div>` : "";
   const fx = s.fx === "flash" ? `<div class="sc-flash"></div>` : "";
   return `
     <div class="overlay scene-overlay">
@@ -216,11 +247,18 @@ function sceneModal(ui: UiState): string {
     </div>`;
 }
 
+const venueName = (cap: number): string => (cap <= 200 ? "小箱ライブハウス" : cap <= 600 ? "ライブホール" : "大ホール");
+
 function liveModal(state: GameState, ui: UiState): string {
   const d = ui.liveDecision;
-  const caps = [300, 600, 1200];
+  const caps = [150, 500, 1200];
   const capOpts = caps
-    .map((c) => `<button class="opt ${d.cap === c ? "sel" : ""}" data-cap="${c}">${c}人</button>`)
+    .map((c) => {
+      const cost = c * K.venueCostPerSeat;
+      const locked = state.funds < cost;
+      return `<button class="opt ${d.cap === c ? "sel" : ""} ${locked ? "locked" : ""}" data-cap="${c}" ${locked ? "disabled" : ""}>
+        ${venueName(c)}<span class="capn">${c}人 / 会場費¥${cost.toLocaleString()}</span></button>`;
+    })
     .join("");
   const segOpts = SEGMENTS.map(
     (s) => `<button class="opt ${d.target === s ? "sel" : ""}" data-target="${s}">${SEGMENT_LABEL[s]}</button>`,
@@ -228,21 +266,22 @@ function liveModal(state: GameState, ui: UiState): string {
   const songOpts = state.songs
     .map(
       (sg, i) =>
-        `<button class="opt ${d.songIndex === i ? "sel" : ""}" data-song="${i}">${esc(sg.name)} (Q${sg.Q})</button>`,
+        `<button class="opt ${d.songIndex === i ? "sel" : ""}" data-song="${i}">${esc(sg.name)} (Q${sg.Q}${sg.age === 0 ? " NEW" : `/${sg.age}ヶ月`})</button>`,
     )
     .join("");
+  const cost = d.cap * K.venueCostPerSeat;
+  const canPay = state.funds >= cost;
   return `
     <div class="overlay"><div class="panel modal">
       <h2>🎤 月末ライブ — 意思決定</h2>
-      <div class="field"><label>会場キャパ（背伸び ⇄ 手堅さ）</label><div class="opts">${capOpts}</div>
-        <div class="hint">大きいほど新規リーチ大／空席・会場費のリスク大</div></div>
+      <div class="field"><label>会場キャパ（会場費を前払い）</label><div class="opts">${capOpts}</div>
+        <div class="hint">資金が足りない規模は選べない。序盤はバイトで会場費を稼ごう。</div></div>
       <div class="field"><label>ターゲットとするファン層</label><div class="opts">${segOpts}</div></div>
       <div class="field"><label>セットリスト（楽曲）</label><div class="opts">${songOpts}</div></div>
-      <div class="center"><button class="btn" id="confirm-live">この方針でライブ実施！</button></div>
+      <div class="center"><button class="btn" id="confirm-live" ${canPay ? "" : "disabled"}>${canPay ? "この方針でライブ実施！" : "資金不足（会場費が払えない）"}</button></div>
     </div></div>`;
 }
 
-/** Satisfaction -> headline + grade tone for the result screen. */
 function liveVerdict(sat: number): { rank: string; tone: string; line: string } {
   if (sat >= 80) return { rank: "S", tone: "great", line: "伝説のライブ！会場が一つになった！" };
   if (sat >= 70) return { rank: "A", tone: "great", line: "最高のステージ！確かな手応え！" };
@@ -252,13 +291,28 @@ function liveVerdict(sat: number): { rank: string; tone: string; line: string } 
   return { rank: "E", tone: "poor", line: "課題の残るライブになった…。" };
 }
 
+function countUp(root: HTMLElement): void {
+  root.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
+    const target = Number(el.dataset.count) || 0;
+    const prefix = el.dataset.prefix ?? "";
+    const dur = 650;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const p = Math.min(1, (now - t0) / dur);
+      const eased = 1 - (1 - p) * (1 - p);
+      el.textContent = prefix + Math.round(target * eased).toLocaleString();
+      if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+
 function resultModal(state: GameState, ui: UiState): string {
   const r = ui.liveResult!;
   const money = r.profit >= 0 ? "pos" : "neg";
   const sign = r.profit >= 0 ? "+" : "−";
   const v = liveVerdict(r.satisfaction);
   const bg = ui.liveDecision.cap >= 1000 ? "venueBig" : "venueSmall";
-  // data-count values are animated up from 0 by render()'s countUp pass.
   return `
     <div class="overlay result-overlay" style="background-image:url('${bgSrc(bg)}')">
       <div class="result-scrim"></div>
@@ -284,14 +338,27 @@ function resultModal(state: GameState, ui: UiState): string {
     </div>`;
 }
 
-/** Title screen: band lineup on the main stage + logo + start button. */
-function titleScreen(state: GameState): string {
-  const roster = ["RYO", "KEN", "MIO", "GO"];
-  const known = new Set(state.members.map((m) => m.name));
-  const chars = roster
-    .filter((m) => known.has(m))
-    .map((m, i) => `<img class="title-char" style="--i:${i}" src="${charSrc(m, "normal")}" alt="${esc(m)}" />`)
+function homeHero(state: GameState): string {
+  const byArt = new Map(state.members.map((m) => [m.artKey, m]));
+  const avg = state.members.reduce((s, m) => s + m.stamina, 0) / (state.members.length || 1);
+  const chars = ROSTER.filter((a) => byArt.has(a))
+    .map((a, i) => {
+      const m = byArt.get(a)!;
+      const tired = m.stamina <= 35;
+      return `<img class="hero-char ${tired ? "tired" : ""}" style="--i:${i}" src="${charSrc(a, tired ? "sad" : "normal")}" alt="${esc(m.name)}" />`;
+    })
     .join("");
+  const caption = avg <= 40 ? "🎸 練習スタジオ — 少しお疲れ気味…" : "🎸 練習スタジオ — バンドの日常";
+  return `
+    <div class="home-hero" style="background-image:url('${bgSrc("studio")}')">
+      <div class="hero-scrim"></div>
+      <div class="hero-band">${chars}</div>
+      <div class="hero-cap">${caption}</div>
+    </div>`;
+}
+
+function titleScreen(): string {
+  const chars = ROSTER.map((m, i) => `<img class="title-char" style="--i:${i}" src="${charSrc(m, "normal")}" alt="${esc(m)}" />`).join("");
   return `
     <div class="title-screen" style="background-image:url('${bgSrc("venueBig")}')">
       <div class="title-scrim"></div>
@@ -304,61 +371,57 @@ function titleScreen(state: GameState): string {
     </div>`;
 }
 
-/** Tween every [data-count] element from 0 to its target for a lively reveal. */
-function countUp(root: HTMLElement): void {
-  root.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
-    const target = Number(el.dataset.count) || 0;
-    const prefix = el.dataset.prefix ?? "";
-    const dur = 650;
-    const t0 = performance.now();
-    const step = (now: number) => {
-      const p = Math.min(1, (now - t0) / dur);
-      const eased = 1 - (1 - p) * (1 - p);
-      el.textContent = prefix + Math.round(target * eased).toLocaleString();
-      if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  });
-}
-
-/** Board-screen banner: the band hanging out in the studio, tired when spent. */
-function homeHero(state: GameState): string {
-  const order = ["RYO", "KEN", "MIO", "GO"];
-  const byName = new Map(state.members.map((m) => [m.name, m]));
-  const avg = state.members.reduce((s, m) => s + m.stamina, 0) / (state.members.length || 1);
-  const chars = order
-    .filter((n) => byName.has(n))
-    .map((n, i) => {
-      const m = byName.get(n)!;
-      const tired = m.stamina <= 35;
-      return `<img class="hero-char ${tired ? "tired" : ""}" style="--i:${i}" src="${charSrc(n, tired ? "sad" : "normal")}" alt="${esc(n)}" />`;
-    })
-    .join("");
-  const caption = avg <= 40 ? "🎸 練習スタジオ — 少しお疲れ気味…" : "🎸 練習スタジオ — バンドの日常";
+function partSelectScreen(): string {
+  const opts = PARTS.map(
+    (p) => `<button class="partopt" data-part="${p.part}">
+      <span class="po-part">${p.part}</span><span class="po-label">${p.label}</span></button>`,
+  ).join("");
   return `
-    <div class="home-hero" style="background-image:url('${bgSrc("studio")}')">
-      <div class="hero-scrim"></div>
-      <div class="hero-band">${chars}</div>
-      <div class="hero-cap">${caption}</div>
+    <div class="title-screen" style="background-image:url('${bgSrc("backstage")}')">
+      <div class="title-scrim"></div>
+      <div class="partselect">
+        <h2>あなたのパートは？</h2>
+        <div class="hint">あなたはこのバンドのリーダー。担当パートを選び、名前を決めよう。</div>
+        <div class="partgrid">${opts}</div>
+        <div class="namefield">
+          <label>リーダー名（任意）</label>
+          <input id="leader-name" type="text" maxlength="12" placeholder="例：リョウ" />
+        </div>
+        <button class="btn partstart" id="confirm-part" disabled>この設定で結成！</button>
+      </div>
     </div>`;
 }
 
 export function render(root: HTMLElement, state: GameState, ui: UiState, h: Handlers): void {
   if (ui.mode === "title") {
-    root.innerHTML = titleScreen(state);
+    root.innerHTML = titleScreen();
     root.querySelector("#start")?.addEventListener("click", () => h.onStart());
     return;
   }
-  const atLive = state.pos >= 0 && state.board[state.pos]?.kind === "live";
+  if (ui.mode === "partSelect") {
+    root.innerHTML = partSelectScreen();
+    let part = "";
+    const nameEl = root.querySelector<HTMLInputElement>("#leader-name");
+    const startBtn = root.querySelector<HTMLButtonElement>("#confirm-part");
+    root.querySelectorAll<HTMLButtonElement>("[data-part]").forEach((el) =>
+      el.addEventListener("click", () => {
+        part = el.dataset.part!;
+        root.querySelectorAll(".partopt").forEach((o) => o.classList.remove("sel"));
+        el.classList.add("sel");
+        if (startBtn) startBtn.disabled = false;
+      }),
+    );
+    startBtn?.addEventListener("click", () => {
+      if (part) h.onChoosePart(part, nameEl?.value ?? "");
+    });
+    return;
+  }
+
   root.innerHTML = `
     ${topbar(state)}
     ${homeHero(state)}
     <div class="stage">
-      <div class="panel boardpanel">
-        <h2>進行ボード（${state.month}ヶ月目）</h2>
-        ${boardView(state)}
-        ${diceBar(ui, atLive)}
-      </div>
+      ${handView(state)}
       <div class="panel logpanel">
         <h2>ログ</h2>
         <div class="log">${state.log.map((l) => `<div>${esc(l)}</div>`).join("")}</div>
@@ -366,19 +429,32 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
     </div>
     ${ui.panel === "members" ? membersPanel(state) : ""}
     ${ui.panel === "appeal" ? appealPanel(state) : ""}
-    ${ui.mode === "practiceChoice" ? practiceChoiceModal(ui) : ""}
-    ${ui.mode === "slides" ? sceneModal(ui) : ""}
+    ${ui.mode === "cardSub" ? cardSubModal(state, ui) : ""}
+    ${ui.mode === "practiceChoice" ? practiceChoiceModal() : ""}
+    ${ui.mode === "slides" ? sceneModal(state, ui) : ""}
     ${ui.mode === "live" ? liveModal(state, ui) : ""}
     ${ui.mode === "result" ? resultModal(state, ui) : ""}
   `;
 
-  root.querySelector("#roll")?.addEventListener("click", () => h.onRoll());
-  root.querySelector("#open-members")?.addEventListener("click", () => h.onOpenPanel("members"));
-  root.querySelector("#open-appeal")?.addEventListener("click", () => h.onOpenPanel("appeal"));
-  root.querySelector("#close-panel")?.addEventListener("click", () => h.onClosePanel());
+  // Fix up the auto toggle button (kept simple to avoid template noise above).
+  const autoBtn = root.querySelector<HTMLButtonElement>("#toggle-auto");
+  if (autoBtn) {
+    autoBtn.className = `iconbtn auto ${ui.auto ? "on" : ""}`;
+    autoBtn.textContent = ui.auto ? "⏸ オート中" : "▶ オート";
+  }
+
+  root.querySelectorAll<HTMLButtonElement>("[data-card]").forEach((el) =>
+    el.addEventListener("click", () => h.onPlayCard(el.dataset.card as ActionKind)),
+  );
+  root.querySelectorAll<HTMLButtonElement>("[data-sub]").forEach((el) =>
+    el.addEventListener("click", () => h.onChooseSub(el.dataset.sub!)),
+  );
   root.querySelectorAll<HTMLButtonElement>("[data-train]").forEach((el) =>
     el.addEventListener("click", () => h.onChooseTraining(el.dataset.train as Param)),
   );
+  root.querySelector("#open-members")?.addEventListener("click", () => h.onOpenPanel("members"));
+  root.querySelector("#open-appeal")?.addEventListener("click", () => h.onOpenPanel("appeal"));
+  root.querySelector("#close-panel")?.addEventListener("click", () => h.onClosePanel());
   root.querySelector("#scene-next")?.addEventListener("click", () => h.onSlideNext());
   root.querySelectorAll<HTMLButtonElement>("[data-cap]").forEach((el) =>
     el.addEventListener("click", () => h.onLiveChange({ cap: Number(el.dataset.cap) })),

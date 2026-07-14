@@ -27,8 +27,10 @@ export const SEGMENT_LABEL: Record<Segment, string> = {
 
 /** A playing band member. */
 export interface Member {
-  name: string;
+  name: string; // display name (leader may be renamed)
+  artKey: string; // sprite key: ryo/ken/mio/go (never changes)
   part: string; // Vo / Gt / Ba / Dr ...
+  isLeader: boolean; // the player controls this member
   T: number;
   P: number;
   S: number;
@@ -47,38 +49,48 @@ export interface Song {
   name: string;
   lean: Record<Segment, number>; // who it leans toward (sums to ~1)
   Q: number; // completion / quality 0–100
+  age: number; // months since release (0 = brand new); older = stale
 }
 
-/** Sugoroku board space kinds. */
-export type SpaceKind =
-  | "practice" // gain exp toward a focused param
-  | "rest" // restore stamina
-  | "money" // gain funds
-  | "fan" // small fan bump
-  | "event" // random band event
-  | "live"; // month-end big node
+/** Turn action categories (the choice-card hand). See docs/phase1-cards.md. */
+export type ActionKind = "rest" | "music" | "promo" | "network" | "money";
 
-export interface Space {
-  kind: SpaceKind;
-  param?: Param; // for practice spaces
-  label: string;
-  /** Fixed events (e.g. LIVE) are always visible and fire on pass-through. */
-  fixed: boolean;
-  /** Hidden spaces show "?" until the band lands on them and they fire. */
-  revealed: boolean;
+export const ACTION_LABEL: Record<ActionKind, string> = {
+  rest: "休息",
+  music: "音楽活動",
+  promo: "広報活動",
+  network: "関係性構築",
+  money: "アルバイト",
+};
+export const ACTION_ICON: Record<ActionKind, string> = {
+  rest: "💤",
+  music: "🎸",
+  promo: "📣",
+  network: "🤝",
+  money: "💴",
+};
+
+/** A card offered in the turn's hand. */
+export interface ActionCard {
+  kind: ActionKind;
+  /** Sub-option chosen when the card is played (music/rest/network have subs). */
+  subs?: { id: string; label: string; desc: string }[];
 }
 
 export interface GameState {
   month: number;
+  turn: number; // 1..turnsPerMonth within the month
+  turnsPerMonth: number;
+  hand: ActionCard[]; // the current turn's offered cards
   members: Member[];
+  leaderPart: string; // the player's chosen part
   support: Support;
   songs: Song[];
+  practiceFreshness: number; // 0–100, decays monthly; low = worse live
   funds: number;
   totalFans: number;
   segFans: Record<Segment, number>;
   fame: number; // 0–100
-  board: Space[];
-  pos: number; // index on board
   log: string[];
 }
 

@@ -40,14 +40,8 @@ export const TRAININGS: Record<Param, Training> = {
   },
 };
 
-function intensity(mult: number): string {
-  if (mult >= 5) return "魂を込めた猛特訓だ";
-  if (mult <= 2) return "軽めのセッションになった";
-  return "みっちり練習した";
-}
-
-/** Scenes for a practice session on `param`, landed with dice `mult`, gain `gain`. */
-export function buildPracticeScenes(param: Param, mult: number, gain: number): Scene[] {
+/** Scenes for a practice session on `param` with total `gain`. */
+export function buildPracticeScenes(param: Param, gain: number): Scene[] {
   const t = TRAININGS[param];
   return [
     {
@@ -58,7 +52,7 @@ export function buildPracticeScenes(param: Param, mult: number, gain: number): S
         { member: "MIO", pos: "center" },
         { member: "GO", pos: "right" },
       ],
-      text: `メンバー全員で集まり、${t.name}に取り組んだ。出目${mult}、${intensity(mult)}。`,
+      text: `メンバー全員で集まり、${t.name}にみっちり取り組んだ。`,
     },
     {
       bg: "studio",

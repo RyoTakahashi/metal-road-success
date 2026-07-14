@@ -43,6 +43,50 @@ body {
 .stat .v { font-weight: 800; font-size: 18px; }
 .stat .k { font-size: 11px; color: var(--muted); }
 
+/* ---- Turn indicator / hand of action cards ---- */
+.stat .v .turn { font-size: 12px; color: var(--muted); font-weight: 700; margin-left: 2px; }
+.handbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.meter {
+  font-size: 11px; padding: 4px 10px; border-radius: 999px;
+  background: var(--panel-2); color: var(--muted); border: 1px solid var(--line);
+}
+.meter.warn { color: var(--accent); border-color: var(--accent); }
+.meter.bad { color: var(--accent-2); border-color: var(--accent-2); }
+.hand { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+@media (max-width: 560px) { .hand { grid-template-columns: 1fr; } }
+.actcard {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 18px 10px; border-radius: 14px; border: 2px solid var(--line);
+  background: var(--panel-2); color: var(--ink); cursor: pointer; transition: transform .12s, border-color .12s, box-shadow .12s;
+}
+.actcard:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow); }
+.actcard.rest:hover { border-color: var(--blue); }
+.actcard.money:hover { border-color: var(--accent); }
+.actcard.network:hover { border-color: var(--green); }
+.ac-ico { font-size: 34px; line-height: 1; }
+.ac-name { font-weight: 900; font-size: 16px; color: var(--accent); }
+.ac-hint { font-size: 11px; color: var(--muted); text-align: center; }
+.leadtag { font-size: 10px; background: var(--accent-2); color: #fff; padding: 1px 7px; border-radius: 999px; }
+.opt.locked { opacity: 0.45; cursor: not-allowed; }
+.opt .capn { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+/* ---- Part select ---- */
+.title-screen:has(.partselect) { justify-content: center; }
+.partselect { position: relative; z-index: 2; width: min(540px, 92vw); margin: 0 auto; text-align: center; color: var(--ink); }
+.partselect h2 { color: var(--accent); font-size: 26px; margin: 0 0 6px; text-shadow: 0 2px 0 #000; }
+.partselect .hint { color: var(--ink); opacity: 0.85; font-size: 13px; margin-bottom: 16px; }
+.partgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.partopt { padding: 16px 6px; border-radius: 12px; border: 2px solid var(--line); background: rgba(18,28,48,0.72); color: var(--ink); cursor: pointer; transition: .12s; }
+.partopt:hover { border-color: var(--accent); }
+.partopt.sel { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 14px rgba(255,207,58,0.45); }
+.po-part { display: block; font-size: 22px; font-weight: 900; }
+.po-label { font-size: 12px; color: var(--muted); }
+.namefield { margin: 16px 0; text-align: left; }
+.namefield label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+.namefield input { width: 100%; padding: 11px 12px; border-radius: 8px; border: 2px solid var(--line); background: var(--panel-2); color: var(--ink); font-size: 15px; }
+.partstart { font-size: 18px; padding: 13px 32px; border-radius: 12px; }
+.partstart:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ---- Home hero (band in the studio) ---- */
 .home-hero {
   position: relative; margin-top: 14px; height: clamp(200px, 28vw, 290px);

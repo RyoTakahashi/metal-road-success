@@ -28,6 +28,10 @@ export const K = {
   ticketPrice: 4000, // yen per attendee
   streamRate: 0.5, // yen per stream
   venueCostPerSeat: 1200, // venue cost scales with capacity (背伸びの痛み)
+  freshnessFloor: 0.7, // live output at 0 practice freshness
+  freshnessRange: 0.3, // added at full freshness (D3: practice decay)
+  songStalePerMonth: 0.12, // per-month decay of a song's pull (D3: new songs)
+  songFreshFloor: 0.4, // floor for a very old song
 } as const;
 
 /** Segment appeal weights over the 4 params (rows sum to 1.0). core-loop.md §3. */
@@ -85,7 +89,11 @@ export function resolveLive(
   const { cap, target, songIndex } = decision;
   const song = state.songs[songIndex];
 
-  const aAdj = appealAdj(state, target); // Appeal_adj[t]
+  // D3: rusty practice drags the whole live down; stale songs pull fewer people.
+  const freshMult = K.freshnessFloor + K.freshnessRange * (state.practiceFreshness / 100);
+  const songFreshMult = Math.max(K.songFreshFloor, 1 - K.songStalePerMonth * song.age);
+
+  const aAdj = appealAdj(state, target) * freshMult; // Appeal_adj[t], practice-adjusted
   const match = songMatch(song, target); // SongMatch(t) 0–1
   const exposure = 1 + state.support.mk + state.support.sn;
 
@@ -110,7 +118,7 @@ export function resolveLive(
   // Step 5: new fans (KPI ②).
   const convRate =
     K.convBase * Math.pow(satisfaction / 100, K.convExp) * (1 + state.support.sn);
-  const newFans = Math.round(draw * convRate);
+  const newFans = Math.round(draw * convRate * songFreshMult);
 
   // Step 6: streams (KPI ③).
   const streams = Math.round(
@@ -118,7 +126,8 @@ export function resolveLive(
       K.streamPerFan *
       (song.Q / K.streamQPivot) *
       (1 + state.support.sn) *
-      (satisfaction / K.streamSatPivot),
+      (satisfaction / K.streamSatPivot) *
+      songFreshMult,
   );
 
   // Step 7: economics.
