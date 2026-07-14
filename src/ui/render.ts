@@ -80,6 +80,7 @@ function topbar(state: GameState): string {
   return `
     <div class="topbar">
       <div class="logo">Metal Road<small>~ SUCCESS! ~</small></div>
+      <span class="rankchip rank-${state.rank}">${state.rank === "major" ? "MAJOR" : "INDIE"}</span>
       <div class="stats">
         <div class="stat"><div class="v">${state.month}<span class="turn">·${state.turn}/${state.turnsPerMonth}</span></div><div class="k">月・ターン</div></div>
         <div class="stat"><div class="v">${state.totalFans.toLocaleString()}</div><div class="k">ファン</div></div>
@@ -260,7 +261,7 @@ const venueName = (cap: number): string => (cap <= 200 ? "小箱ライブハウ�
 
 function liveModal(state: GameState, ui: UiState): string {
   const d = ui.liveDecision;
-  const caps = [150, 500, 1200];
+  const caps = state.rank === "major" ? [500, 1200, 2500] : [150, 500, 1200];
   const capOpts = caps
     .map((c) => {
       const cost = c * K.venueCostPerSeat;

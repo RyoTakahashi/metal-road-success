@@ -6,6 +6,7 @@ import { applyLiveResult, resolveLive } from "./game/coreLoop";
 import { buildLiveScenes } from "./game/narrative";
 import {
   advanceTurn,
+  checkDebut,
   isCardLocked,
   newGame,
   pushLog,
@@ -40,7 +41,7 @@ const ui: UiState = {
 };
 
 // What to do once the current slideshow finishes.
-let afterSlides: "turn" | "result" = "turn";
+let afterSlides: "turn" | "result" | "board" = "turn";
 
 function redraw(): void {
   render(root, state, ui, handlers);
@@ -60,6 +61,12 @@ function playAction(kind: ActionKind, subId: string | undefined, param: Param | 
 function finishSlides(): void {
   if (afterSlides === "result") {
     ui.mode = "result";
+    redraw();
+    return;
+  }
+  if (afterSlides === "board") {
+    // e.g. debut scenes at a month boundary — don't consume a turn
+    ui.mode = "board";
     redraw();
     return;
   }
@@ -162,8 +169,16 @@ const handlers: Handlers = {
   },
   onNextMonth() {
     startNewMonth(state);
-    ui.mode = "board";
     ui.liveResult = undefined;
+    const debut = checkDebut(state); // indie -> major once thresholds are met
+    if (debut) {
+      afterSlides = "board";
+      ui.sceneSeq = debut;
+      ui.sceneIndex = 0;
+      ui.mode = "slides";
+    } else {
+      ui.mode = "board";
+    }
     redraw();
   },
   onToggleAuto() {

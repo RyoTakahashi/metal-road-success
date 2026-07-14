@@ -68,6 +68,7 @@ export function newGame(part = "Vo", leaderName = "", rng: () => number = Math.r
 
   const state: GameState = {
     month: 1,
+    rank: "indie",
     turn: 1,
     turnsPerMonth: TURNS_PER_MONTH,
     hand: [],
@@ -207,7 +208,7 @@ function resolveMusic(
       age: 0,
     };
     state.songs.push(song);
-    addStamina(state, -12);
+    addStamina(state, -14);
     pushLog(state, `作曲：新曲「${song.name}」が完成（Q${Q}）`);
     return {
       scenes: [
@@ -222,7 +223,7 @@ function resolveMusic(
     state.segFans.light += f;
     state.totalFans += f;
     state.fame = Math.min(100, state.fame + 1);
-    addStamina(state, -12);
+    addStamina(state, -14);
     pushLog(state, `パフォーマンス特訓：ステージ度胸UP（P+2 / ファン+${f}）`);
     return { scenes: [scene("street", ["RYO"], `路上でゲリラ演奏。人だかりができた。\n\nパフォーマンス +2・ファン +${f}`, { speaker: "RYO", fx: "shake" })] };
   }
@@ -230,7 +231,7 @@ function resolveMusic(
   const p = param ?? "T";
   const gain = 6;
   addParam(state, p, gain);
-  addStamina(state, -14);
+  addStamina(state, -16);
   state.practiceFreshness = 100;
   pushLog(state, `練習：${PARAM_LABEL[p]}を強化（+${gain} / 全員）・練習の鮮度MAX`);
   return { scenes: buildPracticeScenes(p, gain) };
@@ -242,7 +243,7 @@ function resolvePromo(state: GameState): { scenes: Scene[] } {
   const f = 4 + Math.floor(state.fame / 10);
   state.segFans.light += f;
   state.totalFans += f;
-  addStamina(state, -8);
+  addStamina(state, -10);
   pushLog(state, `広報活動：SNS・宣伝を強化（知名度+3 / ファン+${f}）`);
   return { scenes: [scene("studio", [leaderArt(state)], `SNSやフライヤーで宣伝を打った。じわじわ認知が広がる。\n\n知名度 +3・SNS効果UP・ファン +${f}`, { fx: "flash" })] };
 }
@@ -252,7 +253,7 @@ function resolveNetwork(state: GameState, sub: string): { scenes: Scene[] } {
     state.contacts += 1;
     state.support.mk = Math.min(1, state.support.mk + 0.03);
     state.fame = Math.min(100, state.fame + 1);
-    addStamina(state, -8);
+    addStamina(state, -10);
     pushLog(state, `新たな人脈：業界の知り合いが増えた（人脈+1 → ${state.contacts} / マーケ力・知名度↑）`);
     return { scenes: [scene("street", [leaderArt(state)], `対バン相手やハコの店長と繋がった。人脈は将来サポート陣を招く鍵になる。\n\n人脈 +1（計${state.contacts}）・マーケ力UP・知名度 +1`, { fx: "flash" })] };
   }
@@ -265,7 +266,7 @@ function resolveNetwork(state: GameState, sub: string): { scenes: Scene[] } {
 function resolveMoney(state: GameState, rng: () => number): { scenes: Scene[] } {
   const amt = 60_000 + Math.floor(rng() * 40_000);
   state.funds += amt;
-  addStamina(state, -10);
+  addStamina(state, -12);
   pushLog(state, `アルバイト：${yen(amt)}稼いだ`);
   return { scenes: [scene("studio", [leaderArt(state)], `生活とバンド資金のためにバイト。${yen(amt)}を稼いだ。\n\nライブの会場費はここで貯める。`, { fx: "flash" })] };
 }
@@ -288,10 +289,32 @@ export function startNewMonth(state: GameState, rng: () => number = Math.random)
   state.practiceFreshness = Math.max(0, state.practiceFreshness - 30);
   for (const s of state.songs) s.age += 1;
   // Tighter bands recover a little better between months (bond payoff).
-  const recover = 12 + Math.round(state.bond * 0.2);
+  const recover = 6 + Math.round(state.bond * 0.1);
   for (const m of state.members) m.stamina = Math.min(100, m.stamina + recover);
   dealHand(state, rng);
   pushLog(state, `--- ${state.month}ヶ月目 スタート ---`);
+}
+
+// --- Major debut milestone (P2-0) -------------------------------------------
+
+const DEBUT_FANS = 3000;
+const DEBUT_FAME = 40;
+
+/**
+ * If the band has grown enough, promote indie -> major once and return the
+ * debut scenes to play. Otherwise null. Major unlocks bigger venues (and,
+ * later, support staff / a producer). Call at a month boundary.
+ */
+export function checkDebut(state: GameState): Scene[] | null {
+  if (state.rank !== "indie") return null;
+  if (state.totalFans < DEBUT_FANS || state.fame < DEBUT_FAME) return null;
+  state.rank = "major";
+  state.fame = Math.min(100, state.fame + 8);
+  pushLog(state, "★ メジャーデビュー決定！ 活動の規模が広がる（大箱ライブ解禁）");
+  return [
+    scene("backstage", ["RYO", "KEN", "MIO", "GO"], "レーベルからのオファー。ついに——メジャーデビューが決まった。", { speaker: "RYO", fx: "shake" }),
+    scene("venueBig", ["KEN", "RYO", "MIO", "GO"], "これまでの積み重ねが実を結んだ。ここからが本当の勝負だ！\n\n大箱ライブが解禁。今後はサポート陣（プロデューサー等）の招致も視野に。", { fx: "flash" }),
+  ];
 }
 
 export function pushLog(state: GameState, msg: string): void {

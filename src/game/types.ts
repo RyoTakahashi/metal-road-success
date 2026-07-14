@@ -79,6 +79,7 @@ export interface ActionCard {
 
 export interface GameState {
   month: number;
+  rank: "indie" | "major"; // progression stage; major unlocks bigger venues / staff (P2)
   turn: number; // 1..turnsPerMonth within the month
   turnsPerMonth: number;
   hand: ActionCard[]; // the current turn's offered cards
