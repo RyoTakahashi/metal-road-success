@@ -12,9 +12,21 @@ import {
   startNewMonth,
 } from "./game/state";
 import type { ActionKind, GameState, Param } from "./game/types";
+import * as bgm from "./ui/audio";
 import { render, type Handlers, type UiState } from "./ui/render";
 
 const root = document.getElementById("app")!;
+
+// BGM changes with the game context / progression (docs roadmap B1). Transient
+// modes (slides, sub-choices) keep whatever track is playing.
+function applyBgm(): void {
+  let k: bgm.TrackKey | null = null;
+  if (ui.mode === "title" || ui.mode === "partSelect") k = "metalroad";
+  else if (ui.mode === "live") k = "crimson";
+  else if (ui.mode === "result") k = "freedom";
+  else if (ui.mode === "board") k = state.month >= 6 ? "metropolis" : state.month >= 3 ? "cosmos" : "rolling";
+  if (k) bgm.play(k);
+}
 
 let state: GameState = newGame();
 const ui: UiState = {
@@ -31,6 +43,7 @@ let afterSlides: "turn" | "result" = "turn";
 
 function redraw(): void {
   render(root, state, ui, handlers);
+  applyBgm();
 }
 
 function playAction(kind: ActionKind, subId: string | undefined, param: Param | undefined): void {
@@ -157,5 +170,22 @@ const handlers: Handlers = {
     if (ui.auto) void autoLoop();
   },
 };
+
+// Persistent BGM mute toggle (lives outside #app so re-renders don't drop it).
+const bgmBtn = document.createElement("button");
+bgmBtn.className = "bgm-btn";
+bgmBtn.setAttribute("aria-label", "BGMのオン/オフ");
+bgmBtn.textContent = bgm.isMuted() ? "🔇" : "🔊";
+bgmBtn.addEventListener("click", () => {
+  bgmBtn.textContent = bgm.toggleMute() ? "🔇" : "🔊";
+});
+document.body.appendChild(bgmBtn);
+
+// Unlock audio on the first user gesture (autoplay is blocked until then).
+const unlock = (): void => {
+  bgm.resume();
+  window.removeEventListener("pointerdown", unlock);
+};
+window.addEventListener("pointerdown", unlock);
 
 redraw();
