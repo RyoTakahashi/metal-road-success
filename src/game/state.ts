@@ -12,8 +12,9 @@ import type {
   Param,
   Scene,
   Song,
+  StaffRole,
 } from "./types";
-import { PARAM_LABEL } from "./types";
+import { PARAM_LABEL, STAFF_LABEL } from "./types";
 
 const TURNS_PER_MONTH = 4;
 const clampStat = (n: number) => Math.max(0, Math.min(99, n));
@@ -36,6 +37,22 @@ export function staminaTag(kind: ActionKind): string {
   if (kind === "network") return "体力+ / 人脈・結束";
   return "体力 消費";
 }
+
+// --- Support staff (P2-2/3/4) ----------------------------------------------
+
+export const STAFF_DEFS: Record<StaffRole, { cut: number; contactCost: number; desc: string }> = {
+  producer: { cut: 0.15, contactCost: 4, desc: "毎ターンの手札 +1・作曲Q↑。ただし大箱志向の外圧（小箱続きで親密度↓）" },
+  manager: { cut: 0.1, contactCost: 3, desc: "宣伝到達（マーケ力）が上がり動員が伸びる" },
+  pa: { cut: 0.08, contactCost: 3, desc: "ライブ満足度が上がる。親密度が低いと当日トラブル" },
+  roadie: { cut: 0.06, contactCost: 3, desc: "行動の体力消費を軽減・トラブルを抑える" },
+};
+export const STAFF_CAP = 3;
+export const hasStaff = (s: GameState, role: StaffRole): boolean => s.staff.some((x) => x.role === role);
+export const recruitableRoles = (s: GameState): StaffRole[] =>
+  (Object.keys(STAFF_DEFS) as StaffRole[]).filter((r) => !hasStaff(s, r) && s.contacts >= STAFF_DEFS[r].contactCost);
+/** Support staff can be scouted once major, with spare 人脈 and an open slot. */
+export const canRecruit = (s: GameState): boolean =>
+  s.rank === "major" && s.staff.length < STAFF_CAP && recruitableRoles(s).length > 0;
 
 /** The four founding members (Vo/Gt/Ba/Dr). artKey is the sprite key. */
 function initialMembers(): Member[] {
@@ -69,6 +86,7 @@ export function newGame(part = "Vo", leaderName = "", rng: () => number = Math.r
   const state: GameState = {
     month: 1,
     rank: "indie",
+    staff: [],
     turn: 1,
     turnsPerMonth: TURNS_PER_MONTH,
     hand: [],
@@ -129,7 +147,8 @@ export function dealHand(state: GameState, rng: () => number = Math.random): voi
     const j = Math.floor(rng() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  const picks = pool.slice(0, 2);
+  const count = 2 + (hasStaff(state, "producer") ? 1 : 0); // a producer widens the hand
+  const picks = pool.slice(0, count);
   state.hand = [CARD.rest, ...picks.map((k) => CARD[k])];
 }
 
@@ -140,6 +159,14 @@ const addStamina = (s: GameState, d: number) =>
   forEachMember(s, (m) => (m.stamina = Math.max(0, Math.min(100, m.stamina + d))));
 const addParam = (s: GameState, p: Param, d: number) =>
   forEachMember(s, (m) => (m[p] = clampStat(m[p] + d)));
+
+/** A roadie eases the stamina cost of an action. */
+const roadieRelief = (s: GameState): number => {
+  const r = s.staff.find((x) => x.role === "roadie");
+  return r ? 2 + Math.round(4 * (r.intimacy / 100)) : 0;
+};
+/** Spend stamina for an action (>=2), reduced by any roadie. */
+const spend = (s: GameState, base: number) => addStamina(s, -Math.max(2, base - roadieRelief(s)));
 
 function scene(bg: Scene["bg"], artKeys: string[], text: string, extra: Partial<Scene> = {}): Scene {
   return { bg, chars: artKeys.map((a, i) => ({ member: a, pos: i === 0 ? "center" : i === 1 ? "left" : "right" })), text, ...extra };
@@ -199,7 +226,9 @@ function resolveMusic(
 ): { scenes: Scene[] } {
   if (sub === "compose") {
     const s = bandParam(state.members, "S");
-    const Q = Math.max(20, Math.min(95, Math.round(0.7 * s + rng() * 20)));
+    const producer = state.staff.find((x) => x.role === "producer");
+    const pQ = producer ? 10 * (producer.intimacy / 100) : 0; // producer lifts quality
+    const Q = Math.max(20, Math.min(95, Math.round(0.7 * s + rng() * 20 + pQ)));
     const n = state.songs.length + 1;
     const song: Song = {
       name: `New Track ${n}`,
@@ -208,7 +237,7 @@ function resolveMusic(
       age: 0,
     };
     state.songs.push(song);
-    addStamina(state, -14);
+    spend(state, 14);
     pushLog(state, `作曲：新曲「${song.name}」が完成（Q${Q}）`);
     return {
       scenes: [
@@ -223,7 +252,7 @@ function resolveMusic(
     state.segFans.light += f;
     state.totalFans += f;
     state.fame = Math.min(100, state.fame + 1);
-    addStamina(state, -14);
+    spend(state, 14);
     pushLog(state, `パフォーマンス特訓：ステージ度胸UP（P+2 / ファン+${f}）`);
     return { scenes: [scene("street", ["RYO"], `路上でゲリラ演奏。人だかりができた。\n\nパフォーマンス +2・ファン +${f}`, { speaker: "RYO", fx: "shake" })] };
   }
@@ -231,7 +260,7 @@ function resolveMusic(
   const p = param ?? "T";
   const gain = 6;
   addParam(state, p, gain);
-  addStamina(state, -16);
+  spend(state, 16);
   state.practiceFreshness = 100;
   pushLog(state, `練習：${PARAM_LABEL[p]}を強化（+${gain} / 全員）・練習の鮮度MAX`);
   return { scenes: buildPracticeScenes(p, gain) };
@@ -243,7 +272,7 @@ function resolvePromo(state: GameState): { scenes: Scene[] } {
   const f = 4 + Math.floor(state.fame / 10);
   state.segFans.light += f;
   state.totalFans += f;
-  addStamina(state, -10);
+  spend(state, 10);
   pushLog(state, `広報活動：SNS・宣伝を強化（知名度+3 / ファン+${f}）`);
   return { scenes: [scene("studio", [leaderArt(state)], `SNSやフライヤーで宣伝を打った。じわじわ認知が広がる。\n\n知名度 +3・SNS効果UP・ファン +${f}`, { fx: "flash" })] };
 }
@@ -253,20 +282,37 @@ function resolveNetwork(state: GameState, sub: string): { scenes: Scene[] } {
     state.contacts += 1;
     state.support.mk = Math.min(1, state.support.mk + 0.03);
     state.fame = Math.min(100, state.fame + 1);
-    addStamina(state, -10);
+    spend(state, 10);
     pushLog(state, `新たな人脈：業界の知り合いが増えた（人脈+1 → ${state.contacts} / マーケ力・知名度↑）`);
     return { scenes: [scene("street", [leaderArt(state)], `対バン相手やハコの店長と繋がった。人脈は将来サポート陣を招く鍵になる。\n\n人脈 +1（計${state.contacts}）・マーケ力UP・知名度 +1`, { fx: "flash" })] };
   }
   state.bond = Math.min(100, state.bond + 8);
   addStamina(state, 12);
-  pushLog(state, `バンド関係者との交流：結束が高まった（結束+8 → ${state.bond} / 体力+12）`);
-  return { scenes: [scene("backstage", ["RYO", "KEN", "MIO", "GO"], `メンバーで飲みに行き、本音をぶつけ合った。バンドの結束が高まる。\n\n結束 +8（計${state.bond}）・体力 +12（全員）`, { fx: "flash" })] };
+  // Time with the crew also warms up any hired staff (親密度).
+  for (const st of state.staff) st.intimacy = Math.min(100, st.intimacy + 8);
+  const staffNote = state.staff.length ? "・サポート陣との親密度も上昇" : "";
+  pushLog(state, `バンド関係者との交流：結束が高まった（結束+8 → ${state.bond} / 体力+12${state.staff.length ? " / 親密度↑" : ""}）`);
+  return { scenes: [scene("backstage", ["RYO", "KEN", "MIO", "GO"], `メンバーやスタッフと飲みに行き、本音をぶつけ合った。バンドの結束が高まる。\n\n結束 +8（計${state.bond}）・体力 +12（全員）${staffNote}`, { fx: "flash" })] };
+}
+
+/** Scout a support member, spending 人脈. Returns the intro scenes. */
+export function resolveRecruit(state: GameState, role: StaffRole): { scenes: Scene[] } {
+  const def = STAFF_DEFS[role];
+  state.contacts = Math.max(0, state.contacts - def.contactCost);
+  state.staff.push({ role, intimacy: 30, cut: def.cut });
+  const pct = Math.round(def.cut * 100);
+  pushLog(state, `${STAFF_LABEL[role]}が加入！（人脈-${def.contactCost} / 人件費${pct}%）`);
+  return {
+    scenes: [
+      scene("backstage", [leaderArt(state)], `${STAFF_LABEL[role]}がチームに加わった。\n\n${def.desc}\nただしライブ収益の${pct}%が人件費に。親密度が下がると離脱・トラブルの恐れ（「バンド関係者との交流」で親密度UP）。`, { fx: "flash" }),
+    ],
+  };
 }
 
 function resolveMoney(state: GameState, rng: () => number): { scenes: Scene[] } {
   const amt = 60_000 + Math.floor(rng() * 40_000);
   state.funds += amt;
-  addStamina(state, -12);
+  spend(state, 12);
   pushLog(state, `アルバイト：${yen(amt)}稼いだ`);
   return { scenes: [scene("studio", [leaderArt(state)], `生活とバンド資金のためにバイト。${yen(amt)}を稼いだ。\n\nライブの会場費はここで貯める。`, { fx: "flash" })] };
 }
@@ -291,6 +337,13 @@ export function startNewMonth(state: GameState, rng: () => number = Math.random)
   // Tighter bands recover a little better between months (bond payoff).
   const recover = 6 + Math.round(state.bond * 0.1);
   for (const m of state.members) m.stamina = Math.min(100, m.stamina + recover);
+  // Staff intimacy cools over time; anyone at zero walks out (defection).
+  for (const st of state.staff) st.intimacy = Math.max(0, st.intimacy - 6);
+  const leaving = state.staff.filter((st) => st.intimacy <= 0);
+  if (leaving.length) {
+    state.staff = state.staff.filter((st) => st.intimacy > 0);
+    for (const st of leaving) pushLog(state, `${STAFF_LABEL[st.role]}が離脱した…（親密度が尽きた）`);
+  }
   dealHand(state, rng);
   pushLog(state, `--- ${state.month}ヶ月目 スタート ---`);
 }

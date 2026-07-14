@@ -9,6 +9,7 @@ import type {
   Param,
   Segment,
   Song,
+  StaffRole,
 } from "./types";
 import { PARAMS, SEGMENTS } from "./types";
 
@@ -93,9 +94,17 @@ export function resolveLive(
   const freshMult = K.freshnessFloor + K.freshnessRange * (state.practiceFreshness / 100);
   const songFreshMult = Math.max(K.songFreshFloor, 1 - K.songStalePerMonth * song.age);
 
+  // Staff effects (P2): manager lifts reach, PA lifts satisfaction (but a
+  // low-intimacy PA risks equipment trouble; a roadie mitigates it).
+  const find = (r: StaffRole) => state.staff.find((s) => s.role === r);
+  const manager = find("manager");
+  const pa = find("pa");
+  const roadie = find("roadie");
+  const managerMk = manager ? 0.15 * (manager.intimacy / 100) : 0;
+
   const aAdj = appealAdj(state, target) * freshMult; // Appeal_adj[t], practice-adjusted
   const match = songMatch(song, target); // SongMatch(t) 0–1
-  const exposure = 1 + state.support.mk + state.support.sn;
+  const exposure = 1 + state.support.mk + managerMk + state.support.sn;
 
   // Step 2: expected -> actual draw (capped by venue).
   const expDraw =
@@ -110,9 +119,15 @@ export function resolveLive(
   let atmosphere = 100 * occupancy;
   if (soldOut) atmosphere = Math.min(100, atmosphere + K.selloutBonus);
 
-  // Step 4: satisfaction (KPI ①).
+  // Step 4: satisfaction (KPI ①), plus PA lift and low-intimacy trouble.
+  const paBonus = pa ? 10 * (pa.intimacy / 100) : 0;
+  let trouble = false;
+  if (pa && pa.intimacy < 40) {
+    const chance = roadie ? 0.25 : 0.5; // a roadie halves the trouble odds
+    trouble = rng() < chance;
+  }
   const satisfaction = clamp(
-    0.55 * aAdj + 0.3 * match * 100 + 0.15 * atmosphere,
+    0.55 * aAdj + 0.3 * match * 100 + 0.15 * atmosphere + paBonus - (trouble ? 18 : 0),
   );
 
   // Step 5: new fans (KPI ②).
@@ -130,9 +145,10 @@ export function resolveLive(
       songFreshMult,
   );
 
-  // Step 7: economics.
+  // Step 7: economics — staff take a cut of revenue as 人件費 (利益分散).
   const revenue = draw * K.ticketPrice + streams * K.streamRate;
-  const cost = cap * K.venueCostPerSeat;
+  const staffCost = Math.round(revenue * state.staff.reduce((a, s) => a + s.cut, 0));
+  const cost = cap * K.venueCostPerSeat + staffCost;
   const profit = revenue - cost;
 
   return {
@@ -145,6 +161,8 @@ export function resolveLive(
     streams,
     revenue,
     cost,
+    staffCost,
+    trouble,
     profit,
   };
 }
@@ -159,6 +177,16 @@ export function applyLiveResult(
   state.totalFans += result.newFans;
   state.funds += Math.round(result.profit);
   state.fame = clamp(state.fame + result.newFans / 100);
+
+  // Producer wants scale/branding: booking below their target erodes intimacy.
+  const producer = state.staff.find((s) => s.role === "producer");
+  if (producer) {
+    const targetCap = state.rank === "major" ? 1200 : 500;
+    producer.intimacy =
+      decision.cap >= targetCap
+        ? Math.min(100, producer.intimacy + 6)
+        : Math.max(0, producer.intimacy - 12);
+  }
 }
 
 /** Convenience: appeal across all segments (for UI display). */

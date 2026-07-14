@@ -11,9 +11,10 @@ import {
   newGame,
   pushLog,
   resolveAction,
+  resolveRecruit,
   startNewMonth,
 } from "./game/state";
-import type { ActionKind, GameState, Param } from "./game/types";
+import type { ActionKind, GameState, Param, StaffRole } from "./game/types";
 import * as bgm from "./ui/audio";
 import { render, type Handlers, type UiState } from "./ui/render";
 
@@ -127,9 +128,21 @@ const handlers: Handlers = {
     if (kind === "music" && subId === "practice") {
       ui.mode = "practiceChoice"; // keep pendingCard; wait for the param pick
       redraw();
+    } else if (kind === "network" && subId === "recruit") {
+      ui.mode = "staffPick"; // keep pendingCard; wait for the role pick
+      redraw();
     } else {
       playAction(kind, subId, undefined);
     }
+  },
+  onRecruit(role: StaffRole) {
+    const { scenes } = resolveRecruit(state, role);
+    afterSlides = "turn"; // recruiting spends the network turn
+    ui.pendingCard = undefined;
+    ui.sceneSeq = scenes;
+    ui.sceneIndex = 0;
+    ui.mode = "slides";
+    redraw();
   },
   onChooseTraining(param: Param) {
     playAction("music", "practice", param);
@@ -149,7 +162,7 @@ const handlers: Handlers = {
   onClosePanel() {
     ui.panel = "none";
     ui.pendingCard = undefined;
-    if (ui.mode === "cardSub" || ui.mode === "practiceChoice") ui.mode = "board";
+    if (ui.mode === "cardSub" || ui.mode === "practiceChoice" || ui.mode === "staffPick") ui.mode = "board";
     redraw();
   },
   onLiveChange(patch) {

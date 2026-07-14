@@ -4,7 +4,18 @@
 
 import { appealProfile, K } from "../game/coreLoop";
 import { TRAININGS } from "../game/narrative";
-import { FATIGUE_FLOOR, PARTS, bandStamina, isCardLocked, nameOf, staminaTag } from "../game/state";
+import {
+  FATIGUE_FLOOR,
+  PARTS,
+  STAFF_CAP,
+  STAFF_DEFS,
+  bandStamina,
+  canRecruit,
+  isCardLocked,
+  nameOf,
+  recruitableRoles,
+  staminaTag,
+} from "../game/state";
 import type {
   ActionKind,
   GameState,
@@ -13,12 +24,13 @@ import type {
   Member,
   Param,
   Scene,
+  StaffRole,
 } from "../game/types";
-import { ACTION_ICON, ACTION_LABEL, PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS } from "../game/types";
+import { ACTION_ICON, ACTION_LABEL, PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS, STAFF_LABEL } from "../game/types";
 import { bgSrc, charSrc } from "./assets";
 
 export interface UiState {
-  mode: "title" | "partSelect" | "board" | "cardSub" | "practiceChoice" | "slides" | "live" | "result";
+  mode: "title" | "partSelect" | "board" | "cardSub" | "staffPick" | "practiceChoice" | "slides" | "live" | "result";
   panel: "none" | "members" | "appeal";
   pendingCard?: ActionKind; // card whose sub-option is being chosen
   sceneSeq: Scene[];
@@ -33,6 +45,7 @@ export interface Handlers {
   onChoosePart: (part: string, name: string) => void;
   onPlayCard: (kind: ActionKind) => void;
   onChooseSub: (subId: string) => void;
+  onRecruit: (role: StaffRole) => void;
   onChooseTraining: (param: Param) => void;
   onSlideNext: () => void;
   onOpenPanel: (panel: UiState["panel"]) => void;
@@ -109,12 +122,46 @@ function memberCard(m: Member): string {
     </div>`;
 }
 
+function staffRow(role: StaffRole, intimacy: number, cut: number): string {
+  return `
+    <div class="member staffrow">
+      <div class="avatar"><div class="head"></div><div class="body" style="background:#5b6b86"></div><div class="part">🎧</div></div>
+      <div class="minfo">
+        <div class="mname">${STAFF_LABEL[role]} <span class="leadtag cut">人件費${Math.round(cut * 100)}%</span></div>
+        <div class="gauges">${gaugeRow("親密度", intimacy)}</div>
+      </div>
+    </div>`;
+}
+
 function membersPanel(state: GameState): string {
+  const staff = state.staff.length
+    ? `<h2 class="sub">🎧 サポート陣</h2>${state.staff.map((s) => staffRow(s.role, s.intimacy, s.cut)).join("")}`
+    : "";
   return `
     <div class="overlay"><div class="panel modal">
       <h2>🎸 メンバー</h2>
       ${state.members.map(memberCard).join("")}
+      ${staff}
       <div class="center"><button class="btn secondary" id="close-panel">閉じる</button></div>
+    </div></div>`;
+}
+
+function staffPickModal(state: GameState): string {
+  const opts = recruitableRoles(state)
+    .map((r) => {
+      const d = STAFF_DEFS[r];
+      return `<button class="train" data-recruit="${r}">
+        <span class="tname">${STAFF_LABEL[r]} <small>(人脈-${d.contactCost})</small></span>
+        <span class="tdesc">${esc(d.desc)}／人件費${Math.round(d.cut * 100)}%</span>
+      </button>`;
+    })
+    .join("");
+  return `
+    <div class="overlay"><div class="panel modal">
+      <h2>🤝 サポート勧誘（人脈 ${state.contacts} / 枠 ${state.staff.length}/${STAFF_CAP}）</h2>
+      <div class="hint">加入で活動が拡大。ただしライブ収益から人件費、親密度の管理も必要。</div>
+      <div class="traingrid">${opts}</div>
+      <div class="center"><button class="btn secondary" id="close-panel">やめる</button></div>
     </div></div>`;
 }
 
@@ -173,6 +220,7 @@ function handView(state: GameState): string {
         <span class="meter ${songTone}">最新曲 ${newest === 0 ? "NEW" : `${newest}ヶ月前`}</span>
         <span class="meter">🤝 人脈 ${state.contacts}</span>
         <span class="meter">🔥 結束 ${Math.round(state.bond)}</span>
+        ${state.staff.length ? `<span class="meter">🎧 サポート ${state.staff.length}/${STAFF_CAP}</span>` : ""}
       </div>
       ${fatigued ? '<div class="fatigue-note">メンバーは疲労困憊…「休息」でしか動けない。しっかり休もう。</div>' : ""}
       <div class="hand">${cards}</div>
@@ -198,10 +246,17 @@ function cardSubModal(state: GameState, ui: UiState): string {
       </button>`,
     )
     .join("");
+  const recruit =
+    kind === "network" && canRecruit(state)
+      ? `<button class="train recruit" data-sub="recruit">
+        <span class="tname">🤝 サポート勧誘</span>
+        <span class="tdesc">人脈を使ってサポート陣を招く（人脈 ${state.contacts}）</span>
+      </button>`
+      : "";
   return `
     <div class="overlay"><div class="panel modal">
       <h2>${ACTION_ICON[kind]} ${ACTION_LABEL[kind]} — 内容を選択</h2>
-      <div class="traingrid">${opts}</div>
+      <div class="traingrid">${opts}${recruit}</div>
       <div class="center"><button class="btn secondary" id="close-panel">やめる</button></div>
     </div></div>`;
 }
@@ -330,7 +385,7 @@ function resultModal(state: GameState, ui: UiState): string {
       <div class="panel modal resultcard tone-${v.tone}">
         <div class="result-head">
           <div class="rank rank-${v.tone}">${v.rank}</div>
-          <div class="result-title"><h2>ライブ結果 — ${state.month}ヶ月目</h2><div class="verdict">${v.line}</div></div>
+          <div class="result-title"><h2>ライブ結果 — ${state.month}ヶ月目</h2><div class="verdict">${v.line}</div>${r.trouble ? '<div class="trouble">⚠ 当日トラブル発生（PA親密度不足）</div>' : ""}</div>
           ${r.soldOut ? '<div class="soldout">SOLD<br>OUT</div>' : ""}
         </div>
         <div class="kpis">
@@ -341,7 +396,7 @@ function resultModal(state: GameState, ui: UiState): string {
         </div>
         <div class="kpi money-row">
           <div class="v money ${money}">${sign}¥${Math.abs(Math.round(r.profit)).toLocaleString()}</div>
-          <div class="k">収支（売上¥${Math.round(r.revenue).toLocaleString()} − 経費¥${Math.round(r.cost).toLocaleString()}）</div>
+          <div class="k">収支（売上¥${Math.round(r.revenue).toLocaleString()} − 経費¥${Math.round(r.cost).toLocaleString()}${r.staffCost > 0 ? `／うち人件費¥${r.staffCost.toLocaleString()}` : ""}）</div>
         </div>
         <div class="center"><button class="btn" id="next-month">次の月へ →</button></div>
       </div>
@@ -440,6 +495,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
     ${ui.panel === "members" ? membersPanel(state) : ""}
     ${ui.panel === "appeal" ? appealPanel(state) : ""}
     ${ui.mode === "cardSub" ? cardSubModal(state, ui) : ""}
+    ${ui.mode === "staffPick" ? staffPickModal(state) : ""}
     ${ui.mode === "practiceChoice" ? practiceChoiceModal() : ""}
     ${ui.mode === "slides" ? sceneModal(state, ui) : ""}
     ${ui.mode === "live" ? liveModal(state, ui) : ""}
@@ -461,6 +517,9 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   );
   root.querySelectorAll<HTMLButtonElement>("[data-train]").forEach((el) =>
     el.addEventListener("click", () => h.onChooseTraining(el.dataset.train as Param)),
+  );
+  root.querySelectorAll<HTMLButtonElement>("[data-recruit]").forEach((el) =>
+    el.addEventListener("click", () => h.onRecruit(el.dataset.recruit as StaffRole)),
   );
   root.querySelector("#open-members")?.addEventListener("click", () => h.onOpenPanel("members"));
   root.querySelector("#open-appeal")?.addEventListener("click", () => h.onOpenPanel("appeal"));

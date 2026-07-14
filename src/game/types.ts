@@ -77,9 +77,27 @@ export interface ActionCard {
   subs?: { id: string; label: string; desc: string }[];
 }
 
+/** Support staff roles (P2-2/3/4). */
+export type StaffRole = "producer" | "pa" | "roadie" | "manager";
+
+export const STAFF_LABEL: Record<StaffRole, string> = {
+  producer: "プロデューサー",
+  pa: "PA",
+  roadie: "ローディー",
+  manager: "マネージャー",
+};
+
+/** A hired support member. Boosts activity but takes a cut and needs 親密度. */
+export interface Staff {
+  role: StaffRole;
+  intimacy: number; // 0–100; low = trouble / defection risk
+  cut: number; // share of live revenue taken as 人件費 (0..1)
+}
+
 export interface GameState {
   month: number;
   rank: "indie" | "major"; // progression stage; major unlocks bigger venues / staff (P2)
+  staff: Staff[]; // hired support members (P2)
   turn: number; // 1..turnsPerMonth within the month
   turnsPerMonth: number;
   hand: ActionCard[]; // the current turn's offered cards
@@ -154,6 +172,8 @@ export interface LiveResult {
   newFans: number;
   streams: number;
   revenue: number;
-  cost: number;
+  cost: number; // includes venue + staff cut
+  staffCost: number; // 人件費 portion of cost
+  trouble: boolean; // equipment/PA trouble fired (low intimacy)
   profit: number;
 }
