@@ -8,11 +8,13 @@ import {
   advanceTurn,
   checkProgress,
   isCardLocked,
+  maybeFindItem,
   newGame,
   pushLog,
   resolveAction,
   resolveRecruit,
   startNewMonth,
+  useItem,
 } from "./game/state";
 import type { ActionKind, GameState, Param, StaffRole } from "./game/types";
 import * as bgm from "./ui/audio";
@@ -51,6 +53,8 @@ function redraw(): void {
 
 function playAction(kind: ActionKind, subId: string | undefined, param: Param | undefined): void {
   const { scenes } = resolveAction(state, kind, subId, param);
+  const found = maybeFindItem(state); // 30% item drop after an action
+  if (found) scenes.push(found);
   afterSlides = "turn";
   ui.pendingCard = undefined;
   ui.sceneSeq = scenes;
@@ -142,6 +146,8 @@ const handlers: Handlers = {
   },
   onRecruit(role: StaffRole) {
     const { scenes } = resolveRecruit(state, role);
+    const found = maybeFindItem(state);
+    if (found) scenes.push(found);
     afterSlides = "turn"; // recruiting spends the network turn
     ui.pendingCard = undefined;
     ui.sceneSeq = scenes;
@@ -215,6 +221,10 @@ const handlers: Handlers = {
     ui.auto = !ui.auto;
     redraw();
     if (ui.auto) void autoLoop();
+  },
+  onUseItem(id: string) {
+    useItem(state, id);
+    redraw(); // keep the panel open with updated counts / buffs
   },
 };
 

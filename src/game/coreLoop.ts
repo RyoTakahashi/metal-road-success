@@ -111,7 +111,8 @@ export function resolveLive(
     state.segFans[target] * K.drawLoyalty * (aAdj / K.drawAppealPivot) * exposure +
     state.totalFans * K.fameWalkupRate;
   const noise = 0.9 + rng() * 0.2; // ×0.9–1.1
-  const draw = Math.min(Math.round(expDraw * noise), cap);
+  // 星の弦: a sellout item fills the venue regardless of the natural draw.
+  const draw = state.buffs.liveSellout ? cap : Math.min(Math.round(expDraw * noise), cap);
   const occupancy = cap > 0 ? draw / cap : 0;
   const soldOut = draw >= cap;
 
@@ -127,7 +128,7 @@ export function resolveLive(
     trouble = rng() < chance;
   }
   const satisfaction = clamp(
-    0.55 * aAdj + 0.3 * match * 100 + 0.15 * atmosphere + paBonus - (trouble ? 18 : 0),
+    0.55 * aAdj + 0.3 * match * 100 + 0.15 * atmosphere + paBonus - (trouble ? 18 : 0) + state.buffs.liveSat,
   );
 
   // Step 5: new fans (KPI ②).
@@ -177,6 +178,10 @@ export function applyLiveResult(
   state.totalFans += result.newFans;
   state.funds += Math.round(result.profit);
   state.fame = clamp(state.fame + result.newFans / 100);
+
+  // Consume live-scoped item buffs.
+  state.buffs.liveSat = 0;
+  state.buffs.liveSellout = false;
 
   // Producer wants scale/branding: booking below their target erodes intimacy.
   const producer = state.staff.find((s) => s.role === "producer");

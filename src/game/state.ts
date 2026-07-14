@@ -89,6 +89,8 @@ export function newGame(part = "Vo", leaderName = "", rng: () => number = Math.r
     rank: "indie",
     stage: 0,
     staff: [],
+    items: { metalianD: 2 },
+    buffs: { practiceMult: 1, practiceTurns: 0, restFull: false, composeQ95: false, liveSat: 0, liveSellout: false },
     turn: 1,
     turnsPerMonth: TURNS_PER_MONTH,
     hand: [],
@@ -203,6 +205,13 @@ export function resolveAction(
 
 function resolveRest(state: GameState, sub: string): { scenes: Scene[] } {
   const L = leaderArt(state);
+  if (state.buffs.restFull) {
+    // ボインキラー: resting this turn fully restores everyone
+    state.members.forEach((m) => (m.stamina = 100));
+    state.buffs.restFull = false;
+    pushLog(state, "休息（ボインキラー効果）：体力が全回復した！");
+    return { scenes: [scene("backstage", [L], "妙な高揚感とともに、みなぎる活力。体力が全回復した！\n\n体力 MAX（全員）", { fx: "flash" })] };
+  }
   if (sub === "study") {
     addStamina(state, 12);
     addParam(state, "S", 1);
@@ -230,7 +239,11 @@ function resolveMusic(
     const s = bandParam(state.members, "S");
     const producer = state.staff.find((x) => x.role === "producer");
     const pQ = producer ? 10 * (producer.intimacy / 100) : 0; // producer lifts quality
-    const Q = Math.max(20, Math.min(95, Math.round(0.7 * s + rng() * 20 + pQ)));
+    let Q = Math.max(20, Math.min(95, Math.round(0.7 * s + rng() * 20 + pQ)));
+    if (state.buffs.composeQ95) {
+      Q = 95;
+      state.buffs.composeQ95 = false;
+    }
     const n = state.songs.length + 1;
     const song: Song = {
       name: `New Track ${n}`,
@@ -258,9 +271,9 @@ function resolveMusic(
     pushLog(state, `パフォーマンス特訓：ステージ度胸UP（P+2 / ファン+${f}）`);
     return { scenes: [scene("street", ["RYO"], `路上でゲリラ演奏。人だかりができた。\n\nパフォーマンス +2・ファン +${f}`, { speaker: "RYO", fx: "shake" })] };
   }
-  // practice — needs a param
+  // practice — needs a param; item buffs multiply the gain
   const p = param ?? "T";
-  const gain = 6;
+  const gain = Math.round(6 * state.buffs.practiceMult);
   addParam(state, p, gain);
   spend(state, 16);
   state.practiceFreshness = 100;
@@ -319,6 +332,82 @@ function resolveMoney(state: GameState, rng: () => number): { scenes: Scene[] } 
   return { scenes: [scene("studio", [leaderArt(state)], `生活とバンド資金のためにバイト。${yen(amt)}を稼いだ。\n\nライブの会場費はここで貯める。`, { fx: "flash" })] };
 }
 
+// --- Items ------------------------------------------------------------------
+
+const bandAvg = (s: GameState, p: Param): number =>
+  Math.round(s.members.reduce((a, m) => a + m[p], 0) / (s.members.length || 1));
+const addStaffIntimacy = (s: GameState, d: number) =>
+  s.staff.forEach((st) => (st.intimacy = Math.max(0, Math.min(100, st.intimacy + d))));
+const setPracticeBuff = (s: GameState, mult: number, turns: number) => {
+  s.buffs.practiceMult = mult;
+  s.buffs.practiceTurns = turns;
+};
+
+export interface ItemDef {
+  id: string;
+  name: string;
+  tier: "S" | "A" | "B";
+  effect: string;
+  desc: string;
+  appearReq?: (s: GameState) => boolean; // appearance condition (drop pool)
+  apply: (s: GameState) => void;
+}
+
+export const ITEMS: ItemDef[] = [
+  { id: "metalianD", name: "メタリアンD", tier: "B", effect: "使用すると体力が最大60回復", desc: "コンビニに売ってる栄養ドリンク。美味しくはない", apply: (s) => addStamina(s, 60) },
+  { id: "hellTraining", name: "地獄のメカニカルトレーニング", tier: "B", effect: "使用したターンの練習効果が2倍", desc: "伝説の教則本。速弾きを極めるならこれだ。", apply: (s) => setPracticeBuff(s, 2, 1) },
+  { id: "baaaan", name: "BAAAAN!!", tier: "B", effect: "使用すると音楽センス+4", desc: "メタラーの愛読書。どれどれ、今月の表紙はだれかな？", apply: (s) => addParam(s, "S", 4) },
+  { id: "studJacket", name: "スタッズの付いた革ジャン", tier: "B", effect: "使用するとビジュ力+4", desc: "これを着ればモテモテ間違いなし！", apply: (s) => addParam(s, "V", 4) },
+  { id: "boinKiller", name: "ボインキラー", tier: "B", effect: "使用したターンに休息を取ると体力が全回復する", desc: "エッチな本。", apply: (s) => { s.buffs.restFull = true; } },
+  { id: "jackDaniels", name: "ジャックダミエルズ", tier: "B", effect: "使用したターンの練習効果が4倍になるが、親密度が-10する", desc: "飲まなきゃやってられねぇ", apply: (s) => { setPracticeBuff(s, 4, 1); addStaffIntimacy(s, -10); } },
+  { id: "hyperMetronome", name: "ハイパーメトロノーム", tier: "A", effect: "使用すると演奏基礎+4、且つ使用したターンの練習効果が1.5倍", desc: "BPM300まで数えられるメトロノーム", apply: (s) => { addParam(s, "T", 4); setPracticeBuff(s, 1.5, 1); } },
+  { id: "bloodLetter", name: "血まみれのファンレター", tier: "A", effect: "使用するとパフォーマンス+10、ただし体力が20減る", desc: "ボロボロの紙に血でこう書かれている。「一生推します」", appearReq: (s) => bandAvg(s, "V") >= 50 && s.totalFans >= 4000, apply: (s) => { addParam(s, "P", 10); addStamina(s, -20); } },
+  { id: "silentGuitar", name: "サイレントギター", tier: "A", effect: "使用するとそのターンから3ターンの間練習効果が2倍", desc: "これで夜中も練習し放題！", apply: (s) => setPracticeBuff(s, 2, 3) },
+  { id: "starStrings", name: "星の弦", tier: "A", effect: "使用したターンにライブをすると動員数が満員になるが満足度は-30される", desc: "人気になるってのは、それはそれで大変だよな", appearReq: (s) => s.rank === "major" && bandAvg(s, "V") >= 50, apply: (s) => { s.buffs.liveSellout = true; s.buffs.liveSat -= 30; } },
+  { id: "batThing", name: "例のコウモリ", tier: "S", effect: "使用したターンにライブがある場合、顧客満足度が+40", desc: "コウモリの人形を食べるパフォーマンスのはずが本物のコウモリだったんだよ", apply: (s) => { s.buffs.liveSat += 40; } },
+  { id: "whitePowder", name: "白い粉", tier: "S", effect: "使用したターンに作成した曲の完成度が95になる、ただし体力が0になり親密度も-20になる", desc: "危険な粉。すべてを差し出す覚悟はあるか？", apply: (s) => { s.buffs.composeQ95 = true; s.members.forEach((m) => (m.stamina = 0)); addStaffIntimacy(s, -20); } },
+  { id: "metalGodProof", name: "メタルゴッドの証", tier: "S", effect: "使用すると演奏基礎、パフォーマンス、音楽センス、ビジュ力が+30され、総ファン数が2倍になる", desc: "メタルゴッドはすべてのメタルバンドを愛している", appearReq: (s) => s.stage >= 4, apply: (s) => { (["T", "P", "S", "V"] as Param[]).forEach((p) => addParam(s, p, 30)); s.totalFans *= 2; } },
+];
+
+const ITEM_BY_ID: Record<string, ItemDef> = Object.fromEntries(ITEMS.map((i) => [i.id, i]));
+export const itemDef = (id: string): ItemDef | undefined => ITEM_BY_ID[id];
+
+/** Clear turn-scoped buffs and tick down multi-turn practice buffs. */
+export function tickTurnBuffs(state: GameState): void {
+  state.buffs.restFull = false;
+  state.buffs.composeQ95 = false;
+  if (state.buffs.practiceTurns > 0) {
+    state.buffs.practiceTurns -= 1;
+    if (state.buffs.practiceTurns <= 0) state.buffs.practiceMult = 1;
+  } else {
+    state.buffs.practiceMult = 1;
+  }
+}
+
+/** Use an owned item (mutates). Returns the item name, or null if none. */
+export function useItem(state: GameState, id: string): string | null {
+  if ((state.items[id] ?? 0) <= 0) return null;
+  const def = ITEM_BY_ID[id];
+  if (!def) return null;
+  state.items[id] -= 1;
+  def.apply(state);
+  pushLog(state, `アイテム使用：${def.name}`);
+  return def.name;
+}
+
+/** 30% after an action: roll a tier (S2/A18/B80), then a random eligible item. */
+export function maybeFindItem(state: GameState, rng: () => number = Math.random): Scene | null {
+  if (rng() >= 0.3) return null;
+  const r = rng();
+  const tier = r < 0.02 ? "S" : r < 0.2 ? "A" : "B";
+  const pool = ITEMS.filter((i) => i.tier === tier && (!i.appearReq || i.appearReq(state)));
+  if (pool.length === 0) return null;
+  const item = pool[Math.floor(rng() * pool.length)];
+  state.items[item.id] = (state.items[item.id] ?? 0) + 1;
+  pushLog(state, `🎁 アイテム発見：${item.name}（${item.tier}）`);
+  return scene("street", [leaderArt(state)], `🎁 アイテム発見！\n\n「${item.name}」を手に入れた。\n${item.effect}`, { fx: "flash" });
+}
+
 /**
  * Advance past the just-resolved action. Returns "live" if the month's
  * action turns are done (time for the month-end live), else "board".
@@ -326,6 +415,7 @@ function resolveMoney(state: GameState, rng: () => number): { scenes: Scene[] } 
 export function advanceTurn(state: GameState, rng: () => number = Math.random): "live" | "board" {
   if (state.turn >= state.turnsPerMonth) return "live";
   state.turn += 1;
+  tickTurnBuffs(state);
   dealHand(state, rng);
   return "board";
 }
@@ -346,6 +436,7 @@ export function startNewMonth(state: GameState, rng: () => number = Math.random)
     state.staff = state.staff.filter((st) => st.intimacy > 0);
     for (const st of leaving) pushLog(state, `${STAFF_LABEL[st.role]}が離脱した…（親密度が尽きた）`);
   }
+  tickTurnBuffs(state);
   dealHand(state, rng);
   pushLog(state, `--- ${state.month}ヶ月目 スタート ---`);
 }

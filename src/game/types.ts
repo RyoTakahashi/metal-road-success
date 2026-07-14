@@ -94,11 +94,23 @@ export interface Staff {
   cut: number; // share of live revenue taken as 人件費 (0..1)
 }
 
+/** Transient item buffs. Turn-scoped ones clear at the next turn/month. */
+export interface Buffs {
+  practiceMult: number; // multiplier applied to the next practice(s)
+  practiceTurns: number; // turns the practiceMult stays active (0 = inactive)
+  restFull: boolean; // this turn: resting fully restores stamina
+  composeQ95: boolean; // this turn: composing yields Q95
+  liveSat: number; // added to the next live's satisfaction
+  liveSellout: boolean; // next live sells out regardless of draw
+}
+
 export interface GameState {
   month: number;
   rank: "indie" | "major"; // major unlocks bigger venues / staff (set when the major milestone clears)
   stage: number; // milestones cleared so far (index into MILESTONES); reaching the end = game clear
   staff: Staff[]; // hired support members (P2)
+  items: Record<string, number>; // itemId -> count owned
+  buffs: Buffs; // active item buffs
   turn: number; // 1..turnsPerMonth within the month
   turnsPerMonth: number;
   hand: ActionCard[]; // the current turn's offered cards

@@ -14,6 +14,7 @@ import {
   canRecruit,
   currentMilestone,
   isCardLocked,
+  itemDef,
   nameOf,
   recruitableRoles,
   reqValue,
@@ -35,7 +36,7 @@ import { bgSrc, charSrc } from "./assets";
 
 export interface UiState {
   mode: "title" | "partSelect" | "board" | "cardSub" | "staffPick" | "practiceChoice" | "slides" | "live" | "result" | "gameover" | "clear";
-  panel: "none" | "members" | "appeal";
+  panel: "none" | "members" | "appeal" | "items";
   pendingCard?: ActionKind; // card whose sub-option is being chosen
   sceneSeq: Scene[];
   sceneIndex: number;
@@ -59,6 +60,7 @@ export interface Handlers {
   onNextMonth: () => void;
   onToggleAuto: () => void;
   onRestart: () => void;
+  onUseItem: (id: string) => void;
 }
 
 const PART_COLOR: Record<string, string> = {
@@ -187,6 +189,36 @@ function appealPanel(state: GameState): string {
     </div></div>`;
 }
 
+function itemCount(state: GameState): number {
+  return Object.values(state.items).reduce((a, n) => a + n, 0);
+}
+
+function itemsPanel(state: GameState): string {
+  const owned = Object.entries(state.items).filter(([, n]) => n > 0);
+  const rows = owned.length
+    ? owned
+        .map(([id, n]) => {
+          const d = itemDef(id);
+          if (!d) return "";
+          return `
+      <div class="item">
+        <div class="it-head"><span class="it-tier t-${d.tier}">${d.tier}</span><span class="it-name">${esc(d.name)}</span><span class="it-count">×${n}</span></div>
+        <div class="it-eff">${esc(d.effect)}</div>
+        <div class="it-desc">${esc(d.desc)}</div>
+        <div class="it-foot"><button class="btn small" data-use="${id}">使う</button></div>
+      </div>`;
+        })
+        .join("")
+    : `<div class="hint">アイテムを持っていない。行動後に見つかることがある。</div>`;
+  return `
+    <div class="overlay"><div class="panel modal">
+      <h2>🎒 アイテム</h2>
+      <div class="hint">description と effect を確認して使用（使用はターンを消費しません）。</div>
+      <div class="itemlist">${rows}</div>
+      <div class="center"><button class="btn secondary" id="close-panel">閉じる</button></div>
+    </div></div>`;
+}
+
 // --- Hand of action cards (the main board) ---------------------------------
 
 const CARD_HINT: Record<ActionKind, string> = {
@@ -282,6 +314,7 @@ function handView(state: GameState): string {
       <div class="dicebar">
         <div class="navbtns">
           <button class="iconbtn auto" id="toggle-auto">▶ オート</button>
+          <button class="iconbtn" id="open-items">🎒 アイテム ${itemCount(state)}</button>
           <button class="iconbtn" id="open-members">🎸 メンバー</button>
           <button class="iconbtn" id="open-appeal">📊 アピール</button>
         </div>
@@ -398,7 +431,11 @@ function liveModal(state: GameState, ui: UiState): string {
         <div class="hint">資金が足りない規模は選べない。序盤はバイトで会場費を稼ごう。</div></div>
       <div class="field"><label>ターゲットとするファン層</label><div class="opts">${segOpts}</div></div>
       <div class="field"><label>セットリスト（楽曲）</label><div class="opts">${songOpts}</div></div>
-      <div class="center"><button class="btn" id="confirm-live" ${canPay ? "" : "disabled"}>${canPay ? "この方針でライブ実施！" : "資金不足（会場費が払えない）"}</button></div>
+      ${state.buffs.liveSat !== 0 || state.buffs.liveSellout ? `<div class="hint buffnote">🎒 発動中：${state.buffs.liveSellout ? "動員満員 " : ""}${state.buffs.liveSat !== 0 ? `満足度${state.buffs.liveSat > 0 ? "+" : ""}${state.buffs.liveSat}` : ""}</div>` : ""}
+      <div class="center">
+        <button class="btn secondary" id="open-items">🎒 アイテム ${itemCount(state)}</button>
+        <button class="btn" id="confirm-live" ${canPay ? "" : "disabled"}>${canPay ? "この方針でライブ実施！" : "資金不足（会場費が払えない）"}</button>
+      </div>
     </div></div>`;
 }
 
@@ -554,6 +591,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
     </div>
     ${ui.panel === "members" ? membersPanel(state) : ""}
     ${ui.panel === "appeal" ? appealPanel(state) : ""}
+    ${ui.panel === "items" ? itemsPanel(state) : ""}
     ${ui.mode === "cardSub" ? cardSubModal(state, ui) : ""}
     ${ui.mode === "staffPick" ? staffPickModal(state) : ""}
     ${ui.mode === "practiceChoice" ? practiceChoiceModal() : ""}
@@ -583,6 +621,10 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   );
   root.querySelector("#open-members")?.addEventListener("click", () => h.onOpenPanel("members"));
   root.querySelector("#open-appeal")?.addEventListener("click", () => h.onOpenPanel("appeal"));
+  root.querySelector("#open-items")?.addEventListener("click", () => h.onOpenPanel("items"));
+  root.querySelectorAll<HTMLButtonElement>("[data-use]").forEach((el) =>
+    el.addEventListener("click", () => h.onUseItem(el.dataset.use!)),
+  );
   root.querySelector("#close-panel")?.addEventListener("click", () => h.onClosePanel());
   root.querySelector("#scene-next")?.addEventListener("click", () => h.onSlideNext());
   root.querySelectorAll<HTMLButtonElement>("[data-cap]").forEach((el) =>
