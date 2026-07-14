@@ -7,6 +7,7 @@ import { buildPracticeScenes } from "./narrative";
 import type {
   ActionCard,
   ActionKind,
+  BgKey,
   GameState,
   Member,
   Param,
@@ -86,6 +87,7 @@ export function newGame(part = "Vo", leaderName = "", rng: () => number = Math.r
   const state: GameState = {
     month: 1,
     rank: "indie",
+    stage: 0,
     staff: [],
     turn: 1,
     turnsPerMonth: TURNS_PER_MONTH,
@@ -348,26 +350,79 @@ export function startNewMonth(state: GameState, rng: () => number = Math.random)
   pushLog(state, `--- ${state.month}ヶ月目 スタート ---`);
 }
 
-// --- Major debut milestone (P2-0) -------------------------------------------
+// --- Milestone ladder & game over (checkpoints) -----------------------------
 
-const DEBUT_FANS = 3000;
-const DEBUT_FAME = 40;
+export interface Milestone {
+  id: string;
+  label: string;
+  deadline: number; // must be cleared by this month, else disband
+  req: { power?: number; fans?: number; songs?: number; bond?: number; fame?: number };
+  bg: BgKey;
+  flavor: string;
+}
+
+/** Band "演奏力" = mean of every member's T/P/S/V. */
+export const bandPower = (s: GameState): number => {
+  const per = s.members.map((m) => (m.T + m.P + m.S + m.V) / 4);
+  return Math.round(per.reduce((a, b) => a + b, 0) / (per.length || 1));
+};
+
+export const MILESTONES: Milestone[] = [
+  { id: "gateway", label: "アマチュア登竜門ライブ", deadline: 6, req: { power: 55, fans: 2000 }, bg: "venueSmall", flavor: "登竜門ライブを勝ち抜いた！シーンに名前が知れ渡る。" },
+  { id: "indiefes", label: "インディーズメタルフェス", deadline: 12, req: { power: 62, fans: 4000, songs: 3 }, bg: "venueBig", flavor: "インディーズフェスのステージへ！観客の規模が跳ね上がる。" },
+  { id: "major", label: "メジャーデビュー", deadline: 20, req: { power: 70, fans: 8000, bond: 55 }, bg: "venueBig", flavor: "メジャーデビュー決定！大箱ライブとサポート招致が解禁。ここからが本当の勝負だ。" },
+  { id: "bigfes", label: "大型フェスのオファー", deadline: 30, req: { power: 78, fans: 20000, fame: 70 }, bg: "venueBig", flavor: "大型フェスのメインステージへ大抜擢！" },
+  { id: "overseas", label: "海外進出", deadline: 42, req: { power: 85, fans: 50000, fame: 85 }, bg: "venueBig", flavor: "ついに海外へ——世界がバンドを待っている！" },
+];
+
+/** Current value of a requirement key (for the checklist). */
+export function reqValue(s: GameState, key: keyof Milestone["req"]): number {
+  switch (key) {
+    case "power": return bandPower(s);
+    case "fans": return s.totalFans;
+    case "songs": return s.songs.length;
+    case "bond": return Math.round(s.bond);
+    case "fame": return Math.round(s.fame);
+  }
+  return 0;
+}
+
+export const REQ_LABEL: Record<keyof Milestone["req"], string> = {
+  power: "演奏力", fans: "ファン", songs: "曲数", bond: "結束", fame: "知名度",
+};
+
+const reqMet = (s: GameState, req: Milestone["req"]): boolean =>
+  (Object.keys(req) as (keyof Milestone["req"])[]).every((k) => reqValue(s, k) >= (req[k] ?? 0));
+
+/** The milestone the band is currently working toward (undefined = all cleared). */
+export const currentMilestone = (s: GameState): Milestone | undefined => MILESTONES[s.stage];
+
+export type ProgressResult =
+  | { kind: "none" }
+  | { kind: "advance" | "clear"; milestone: Milestone; scenes: Scene[] }
+  | { kind: "gameover"; milestone: Milestone };
 
 /**
- * If the band has grown enough, promote indie -> major once and return the
- * debut scenes to play. Otherwise null. Major unlocks bigger venues (and,
- * later, support staff / a producer). Call at a month boundary.
+ * Evaluate the current checkpoint at a month boundary: advance if its
+ * conditions are met, disband if its deadline has passed unmet, else continue.
  */
-export function checkDebut(state: GameState): Scene[] | null {
-  if (state.rank !== "indie") return null;
-  if (state.totalFans < DEBUT_FANS || state.fame < DEBUT_FAME) return null;
-  state.rank = "major";
-  state.fame = Math.min(100, state.fame + 8);
-  pushLog(state, "★ メジャーデビュー決定！ 活動の規模が広がる（大箱ライブ解禁）");
-  return [
-    scene("backstage", ["RYO", "KEN", "MIO", "GO"], "レーベルからのオファー。ついに——メジャーデビューが決まった。", { speaker: "RYO", fx: "shake" }),
-    scene("venueBig", ["KEN", "RYO", "MIO", "GO"], "これまでの積み重ねが実を結んだ。ここからが本当の勝負だ！\n\n大箱ライブが解禁。今後はサポート陣（プロデューサー等）の招致も視野に。", { fx: "flash" }),
-  ];
+export function checkProgress(state: GameState): ProgressResult {
+  const target = MILESTONES[state.stage];
+  if (!target) return { kind: "none" };
+  if (reqMet(state, target.req)) {
+    state.stage += 1;
+    if (target.id === "major") state.rank = "major";
+    pushLog(state, `★ ${target.label} 達成！`);
+    const scenes: Scene[] = [
+      scene(target.bg, ["KEN", "RYO", "MIO", "GO"], `【${target.label}】達成！\n\n${target.flavor}`, { fx: "flash" }),
+    ];
+    return { kind: state.stage >= MILESTONES.length ? "clear" : "advance", milestone: target, scenes };
+  }
+  if (state.month > target.deadline) {
+    pushLog(state, `${target.label} の期限（${target.deadline}ヶ月目）を過ぎた…。バンドは解散した。`);
+    return { kind: "gameover", milestone: target };
+  }
+  return { kind: "none" };
 }
 
 export function pushLog(state: GameState, msg: string): void {

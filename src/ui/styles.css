@@ -395,6 +395,30 @@ body {
 .money-row { margin-top: 4px; }
 .money-row .v { font-size: 22px; }
 
+/* ---- Milestone banner (checkpoints) ---- */
+.milestone { margin: 0 0 12px; padding: 9px 12px; border-radius: 10px; background: rgba(255,207,58,0.08); border: 1px solid var(--line); }
+.milestone.warn { border-color: var(--accent); }
+.milestone.bad { border-color: var(--accent-2); background: rgba(255,85,119,0.1); }
+.ms-head { font-size: 12px; font-weight: 800; color: var(--ink); }
+.ms-head b { color: var(--accent); }
+.ms-reqs { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 7px; }
+.req { font-size: 11px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-weight: 700; }
+.req.ok { color: var(--green); border-color: var(--green); }
+.req.ng { color: var(--accent-2); border-color: #5a3a4a; }
+
+/* ---- End screens (game over / clear) ---- */
+.endscreen {
+  position: fixed; inset: 0; z-index: 30; overflow: hidden; background-size: cover; background-position: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.endscreen.clear .title-band { position: relative; height: 44vh; margin-bottom: 6px; }
+.end-copy { position: relative; z-index: 2; text-align: center; padding: 0 16px; }
+.end-logo { font-size: clamp(40px, 10vw, 86px); font-weight: 900; font-style: italic; letter-spacing: 2px; line-height: 1; }
+.end-logo.lose { color: #c94b63; text-shadow: 0 0 20px rgba(201,75,99,0.5), 0 4px 0 #000; }
+.end-logo.win { color: var(--accent); text-shadow: 0 0 26px rgba(255,207,58,0.6), 0 4px 0 #000; }
+.end-sub { color: var(--ink); font-size: clamp(13px, 2.6vw, 17px); margin: 14px 0 6px; font-weight: 700; }
+.end-stat { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
+
 /* ---- Narrow screens: stack the scene art ABOVE the textbox (no overlap) ---- */
 @media (max-width: 640px) {
   .scene-overlay { align-items: stretch; }

@@ -7,15 +7,19 @@ import { TRAININGS } from "../game/narrative";
 import {
   FATIGUE_FLOOR,
   PARTS,
+  REQ_LABEL,
   STAFF_CAP,
   STAFF_DEFS,
   bandStamina,
   canRecruit,
+  currentMilestone,
   isCardLocked,
   nameOf,
   recruitableRoles,
+  reqValue,
   staminaTag,
 } from "../game/state";
+import type { Milestone } from "../game/state";
 import type {
   ActionKind,
   GameState,
@@ -30,7 +34,7 @@ import { ACTION_ICON, ACTION_LABEL, PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS
 import { bgSrc, charSrc } from "./assets";
 
 export interface UiState {
-  mode: "title" | "partSelect" | "board" | "cardSub" | "staffPick" | "practiceChoice" | "slides" | "live" | "result";
+  mode: "title" | "partSelect" | "board" | "cardSub" | "staffPick" | "practiceChoice" | "slides" | "live" | "result" | "gameover" | "clear";
   panel: "none" | "members" | "appeal";
   pendingCard?: ActionKind; // card whose sub-option is being chosen
   sceneSeq: Scene[];
@@ -54,6 +58,7 @@ export interface Handlers {
   onConfirmLive: () => void;
   onNextMonth: () => void;
   onToggleAuto: () => void;
+  onRestart: () => void;
 }
 
 const PART_COLOR: Record<string, string> = {
@@ -192,6 +197,55 @@ const CARD_HINT: Record<ActionKind, string> = {
   money: "バイトで資金を稼ぐ",
 };
 
+function milestoneBanner(state: GameState): string {
+  const m = currentMilestone(state);
+  if (!m) return "";
+  const left = m.deadline - state.month;
+  const tone = left <= 1 ? "bad" : left <= 3 ? "warn" : "";
+  const rows = (Object.keys(m.req) as (keyof Milestone["req"])[])
+    .map((k) => {
+      const need = m.req[k]!;
+      const cur = reqValue(state, k);
+      const ok = cur >= need;
+      return `<span class="req ${ok ? "ok" : "ng"}">${REQ_LABEL[k]} ${cur.toLocaleString()}/${need.toLocaleString()}${ok ? " ✓" : ""}</span>`;
+    })
+    .join("");
+  const leftN = Math.max(0, left);
+  return `
+    <div class="milestone ${tone}">
+      <div class="ms-head">🎯 次の関門：<b>${esc(m.label)}</b> ／ 期限 ${m.deadline}ヶ月目（あと${leftN}ヶ月・${leftN * state.turnsPerMonth}行動）</div>
+      <div class="ms-reqs">${rows}</div>
+    </div>`;
+}
+
+function endScreen(state: GameState, kind: "gameover" | "clear"): string {
+  if (kind === "clear") {
+    const band = ROSTER.map((mm, i) => `<img class="title-char" style="--i:${i}" src="${charSrc(mm, "happy")}" alt="${esc(mm)}" />`).join("");
+    return `
+      <div class="endscreen clear" style="background-image:url('${bgSrc("venueBig")}')">
+        <div class="title-scrim"></div>
+        <div class="title-band">${band}</div>
+        <div class="end-copy">
+          <div class="end-logo win">CONGRATULATIONS!</div>
+          <div class="end-sub">海外進出を成し遂げ、Metal Road は世界へ羽ばたいた！</div>
+          <div class="end-stat">${state.month}ヶ月でクリア ／ ファン ${state.totalFans.toLocaleString()}</div>
+          <button class="btn title-start" id="restart">▶ もう一度はじめる</button>
+        </div>
+      </div>`;
+  }
+  const m = currentMilestone(state);
+  return `
+    <div class="endscreen gameover" style="background-image:url('${bgSrc("backstage")}')">
+      <div class="title-scrim"></div>
+      <div class="end-copy">
+        <div class="end-logo lose">GAME OVER</div>
+        <div class="end-sub">${m ? esc(m.label) + "の期限に間に合わず、バンドは解散した…" : "バンドは解散した…"}</div>
+        <div class="end-stat">${state.month}ヶ月の活動 ／ ファン ${state.totalFans.toLocaleString()} ／ 到達 ${state.stage}関門</div>
+        <button class="btn title-start" id="restart">▶ もう一度はじめる</button>
+      </div>
+    </div>`;
+}
+
 function handView(state: GameState): string {
   const cards = state.hand
     .map((c) => {
@@ -214,6 +268,7 @@ function handView(state: GameState): string {
   return `
     <div class="panel boardpanel">
       <h2>${state.month}ヶ月目 ・ ターン ${state.turn}/${state.turnsPerMonth} — 行動を選択</h2>
+      ${milestoneBanner(state)}
       <div class="handbar">
         <span class="meter ${staTone}">体力(平均) ${sta}</span>
         <span class="meter ${freshTone}">練習の鮮度 ${Math.round(state.practiceFreshness)}</span>
@@ -461,6 +516,11 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   if (ui.mode === "title") {
     root.innerHTML = titleScreen();
     root.querySelector("#start")?.addEventListener("click", () => h.onStart());
+    return;
+  }
+  if (ui.mode === "gameover" || ui.mode === "clear") {
+    root.innerHTML = endScreen(state, ui.mode);
+    root.querySelector("#restart")?.addEventListener("click", () => h.onRestart());
     return;
   }
   if (ui.mode === "partSelect") {

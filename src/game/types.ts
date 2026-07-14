@@ -96,7 +96,8 @@ export interface Staff {
 
 export interface GameState {
   month: number;
-  rank: "indie" | "major"; // progression stage; major unlocks bigger venues / staff (P2)
+  rank: "indie" | "major"; // major unlocks bigger venues / staff (set when the major milestone clears)
+  stage: number; // milestones cleared so far (index into MILESTONES); reaching the end = game clear
   staff: Staff[]; // hired support members (P2)
   turn: number; // 1..turnsPerMonth within the month
   turnsPerMonth: number;

@@ -6,7 +6,7 @@ import { applyLiveResult, resolveLive } from "./game/coreLoop";
 import { buildLiveScenes } from "./game/narrative";
 import {
   advanceTurn,
-  checkDebut,
+  checkProgress,
   isCardLocked,
   newGame,
   pushLog,
@@ -42,7 +42,7 @@ const ui: UiState = {
 };
 
 // What to do once the current slideshow finishes.
-let afterSlides: "turn" | "result" | "board" = "turn";
+let afterSlides: "turn" | "result" | "board" | "clear" = "turn";
 
 function redraw(): void {
   render(root, state, ui, handlers);
@@ -66,8 +66,13 @@ function finishSlides(): void {
     return;
   }
   if (afterSlides === "board") {
-    // e.g. debut scenes at a month boundary — don't consume a turn
+    // e.g. milestone scenes at a month boundary — don't consume a turn
     ui.mode = "board";
+    redraw();
+    return;
+  }
+  if (afterSlides === "clear") {
+    ui.mode = "clear";
     redraw();
     return;
   }
@@ -183,15 +188,27 @@ const handlers: Handlers = {
   onNextMonth() {
     startNewMonth(state);
     ui.liveResult = undefined;
-    const debut = checkDebut(state); // indie -> major once thresholds are met
-    if (debut) {
-      afterSlides = "board";
-      ui.sceneSeq = debut;
+    const prog = checkProgress(state); // milestone advance / clear / game over
+    if (prog.kind === "gameover") {
+      ui.mode = "gameover";
+    } else if (prog.kind === "advance" || prog.kind === "clear") {
+      afterSlides = prog.kind === "clear" ? "clear" : "board";
+      ui.sceneSeq = prog.scenes;
       ui.sceneIndex = 0;
       ui.mode = "slides";
     } else {
       ui.mode = "board";
     }
+    redraw();
+  },
+  onRestart() {
+    state = newGame();
+    ui.mode = "title";
+    ui.panel = "none";
+    ui.pendingCard = undefined;
+    ui.liveResult = undefined;
+    ui.sceneSeq = [];
+    ui.sceneIndex = 0;
     redraw();
   },
   onToggleAuto() {
