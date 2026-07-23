@@ -21,8 +21,11 @@ export const K = {
   drawAppealPivot: 50, // appeal value that maps to ×1.0
   fameWalkupRate: 0.09, // general walk-ups = totalFans * this
   selloutBonus: 10, // atmosphere bonus when sold out
-  convBase: 0.24, // base conversion rate of attendees -> new fans
-  convExp: 1.5, // satisfaction exponent for conversion
+  // New fans ≈ capacity × 出来栄え(quality) + ファン層. Quality is superlinear
+  // so a great live pulls in dramatically more fans than a mediocre one.
+  fanCapCoef: 0.8, // fans per venue seat at full quality
+  fanQualExp: 2, // satisfaction exponent (higher = bigger reward for great shows)
+  fanSegCoef: 0.07, // word-of-mouth from the targeted layer's existing fans
   streamPerFan: 3, // base streams contributed per fan
   streamQPivot: 50, // song quality that maps to ×1.0
   streamSatPivot: 60, // satisfaction that maps to ×1.0
@@ -131,10 +134,14 @@ export function resolveLive(
     0.55 * aAdj + 0.3 * match * 100 + 0.15 * atmosphere + paBonus - (trouble ? 18 : 0) + state.buffs.liveSat,
   );
 
-  // Step 5: new fans (KPI ②).
-  const convRate =
-    K.convBase * Math.pow(satisfaction / 100, K.convExp) * (1 + state.support.sn);
-  const newFans = Math.round(draw * convRate * songFreshMult);
+  // Step 5: new fans (KPI ②) — capacity × 出来栄え + ファン層.
+  const quality = satisfaction / 100;
+  const newFans = Math.round(
+    (cap * K.fanCapCoef * Math.pow(quality, K.fanQualExp) +
+      state.segFans[target] * K.fanSegCoef * quality) *
+      (1 + state.support.sn) *
+      songFreshMult,
+  );
 
   // Step 6: streams (KPI ③).
   const streams = Math.round(
