@@ -567,7 +567,7 @@ function partSelectScreen(): string {
         <div class="partgrid">${opts}</div>
         <div class="namefield">
           <label>リーダー名（任意）</label>
-          <input id="leader-name" type="text" maxlength="12" placeholder="NAOYA" />
+          <input id="leader-name" type="text" maxlength="12" value="NAOYA" placeholder="NAOYA" />
         </div>
         <button class="btn partstart" id="confirm-part" disabled>この設定で結成！</button>
       </div>
