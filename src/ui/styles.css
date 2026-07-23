@@ -40,6 +40,29 @@ body {
 .logo small { color: var(--accent-2); font-size: 12px; display: block; letter-spacing: 3px; }
 .rankchip { font-size: 11px; font-weight: 900; letter-spacing: 1px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); align-self: center; }
 .rankchip.rank-major { color: #201400; background: linear-gradient(160deg, var(--accent), #d99a00); border-color: var(--accent); box-shadow: 0 0 12px rgba(255,207,58,0.5); }
+
+/* ---- Stat strip (Powerpro-style ranks + gauges) ---- */
+.statbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 9px 16px;
+  margin-top: 10px; padding: 9px 14px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow);
+}
+.sb-cell { display: flex; align-items: center; gap: 5px; }
+.sb-l { font-size: 11px; color: var(--muted); }
+.sb-rank { font-weight: 900; font-size: 15px; min-width: 20px; padding: 0 4px; text-align: center; border-radius: 5px; color: #0e1726; }
+.sb-v { font-size: 13px; font-weight: 800; color: var(--ink); min-width: 24px; text-align: right; }
+.g-S { background: linear-gradient(160deg, #ffe07a, #e0a400); }
+.g-A { background: var(--accent); }
+.g-B { background: #7ed957; }
+.g-C { background: var(--blue); color: #fff; }
+.g-D { background: #6b7a90; color: #fff; }
+.g-E, .g-F, .g-G { background: #c94b63; color: #fff; }
+.sb-gauge { display: flex; align-items: center; gap: 6px; }
+.sb-bar { width: 72px; height: 9px; border-radius: 5px; background: var(--panel-2); overflow: hidden; display: inline-block; }
+.sb-bar > span { display: block; height: 100%; }
+.sb-bar.st > span { background: linear-gradient(90deg, #2fbf71, #7ed957); }
+.sb-bar.fr > span { background: linear-gradient(90deg, #3aa0ff, #5fc0ff); }
+@media (max-width: 560px) { .statbar { gap: 7px 10px; padding: 8px 10px; } .sb-bar { width: 52px; } }
 .stats { margin-left: auto; display: flex; gap: 18px; }
 .stat { text-align: center; }
 .stat .v { font-weight: 800; font-size: 18px; }

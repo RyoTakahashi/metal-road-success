@@ -19,9 +19,9 @@ export const K = {
   conditionRange: 0.18, // added at full stamina
   drawLoyalty: 0.6, // fraction of segment fans that show up
   drawAppealPivot: 50, // appeal value that maps to ×1.0
-  fameWalkupRate: 0.05, // general walk-ups = totalFans * this
+  fameWalkupRate: 0.09, // general walk-ups = totalFans * this
   selloutBonus: 10, // atmosphere bonus when sold out
-  convBase: 0.15, // base conversion rate of attendees -> new fans
+  convBase: 0.24, // base conversion rate of attendees -> new fans
   convExp: 1.5, // satisfaction exponent for conversion
   streamPerFan: 3, // base streams contributed per fan
   streamQPivot: 50, // song quality that maps to ×1.0

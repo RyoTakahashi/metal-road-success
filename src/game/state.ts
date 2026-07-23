@@ -263,13 +263,15 @@ function resolveMusic(
   }
   if (sub === "perform") {
     addParam(state, "P", 2);
-    const f = 6 + Math.floor(rng() * 8);
+    const f = 24 + Math.floor(rng() * 24); // 24–47 fans
+    const c = Math.round(f * 0.4);
     state.segFans.light += f;
-    state.totalFans += f;
+    state.segFans.core += c;
+    state.totalFans += f + c;
     state.fame = Math.min(100, state.fame + 1);
     spend(state, 14);
-    pushLog(state, `パフォーマンス特訓：ステージ度胸UP（P+2 / ファン+${f}）`);
-    return { scenes: [scene("street", ["RYO"], `路上でゲリラ演奏。人だかりができた。\n\nパフォーマンス +2・ファン +${f}`, { speaker: "RYO", fx: "shake" })] };
+    pushLog(state, `パフォーマンス特訓：ステージ度胸UP（P+2 / ファン+${f + c}）`);
+    return { scenes: [scene("street", ["RYO"], `路上でゲリラ演奏。人だかりができた。\n\nパフォーマンス +2・ファン +${f + c}`, { speaker: "RYO", fx: "shake" })] };
   }
   // practice — needs a param; item buffs multiply the gain
   const p = param ?? "T";
@@ -284,12 +286,14 @@ function resolveMusic(
 function resolvePromo(state: GameState): { scenes: Scene[] } {
   state.fame = Math.min(100, state.fame + 3);
   state.support.sn = Math.min(1, state.support.sn + 0.03);
-  const f = 4 + Math.floor(state.fame / 10);
+  const f = 14 + Math.floor(state.fame / 4);
+  const c = Math.round(f * 0.3);
   state.segFans.light += f;
-  state.totalFans += f;
+  state.segFans.core += c;
+  state.totalFans += f + c;
   spend(state, 10);
-  pushLog(state, `広報活動：SNS・宣伝を強化（知名度+3 / ファン+${f}）`);
-  return { scenes: [scene("studio", [leaderArt(state)], `SNSやフライヤーで宣伝を打った。じわじわ認知が広がる。\n\n知名度 +3・SNS効果UP・ファン +${f}`, { fx: "flash" })] };
+  pushLog(state, `広報活動：SNS・宣伝を強化（知名度+3 / ファン+${f + c}）`);
+  return { scenes: [scene("studio", [leaderArt(state)], `SNSやフライヤーで宣伝を打った。じわじわ認知が広がる。\n\n知名度 +3・SNS効果UP・ファン +${f + c}`, { fx: "flash" })] };
 }
 
 function resolveNetwork(state: GameState, sub: string): { scenes: Scene[] } {
@@ -397,7 +401,7 @@ export function useItem(state: GameState, id: string): string | null {
 
 /** 30% after an action: roll a tier (S2/A18/B80), then a random eligible item. */
 export function maybeFindItem(state: GameState, rng: () => number = Math.random): Scene | null {
-  if (rng() >= 0.3) return null;
+  if (rng() >= 0.25) return null; // ~1 drop per month (4 actions)
   const r = rng();
   const tier = r < 0.02 ? "S" : r < 0.2 ? "A" : "B";
   const pool = ITEMS.filter((i) => i.tier === tier && (!i.appearReq || i.appearReq(state)));
@@ -460,11 +464,11 @@ export const bandPower = (s: GameState): number => {
 };
 
 export const MILESTONES: Milestone[] = [
-  { id: "gateway", label: "アマチュア登竜門ライブ", deadline: 6, req: { power: 55, fans: 2000 }, bg: "venueSmall", flavor: "登竜門ライブを勝ち抜いた！シーンに名前が知れ渡る。", intro: "アマチュアバンドの登竜門ライブ。ここに立てなければ話にならない。まずは演奏力を鍛え、動員できるファンを集めろ。" },
-  { id: "indiefes", label: "インディーズメタルフェス", deadline: 12, req: { power: 62, fans: 4000, songs: 3 }, bg: "venueBig", flavor: "インディーズフェスのステージへ！観客の規模が跳ね上がる。", intro: "インディーズメタルフェスからのオファーを掴む。より高い演奏力とファンに加え、武器となる楽曲の数（曲数）も問われる。" },
-  { id: "major", label: "メジャーデビュー", deadline: 20, req: { power: 70, fans: 8000, bond: 55 }, bg: "venueBig", flavor: "メジャーデビュー決定！大箱ライブとサポート招致が解禁。ここからが本当の勝負だ。", intro: "夢の入り口、メジャーデビュー。実力とファンはもちろん、ここまで来たバンドの結束が試される。" },
-  { id: "bigfes", label: "大型フェスのオファー", deadline: 30, req: { power: 78, fans: 20000, fame: 70 }, bg: "venueBig", flavor: "大型フェスのメインステージへ大抜擢！", intro: "大型フェスのメインステージ。圧倒的な演奏力と、広く届く知名度がものを言う。" },
-  { id: "overseas", label: "海外進出", deadline: 42, req: { power: 85, fans: 50000, fame: 85 }, bg: "venueBig", flavor: "ついに海外へ——世界がバンドを待っている！", intro: "最終目標、海外進出。世界に通用する実力・知名度・そして膨大なファン。全てを頂点まで引き上げろ。" },
+  { id: "gateway", label: "アマチュア登竜門ライブ", deadline: 8, req: { power: 52, fans: 1600 }, bg: "venueSmall", flavor: "登竜門ライブを勝ち抜いた！シーンに名前が知れ渡る。", intro: "アマチュアバンドの登竜門ライブ。ここに立てなければ話にならない。まずは演奏力を鍛え、動員できるファンを集めろ。" },
+  { id: "indiefes", label: "インディーズメタルフェス", deadline: 15, req: { power: 58, fans: 3200, songs: 3 }, bg: "venueBig", flavor: "インディーズフェスのステージへ！観客の規模が跳ね上がる。", intro: "インディーズメタルフェスからのオファーを掴む。より高い演奏力とファンに加え、武器となる楽曲の数（曲数）も問われる。" },
+  { id: "major", label: "メジャーデビュー", deadline: 24, req: { power: 66, fans: 6000, bond: 50 }, bg: "venueBig", flavor: "メジャーデビュー決定！大箱ライブとサポート招致が解禁。ここからが本当の勝負だ。", intro: "夢の入り口、メジャーデビュー。実力とファンはもちろん、ここまで来たバンドの結束が試される。" },
+  { id: "bigfes", label: "大型フェスのオファー", deadline: 36, req: { power: 74, fans: 14000, fame: 64 }, bg: "venueBig", flavor: "大型フェスのメインステージへ大抜擢！", intro: "大型フェスのメインステージ。圧倒的な演奏力と、広く届く知名度がものを言う。" },
+  { id: "overseas", label: "海外進出", deadline: 50, req: { power: 80, fans: 36000, fame: 78 }, bg: "venueBig", flavor: "ついに海外へ——世界がバンドを待っている！", intro: "最終目標、海外進出。世界に通用する実力・知名度・そして膨大なファン。全てを頂点まで引き上げろ。" },
 ];
 
 /** Summarize a milestone's requirements as "演奏力55・ファン2,000" for text. */

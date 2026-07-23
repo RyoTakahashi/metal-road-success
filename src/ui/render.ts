@@ -10,6 +10,7 @@ import {
   REQ_LABEL,
   STAFF_CAP,
   STAFF_DEFS,
+  bandPower,
   bandStamina,
   canRecruit,
   currentMilestone,
@@ -107,6 +108,29 @@ function topbar(state: GameState): string {
         <div class="stat"><div class="v">${state.fame}</div><div class="k">知名度</div></div>
         <div class="stat"><div class="v">¥${state.funds.toLocaleString()}</div><div class="k">資金</div></div>
       </div>
+    </div>`;
+}
+
+/** Persistent stat strip under the topbar: ability ranks + stamina/freshness. */
+function statBar(state: GameState): string {
+  const avg = (p: Param): number => Math.round(state.members.reduce((a, m) => a + m[p], 0) / (state.members.length || 1));
+  const cells: [string, number][] = [
+    ["演奏力", bandPower(state)],
+    ["演奏基礎", avg("T")],
+    ["パフォ", avg("P")],
+    ["センス", avg("S")],
+    ["ビジュ", avg("V")],
+  ];
+  const cellHtml = cells
+    .map(([l, v]) => `<div class="sb-cell"><span class="sb-l">${l}</span><span class="sb-rank g-${grade(v)}">${grade(v)}</span><span class="sb-v">${v}</span></div>`)
+    .join("");
+  const gauge = (l: string, v: number, cls: string): string =>
+    `<div class="sb-gauge"><span class="sb-l">${l}</span><span class="sb-bar ${cls}"><span style="width:${Math.min(100, v)}%"></span></span><span class="sb-v">${v}</span></div>`;
+  return `
+    <div class="statbar">
+      ${cellHtml}
+      ${gauge("体力", Math.round(bandStamina(state)), "st")}
+      ${gauge("鮮度", Math.round(state.practiceFreshness), "fr")}
     </div>`;
 }
 
@@ -291,19 +315,14 @@ function handView(state: GameState): string {
       </button>`;
     })
     .join("");
-  const freshTone = state.practiceFreshness >= 60 ? "" : state.practiceFreshness >= 30 ? "warn" : "bad";
   const newest = state.songs.reduce((a, s) => Math.min(a, s.age), 99);
   const songTone = newest <= 1 ? "" : newest <= 3 ? "warn" : "bad";
-  const sta = Math.round(bandStamina(state));
-  const staTone = sta < FATIGUE_FLOOR ? "bad" : sta < 50 ? "warn" : "";
-  const fatigued = sta < FATIGUE_FLOOR;
+  const fatigued = bandStamina(state) < FATIGUE_FLOOR;
   return `
     <div class="panel boardpanel">
       <h2>${state.month}ヶ月目 ・ ターン ${state.turn}/${state.turnsPerMonth} — 行動を選択</h2>
       ${milestoneBanner(state)}
       <div class="handbar">
-        <span class="meter ${staTone}">体力(平均) ${sta}</span>
-        <span class="meter ${freshTone}">練習の鮮度 ${Math.round(state.practiceFreshness)}</span>
         <span class="meter ${songTone}">最新曲 ${newest === 0 ? "NEW" : `${newest}ヶ月前`}</span>
         <span class="meter">🤝 人脈 ${state.contacts}</span>
         <span class="meter">🔥 結束 ${Math.round(state.bond)}</span>
@@ -581,6 +600,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
 
   root.innerHTML = `
     ${topbar(state)}
+    ${statBar(state)}
     ${homeHero(state)}
     <div class="stage">
       ${handView(state)}
@@ -621,7 +641,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   );
   root.querySelector("#open-members")?.addEventListener("click", () => h.onOpenPanel("members"));
   root.querySelector("#open-appeal")?.addEventListener("click", () => h.onOpenPanel("appeal"));
-  root.querySelector("#open-items")?.addEventListener("click", () => h.onOpenPanel("items"));
+  root.querySelectorAll("#open-items").forEach((el) => el.addEventListener("click", () => h.onOpenPanel("items")));
   root.querySelectorAll<HTMLButtonElement>("[data-use]").forEach((el) =>
     el.addEventListener("click", () => h.onUseItem(el.dataset.use!)),
   );
