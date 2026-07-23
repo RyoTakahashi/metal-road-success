@@ -459,18 +459,57 @@ body {
 .end-sub { color: var(--ink); font-size: clamp(13px, 2.6vw, 17px); margin: 14px 0 6px; font-weight: 700; }
 .end-stat { color: var(--muted); font-size: 13px; margin-bottom: 22px; }
 
-/* ---- Narrow screens: stack the scene art ABOVE the textbox (no overlap) ---- */
+/* ---- Narrow screens ---- */
 @media (max-width: 640px) {
+  /* VN scene: art on top / textbox below, and every member fits the width. */
   .scene-overlay { align-items: stretch; }
   .scene {
     width: 100vw; height: 100dvh; max-height: 100dvh; aspect-ratio: auto;
     display: flex; flex-direction: column; border: 0;
   }
   .sc-stage { position: relative; inset: auto; flex: 1 1 auto; min-height: 0; overflow: hidden; }
-  .sc-char { height: 96%; }
+  /* width per member = viewport / member count, so 1–4 members always fit */
+  .sc-char, .sc-char.center {
+    height: auto; max-height: 92%; max-width: calc((100vw - 12px) / var(--n, 1));
+    object-fit: contain; margin: 0;
+  }
   .sc-textbox {
     position: relative; left: 0; right: 0; bottom: 0; flex: 0 0 auto;
-    border-radius: 16px 16px 0 0; border-width: 2px 0 0 0;
+    border-radius: 16px 16px 0 0; border-width: 2px 0 0 0; padding: 12px 14px 10px;
   }
-  .sc-text { min-height: 44px; font-size: 16px; }
+  .sc-text { min-height: 38px; font-size: 15px; line-height: 1.6; }
+  .sc-speaker { font-size: 12px; top: -13px; }
+  .sc-foot .btn { padding: 8px 18px; }
+
+  /* Board: keep action cards + item button visible without scrolling. */
+  #app { padding: 8px; }
+  .home-hero { display: none; }
+  .stage { margin-top: 10px; }
+  .boardpanel { min-height: 0; }
+  .statbar { gap: 6px 10px; padding: 7px 10px; margin-top: 8px; }
+  .sb-bar { width: 46px; }
+  .milestone { padding: 7px 10px; margin-bottom: 8px; }
+  .ms-head { font-size: 11px; }
+  .handbar { margin-bottom: 8px; }
+  .hand { grid-template-columns: 1fr; gap: 8px; margin-bottom: 10px; }
+  /* compact horizontal cards */
+  .actcard { flex-direction: row; flex-wrap: wrap; align-items: center; text-align: left; padding: 9px 12px; gap: 2px 10px; }
+  .actcard .ac-ico { font-size: 26px; flex: 0 0 auto; }
+  .actcard .ac-name { font-size: 15px; flex: 1 1 auto; }
+  .actcard .ac-hint { font-size: 11px; flex: 1 1 100%; }
+  .actcard .ac-sta { font-size: 10px; flex: 0 0 auto; }
+  .dicebar .navbtns { flex-wrap: wrap; }
+
+  /* Topbar: keep every stat on-screen (funds was getting clipped). */
+  .topbar { gap: 8px; padding: 8px 12px; flex-wrap: wrap; }
+  .logo { font-size: 17px; }
+  .logo small { font-size: 10px; letter-spacing: 2px; }
+  .rankchip { font-size: 10px; padding: 2px 7px; }
+  .stats { gap: 10px; margin-left: auto; }
+  .stat .v { font-size: 15px; }
+  .stat .v .turn { font-size: 10px; }
+  .stat .k { font-size: 10px; }
+
+  /* Move the BGM toggle out of the way of the scene's 次へ button. */
+  body:has(.scene-overlay) .bgm-btn { top: 12px; bottom: auto; }
 }

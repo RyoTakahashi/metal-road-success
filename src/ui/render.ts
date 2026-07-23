@@ -405,7 +405,7 @@ function sceneModal(state: GameState, ui: UiState): string {
   return `
     <div class="overlay scene-overlay">
       <div class="scene ${s.fx === "shake" ? "shake" : ""}" style="background-image:url('${bgSrc(s.bg)}')">
-        <div class="sc-stage">${chars}</div>
+        <div class="sc-stage" style="--n:${Math.max(1, s.chars.length)}">${chars}</div>
         ${fx}
         <div class="sc-textbox">
           ${speaker}
