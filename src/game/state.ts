@@ -449,7 +449,8 @@ export interface Milestone {
   deadline: number; // must be cleared by this month, else disband
   req: { power?: number; fans?: number; songs?: number; bond?: number; fame?: number };
   bg: BgKey;
-  flavor: string;
+  flavor: string; // shown on achievement
+  intro: string; // shown when this milestone becomes the next target
 }
 
 /** Band "演奏力" = mean of every member's T/P/S/V. */
@@ -459,12 +460,57 @@ export const bandPower = (s: GameState): number => {
 };
 
 export const MILESTONES: Milestone[] = [
-  { id: "gateway", label: "アマチュア登竜門ライブ", deadline: 6, req: { power: 55, fans: 2000 }, bg: "venueSmall", flavor: "登竜門ライブを勝ち抜いた！シーンに名前が知れ渡る。" },
-  { id: "indiefes", label: "インディーズメタルフェス", deadline: 12, req: { power: 62, fans: 4000, songs: 3 }, bg: "venueBig", flavor: "インディーズフェスのステージへ！観客の規模が跳ね上がる。" },
-  { id: "major", label: "メジャーデビュー", deadline: 20, req: { power: 70, fans: 8000, bond: 55 }, bg: "venueBig", flavor: "メジャーデビュー決定！大箱ライブとサポート招致が解禁。ここからが本当の勝負だ。" },
-  { id: "bigfes", label: "大型フェスのオファー", deadline: 30, req: { power: 78, fans: 20000, fame: 70 }, bg: "venueBig", flavor: "大型フェスのメインステージへ大抜擢！" },
-  { id: "overseas", label: "海外進出", deadline: 42, req: { power: 85, fans: 50000, fame: 85 }, bg: "venueBig", flavor: "ついに海外へ——世界がバンドを待っている！" },
+  { id: "gateway", label: "アマチュア登竜門ライブ", deadline: 6, req: { power: 55, fans: 2000 }, bg: "venueSmall", flavor: "登竜門ライブを勝ち抜いた！シーンに名前が知れ渡る。", intro: "アマチュアバンドの登竜門ライブ。ここに立てなければ話にならない。まずは演奏力を鍛え、動員できるファンを集めろ。" },
+  { id: "indiefes", label: "インディーズメタルフェス", deadline: 12, req: { power: 62, fans: 4000, songs: 3 }, bg: "venueBig", flavor: "インディーズフェスのステージへ！観客の規模が跳ね上がる。", intro: "インディーズメタルフェスからのオファーを掴む。より高い演奏力とファンに加え、武器となる楽曲の数（曲数）も問われる。" },
+  { id: "major", label: "メジャーデビュー", deadline: 20, req: { power: 70, fans: 8000, bond: 55 }, bg: "venueBig", flavor: "メジャーデビュー決定！大箱ライブとサポート招致が解禁。ここからが本当の勝負だ。", intro: "夢の入り口、メジャーデビュー。実力とファンはもちろん、ここまで来たバンドの結束が試される。" },
+  { id: "bigfes", label: "大型フェスのオファー", deadline: 30, req: { power: 78, fans: 20000, fame: 70 }, bg: "venueBig", flavor: "大型フェスのメインステージへ大抜擢！", intro: "大型フェスのメインステージ。圧倒的な演奏力と、広く届く知名度がものを言う。" },
+  { id: "overseas", label: "海外進出", deadline: 42, req: { power: 85, fans: 50000, fame: 85 }, bg: "venueBig", flavor: "ついに海外へ——世界がバンドを待っている！", intro: "最終目標、海外進出。世界に通用する実力・知名度・そして膨大なファン。全てを頂点まで引き上げろ。" },
 ];
+
+/** Summarize a milestone's requirements as "演奏力55・ファン2,000" for text. */
+function reqSummary(m: Milestone): string {
+  return (Object.keys(m.req) as (keyof Milestone["req"])[])
+    .map((k) => `${REQ_LABEL[k]}${(m.req[k] ?? 0).toLocaleString()}`)
+    .join("・");
+}
+
+/** Opening monologue centered on the chosen leader (played after part select). */
+export function buildOpeningScenes(state: GameState): Scene[] {
+  const L = leaderArt(state);
+  const name = nameOf(state, L);
+  return [
+    scene("street", [L], `——${name}。昼間はしがない社会人。だが胸の奥では、いつだって歪んだギターの轟音が鳴り止まない。`, { speaker: name, fx: "flash" }),
+    scene("studio", [L], "いつか、俺たちの音を世界に叩きつける。メジャーデビュー、そしてその先へ——。それが、ガキの頃からの夢だ。", { speaker: name }),
+    scene("studio", ["KEN", "RYO", "MIO", "GO"], "仲間はいる。時間も金も、いつだって足りない。それでも今日も、俺たちはスタジオに集まる。\n\n——さあ、伝説を始めよう。", { fx: "shake" }),
+  ];
+}
+
+/** Tutorial: the band explains which action raises which stat. */
+export function buildTutorialScenes(): Scene[] {
+  return [
+    scene("studio", ["KEN"], "【遊び方】まずは行動だ。毎ターン、手札から行動を選ぶ。\n\n『音楽活動＞練習』で演奏力（T/P/S/V）が上がる。『作曲』で曲数が増え、『パフォーマンス』でファンが増える。", { speaker: "KEN" }),
+    scene("studio", ["RYO"], "『広報活動』はファンと知名度をじわじわ伸ばす。ライブの動員に効いてくるぜ。", { speaker: "RYO" }),
+    scene("studio", ["MIO"], "『関係性構築』は人脈と結束を育てる。人脈が貯まればサポート陣を招け、結束は回復や親密度に効く。", { speaker: "MIO" }),
+    scene("studio", ["GO"], "『アルバイト』で資金稼ぎ。ライブの会場費はこれで払う。そして『休息』で体力回復——体力が尽きると休息しか選べなくなるから注意な！", { speaker: "GO" }),
+    scene("venueSmall", ["KEN", "RYO", "MIO", "GO"], "そして『関門』。期限までに条件（演奏力・ファン・曲数・結束・知名度など）を満たせば次のステージへ。\n\n間に合わなければ……解散だ。画面上部のチェックリストを見て、足りない数値を伸ばしていけ！", { fx: "flash" }),
+  ];
+}
+
+/** Milestone intro: protagonist + band get hyped for the next checkpoint. */
+export function buildMilestoneIntro(state: GameState, m: Milestone): Scene[] {
+  const L = leaderArt(state);
+  const name = nameOf(state, L);
+  return [
+    scene(m.bg, ["KEN", "RYO", "MIO", "GO"], `【次の関門】${m.label}\n\n${m.intro}`, { speaker: name }),
+    scene("studio", [L], `期限は${m.deadline}ヶ月目。条件は ${reqSummary(m)}。\n\n——やってやる。次のステージへ、駆け上がるぞ。`, { fx: "flash" }),
+  ];
+}
+
+/** Full intro sequence after part select: monologue + tutorial + first goal. */
+export function buildIntroSequence(state: GameState): Scene[] {
+  const first = MILESTONES[state.stage];
+  return [...buildOpeningScenes(state), ...buildTutorialScenes(), ...(first ? buildMilestoneIntro(state, first) : [])];
+}
 
 /** Current value of a requirement key (for the checklist). */
 export function reqValue(s: GameState, key: keyof Milestone["req"]): number {
@@ -504,10 +550,14 @@ export function checkProgress(state: GameState): ProgressResult {
     state.stage += 1;
     if (target.id === "major") state.rank = "major";
     pushLog(state, `★ ${target.label} 達成！`);
+    const cleared = state.stage >= MILESTONES.length;
+    const next = MILESTONES[state.stage];
     const scenes: Scene[] = [
       scene(target.bg, ["KEN", "RYO", "MIO", "GO"], `【${target.label}】達成！\n\n${target.flavor}`, { fx: "flash" }),
+      // when a new checkpoint appears, introduce it and hype the band up
+      ...(!cleared && next ? buildMilestoneIntro(state, next) : []),
     ];
-    return { kind: state.stage >= MILESTONES.length ? "clear" : "advance", milestone: target, scenes };
+    return { kind: cleared ? "clear" : "advance", milestone: target, scenes };
   }
   if (state.month > target.deadline) {
     pushLog(state, `${target.label} の期限（${target.deadline}ヶ月目）を過ぎた…。バンドは解散した。`);

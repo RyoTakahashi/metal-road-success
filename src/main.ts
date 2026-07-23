@@ -6,6 +6,7 @@ import { applyLiveResult, resolveLive } from "./game/coreLoop";
 import { buildLiveScenes } from "./game/narrative";
 import {
   advanceTurn,
+  buildIntroSequence,
   checkProgress,
   isCardLocked,
   maybeFindItem,
@@ -117,7 +118,11 @@ const handlers: Handlers = {
   },
   onChoosePart(part, name) {
     state = newGame(part, name);
-    ui.mode = "board";
+    // opening monologue -> tutorial -> first checkpoint intro, then the board
+    afterSlides = "board";
+    ui.sceneSeq = buildIntroSequence(state);
+    ui.sceneIndex = 0;
+    ui.mode = "slides";
     redraw();
   },
   onPlayCard(kind) {
