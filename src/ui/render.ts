@@ -394,10 +394,16 @@ function sceneModal(state: GameState, ui: UiState): string {
   const dots = ui.sceneSeq
     .map((_, i) => `<span class="dot ${i === ui.sceneIndex ? "on" : ""}"></span>`)
     .join("");
+  // On mobile only the "primary" character is shown (kept large); desktop shows all.
+  const speakerIdx = s.speaker
+    ? s.chars.findIndex((c) => c.member === s.speaker || nameOf(state, c.member) === s.speaker)
+    : -1;
+  const centerIdx = s.chars.findIndex((c) => c.pos === "center");
+  const primaryIdx = speakerIdx >= 0 ? speakerIdx : centerIdx >= 0 ? centerIdx : 0;
   const chars = s.chars
     .map(
-      (c) =>
-        `<img class="sc-char ${c.pos} mood-${c.mood ?? "normal"}" src="${charSrc(c.member, c.mood ?? "normal")}" alt="${esc(nameOf(state, c.member))}" />`,
+      (c, i) =>
+        `<img class="sc-char ${c.pos} ${i === primaryIdx ? "primary" : ""} mood-${c.mood ?? "normal"}" src="${charSrc(c.member, c.mood ?? "normal")}" alt="${esc(nameOf(state, c.member))}" />`,
     )
     .join("");
   const speaker = s.speaker ? `<div class="sc-speaker">${esc(nameOf(state, s.speaker))}</div>` : "";

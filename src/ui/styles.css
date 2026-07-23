@@ -468,9 +468,10 @@ body {
     display: flex; flex-direction: column; border: 0;
   }
   .sc-stage { position: relative; inset: auto; flex: 1 1 auto; min-height: 0; overflow: hidden; }
-  /* width per member = viewport / member count, so 1–4 members always fit */
-  .sc-char, .sc-char.center {
-    height: auto; max-height: 92%; max-width: calc((100vw - 12px) / var(--n, 1));
+  /* Show only the primary character on phones, kept large (no tiny cramming). */
+  .sc-stage .sc-char { display: none; }
+  .sc-stage .sc-char.primary {
+    display: block; height: auto; max-height: 96%; max-width: 90vw;
     object-fit: contain; margin: 0;
   }
   .sc-textbox {
