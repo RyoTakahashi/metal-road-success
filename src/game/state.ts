@@ -3,7 +3,17 @@
 // See docs/phase1-cards.md.
 
 import { bandParam } from "./coreLoop";
-import { buildPracticeScenes } from "./narrative";
+import {
+  bondScenes,
+  composeScenes,
+  contactScenes,
+  itemFindScenes,
+  moneyScenes,
+  performScenes,
+  practiceScenes,
+  promoScenes,
+  restScenes,
+} from "./flavor";
 import type {
   ActionCard,
   ActionKind,
@@ -191,19 +201,19 @@ export function resolveAction(
 ): { scenes: Scene[] } {
   switch (kind) {
     case "rest":
-      return resolveRest(state, subId ?? "full");
+      return resolveRest(state, subId ?? "full", rng);
     case "music":
       return resolveMusic(state, subId ?? "practice", param, rng);
     case "promo":
-      return resolvePromo(state);
+      return resolvePromo(state, rng);
     case "network":
-      return resolveNetwork(state, subId ?? "band");
+      return resolveNetwork(state, subId ?? "band", rng);
     case "money":
       return resolveMoney(state, rng);
   }
 }
 
-function resolveRest(state: GameState, sub: string): { scenes: Scene[] } {
+function resolveRest(state: GameState, sub: string, rng: () => number): { scenes: Scene[] } {
   const L = leaderArt(state);
   if (state.buffs.restFull) {
     // ボインキラー: resting this turn fully restores everyone
@@ -216,17 +226,17 @@ function resolveRest(state: GameState, sub: string): { scenes: Scene[] } {
     addStamina(state, 12);
     addParam(state, "S", 1);
     pushLog(state, "社会勉強：見聞を広げた（体力+12 / センス+1）");
-    return { scenes: [scene("studio", [L], "図書館やニュースで世の中を学んだ。歌詞の引き出しが増えた。\n\n体力 +12・音楽センス +1（全員）", { fx: "flash" })] };
+    return { scenes: restScenes("study", "体力 +12・音楽センス +1（全員）", rng) };
   }
   if (sub === "hobby") {
     addStamina(state, 26);
     addParam(state, "V", 1);
     pushLog(state, "趣味に没頭：リフレッシュ（体力+26 / ビジュ+1）");
-    return { scenes: [scene("street", [L], "好きなことに没頭してリフレッシュ。スタイルの幅も広がった。\n\n体力 +26・ビジュ力 +1（全員）", { fx: "flash" })] };
+    return { scenes: restScenes("hobby", "体力 +26・ビジュ力 +1（全員）", rng) };
   }
   addStamina(state, 40);
   pushLog(state, "完全休養：しっかり休んだ（体力+40）");
-  return { scenes: [scene("backstage", [L], "今日はしっかり休養。英気を養った。\n\n体力 +40（全員）", { fx: "flash" })] };
+  return { scenes: restScenes("full", "体力 +40（全員）", rng) };
 }
 
 function resolveMusic(
@@ -254,12 +264,7 @@ function resolveMusic(
     state.songs.push(song);
     spend(state, 14);
     pushLog(state, `作曲：新曲「${song.name}」が完成（Q${Q}）`);
-    return {
-      scenes: [
-        scene("studio", ["KEN", "RYO"], "新しいリフが降ってきた。夜通しアレンジを詰める。", { speaker: "KEN", fx: "shake" }),
-        scene("studio", [leaderArt(state)], `新曲「${song.name}」が完成した！（Q${Q}）\n\n新曲はしばらく知名度とファンを引っぱってくれる。`, { fx: "flash" }),
-      ],
-    };
+    return { scenes: composeScenes(song.name, Q, rng) };
   }
   if (sub === "perform") {
     addParam(state, "P", 2);
@@ -271,7 +276,7 @@ function resolveMusic(
     state.fame = Math.min(100, state.fame + 1);
     spend(state, 14);
     pushLog(state, `パフォーマンス特訓：ステージ度胸UP（P+2 / ファン+${f + c}）`);
-    return { scenes: [scene("street", ["RYO"], `路上でゲリラ演奏。人だかりができた。\n\nパフォーマンス +2・ファン +${f + c}`, { speaker: "RYO", fx: "shake" })] };
+    return { scenes: performScenes(`パフォーマンス +2・ファン +${f + c}`, rng) };
   }
   // practice — needs a param; item buffs multiply the gain
   const p = param ?? "T";
@@ -280,10 +285,10 @@ function resolveMusic(
   spend(state, 16);
   state.practiceFreshness = 100;
   pushLog(state, `練習：${PARAM_LABEL[p]}を強化（+${gain} / 全員）・練習の鮮度MAX`);
-  return { scenes: buildPracticeScenes(p, gain) };
+  return { scenes: practiceScenes(p, gain, rng) };
 }
 
-function resolvePromo(state: GameState): { scenes: Scene[] } {
+function resolvePromo(state: GameState, rng: () => number): { scenes: Scene[] } {
   state.fame = Math.min(100, state.fame + 3);
   state.support.sn = Math.min(1, state.support.sn + 0.03);
   const f = 14 + Math.floor(state.fame / 4);
@@ -293,17 +298,17 @@ function resolvePromo(state: GameState): { scenes: Scene[] } {
   state.totalFans += f + c;
   spend(state, 10);
   pushLog(state, `広報活動：SNS・宣伝を強化（知名度+3 / ファン+${f + c}）`);
-  return { scenes: [scene("studio", [leaderArt(state)], `SNSやフライヤーで宣伝を打った。じわじわ認知が広がる。\n\n知名度 +3・SNS効果UP・ファン +${f + c}`, { fx: "flash" })] };
+  return { scenes: promoScenes(`知名度 +3・SNS効果UP・ファン +${f + c}`, rng) };
 }
 
-function resolveNetwork(state: GameState, sub: string): { scenes: Scene[] } {
+function resolveNetwork(state: GameState, sub: string, rng: () => number): { scenes: Scene[] } {
   if (sub === "contact") {
     state.contacts += 1;
     state.support.mk = Math.min(1, state.support.mk + 0.03);
     state.fame = Math.min(100, state.fame + 1);
     spend(state, 10);
     pushLog(state, `新たな人脈：業界の知り合いが増えた（人脈+1 → ${state.contacts} / マーケ力・知名度↑）`);
-    return { scenes: [scene("street", [leaderArt(state)], `対バン相手やハコの店長と繋がった。人脈は将来サポート陣を招く鍵になる。\n\n人脈 +1（計${state.contacts}）・マーケ力UP・知名度 +1`, { fx: "flash" })] };
+    return { scenes: contactScenes(`人脈 +1（計${state.contacts}）・マーケ力UP・知名度 +1`, rng) };
   }
   state.bond = Math.min(100, state.bond + 8);
   addStamina(state, 12);
@@ -311,7 +316,7 @@ function resolveNetwork(state: GameState, sub: string): { scenes: Scene[] } {
   for (const st of state.staff) st.intimacy = Math.min(100, st.intimacy + 8);
   const staffNote = state.staff.length ? "・サポート陣との親密度も上昇" : "";
   pushLog(state, `バンド関係者との交流：結束が高まった（結束+8 → ${state.bond} / 体力+12${state.staff.length ? " / 親密度↑" : ""}）`);
-  return { scenes: [scene("backstage", ["RYO", "KEN", "MIO", "GO"], `メンバーやスタッフと飲みに行き、本音をぶつけ合った。バンドの結束が高まる。\n\n結束 +8（計${state.bond}）・体力 +12（全員）${staffNote}`, { fx: "flash" })] };
+  return { scenes: bondScenes(`結束 +8（計${state.bond}）・体力 +12（全員）${staffNote}`, rng) };
 }
 
 /** Scout a support member, spending 人脈. Returns the intro scenes. */
@@ -333,7 +338,7 @@ function resolveMoney(state: GameState, rng: () => number): { scenes: Scene[] } 
   state.funds += amt;
   spend(state, 12);
   pushLog(state, `アルバイト：${yen(amt)}稼いだ`);
-  return { scenes: [scene("studio", [leaderArt(state)], `生活とバンド資金のためにバイト。${yen(amt)}を稼いだ。\n\nライブの会場費はここで貯める。`, { fx: "flash" })] };
+  return { scenes: moneyScenes(`${yen(amt)}を稼いだ。ライブの会場費はここで貯める。`, rng) };
 }
 
 // --- Items ------------------------------------------------------------------
@@ -400,7 +405,7 @@ export function useItem(state: GameState, id: string): string | null {
 }
 
 /** 30% after an action: roll a tier (S2/A18/B80), then a random eligible item. */
-export function maybeFindItem(state: GameState, rng: () => number = Math.random): Scene | null {
+export function maybeFindItem(state: GameState, rng: () => number = Math.random): Scene[] | null {
   if (rng() >= 0.25) return null; // ~1 drop per month (4 actions)
   const r = rng();
   const tier = r < 0.02 ? "S" : r < 0.2 ? "A" : "B";
@@ -409,7 +414,7 @@ export function maybeFindItem(state: GameState, rng: () => number = Math.random)
   const item = pool[Math.floor(rng() * pool.length)];
   state.items[item.id] = (state.items[item.id] ?? 0) + 1;
   pushLog(state, `🎁 アイテム発見：${item.name}（${item.tier}）`);
-  return scene("street", [leaderArt(state)], `🎁 アイテム発見！\n\n「${item.name}」を手に入れた。\n${item.effect}`, { fx: "flash" });
+  return itemFindScenes(item.tier, item.name, item.effect, rng);
 }
 
 /**
