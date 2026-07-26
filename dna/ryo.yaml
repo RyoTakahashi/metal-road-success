@@ -2,9 +2,10 @@ id: RYO
 display_name: RYO
 part: Vo
 
-version: 1
+version: 2
 changelog:
-  - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠）" }
+  - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠・人間）" }
+  - { version: 2, date: "2026-07-26", note: "けものフレンズ的な擬人化動物へ刷新。ライオン(ボーカル)" }
 
 generation:
   model: ""
@@ -14,8 +15,9 @@ generation:
   cfg: 0
 
 identity:
-  - "spiky black hair with a single hot-pink streak"
-  - "sharp confident eyes, slim tall build"
+  - "anthropomorphic lion, bipedal kemono character"
+  - "big flowing golden mane styled like a rocker's wild hair, with a single hot-pink streak"
+  - "feline face with a short muzzle, sharp confident amber eyes, tufted tail"
 
 outfit:
   - "black studded leather jacket"
@@ -26,17 +28,17 @@ props:
   - "holding a vocal microphone"
 
 color_palette:
-  - "black"
+  - "golden fur (#e8b84b)"
   - "hot pink (#ff5577)"
-  - "skin (#ffe0c0)"
+  - "black"
 
-personality_vibe: "charismatic metal frontman, cocky grin"
+personality_vibe: "charismatic metal frontman lion, cocky grin, king-of-the-stage aura"
 
 expressions:
   normal: "calm confident expression"
-  fired: "screaming into the mic, mouth wide open, fierce eyes"
+  fired: "roaring into the mic, mouth wide open showing fangs, fierce eyes"
   happy: "big triumphant grin, sparkling eyes"
-  sad: "frustrated downcast look"
+  sad: "frustrated downcast look, ears drooping"
 
 negatives:
-  - "blonde hair, glasses"
+  - "human skin, human ears, full realistic animal on all fours"

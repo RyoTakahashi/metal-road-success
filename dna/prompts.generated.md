@@ -4,175 +4,175 @@
 
 出力スペック: 720x1120 / png with transparent background
 
-## GO（GO / Dr） v1
+## GO（GO / Dr） v2
 - model: (未設定) ／ seed: 0
 
-### normal → `go.v1.normal.png`
+### normal → `go.v2.normal.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, short hair under a green cap, energetic friendly face, athletic build, green tank top, bare muscular arms, holding a pair of drumsticks raised up, Dr of a metal band, energetic powerhouse drummer, cheerful, bright friendly expression, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic rabbit, bipedal kemono character, long upright rabbit ears, fluffy white-and-grey fur, energetic friendly face, athletic build, small cotton tail, a green cap between the ears, green tank top, bare furry arms, holding a pair of drumsticks raised up, Dr of a metal band, energetic powerhouse drummer rabbit, cheerful and bouncy, bright friendly expression, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, long hair, sluggish pose
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic rabbit, four legs
 ```
 
-### fired → `go.v1.fired.png`
+### fired → `go.v2.fired.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, short hair under a green cap, energetic friendly face, athletic build, green tank top, bare muscular arms, holding a pair of drumsticks raised up, Dr of a metal band, energetic powerhouse drummer, cheerful, drumming furiously, big open-mouthed yell, sweat flying, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic rabbit, bipedal kemono character, long upright rabbit ears, fluffy white-and-grey fur, energetic friendly face, athletic build, small cotton tail, a green cap between the ears, green tank top, bare furry arms, holding a pair of drumsticks raised up, Dr of a metal band, energetic powerhouse drummer rabbit, cheerful and bouncy, drumming furiously, big open-mouthed yell, ears flying back, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, long hair, sluggish pose
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic rabbit, four legs
 ```
 
-### happy → `go.v1.happy.png`
+### happy → `go.v2.happy.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, short hair under a green cap, energetic friendly face, athletic build, green tank top, bare muscular arms, holding a pair of drumsticks raised up, Dr of a metal band, energetic powerhouse drummer, cheerful, huge cheerful grin, thumbs up energy, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic rabbit, bipedal kemono character, long upright rabbit ears, fluffy white-and-grey fur, energetic friendly face, athletic build, small cotton tail, a green cap between the ears, green tank top, bare furry arms, holding a pair of drumsticks raised up, Dr of a metal band, energetic powerhouse drummer rabbit, cheerful and bouncy, huge cheerful grin, thumbs up energy, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, long hair, sluggish pose
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic rabbit, four legs
 ```
 
-### sad → `go.v1.sad.png`
+### sad → `go.v2.sad.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, short hair under a green cap, energetic friendly face, athletic build, green tank top, bare muscular arms, holding a pair of drumsticks raised up, Dr of a metal band, energetic powerhouse drummer, cheerful, deflated tired look, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic rabbit, bipedal kemono character, long upright rabbit ears, fluffy white-and-grey fur, energetic friendly face, athletic build, small cotton tail, a green cap between the ears, green tank top, bare furry arms, holding a pair of drumsticks raised up, Dr of a metal band, energetic powerhouse drummer rabbit, cheerful and bouncy, deflated tired look, ears flopped down, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, long hair, sluggish pose
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic rabbit, four legs
 ```
 
-## KEN（KEN / Gt） v1
+## KEN（KEN / Gt） v2
 - model: (未設定) ／ seed: 0
 
-### normal → `ken.v1.normal.png`
+### normal → `ken.v2.normal.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, long wild brown hair, gold headband across the forehead, muscular build, sleeveless dark shirt, leather wristbands, holding a gold Flying-V electric guitar, Gt of a metal band, hot-blooded shredder guitarist, intense, focused serious expression, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic bird, bipedal kemono character, wild spiky feather crest on the head like a headbanger's mane, brown and gold plumage, sharp beak, intense eyes, feathered wing-arms ending in clawed hands, a gold headband, sleeveless dark shirt, leather wristbands, holding a gold Flying-V electric guitar, Gt of a metal band, hot-blooded shredder guitarist bird, intense and fiery, focused serious expression, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, short hair, clean shaven head
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic bird, four legs
 ```
 
-### fired → `ken.v1.fired.png`
+### fired → `ken.v2.fired.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, long wild brown hair, gold headband across the forehead, muscular build, sleeveless dark shirt, leather wristbands, holding a gold Flying-V electric guitar, Gt of a metal band, hot-blooded shredder guitarist, intense, headbanging, shouting, eyes burning with passion, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic bird, bipedal kemono character, wild spiky feather crest on the head like a headbanger's mane, brown and gold plumage, sharp beak, intense eyes, feathered wing-arms ending in clawed hands, a gold headband, sleeveless dark shirt, leather wristbands, holding a gold Flying-V electric guitar, Gt of a metal band, hot-blooded shredder guitarist bird, intense and fiery, headbanging, screeching, eyes burning with passion, feathers flaring, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, short hair, clean shaven head
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic bird, four legs
 ```
 
-### happy → `ken.v1.happy.png`
+### happy → `ken.v2.happy.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, long wild brown hair, gold headband across the forehead, muscular build, sleeveless dark shirt, leather wristbands, holding a gold Flying-V electric guitar, Gt of a metal band, hot-blooded shredder guitarist, intense, fierce satisfied smirk, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic bird, bipedal kemono character, wild spiky feather crest on the head like a headbanger's mane, brown and gold plumage, sharp beak, intense eyes, feathered wing-arms ending in clawed hands, a gold headband, sleeveless dark shirt, leather wristbands, holding a gold Flying-V electric guitar, Gt of a metal band, hot-blooded shredder guitarist bird, intense and fiery, fierce satisfied smirk, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, short hair, clean shaven head
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic bird, four legs
 ```
 
-### sad → `ken.v1.sad.png`
+### sad → `ken.v2.sad.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, long wild brown hair, gold headband across the forehead, muscular build, sleeveless dark shirt, leather wristbands, holding a gold Flying-V electric guitar, Gt of a metal band, hot-blooded shredder guitarist, intense, annoyed disappointed frown, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic bird, bipedal kemono character, wild spiky feather crest on the head like a headbanger's mane, brown and gold plumage, sharp beak, intense eyes, feathered wing-arms ending in clawed hands, a gold headband, sleeveless dark shirt, leather wristbands, holding a gold Flying-V electric guitar, Gt of a metal band, hot-blooded shredder guitarist bird, intense and fiery, annoyed disappointed frown, feathers drooping, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, short hair, clean shaven head
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic bird, four legs
 ```
 
-## MIO（MIO / Ba） v1
+## MIO（MIO / Ba） v2
 - model: (未設定) ／ seed: 0
 
-### normal → `mio.v1.normal.png`
+### normal → `mio.v2.normal.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, long straight navy-blue hair, calm half-lidded eyes, cool composure, dark outfit with blue accents, minimalist style, holding a bass guitar, Ba of a metal band, cool stoic bassist, quietly intense, calm cool expression, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic frog, bipedal kemono character, smooth blue-green frog skin, wide-set calm half-lidded eyes, cool composure, slender webbed hands, subtle darker spots along the back, dark outfit with blue accents, minimalist style, holding a bass guitar, Ba of a metal band, cool stoic bassist frog, quietly intense, unshakably calm, calm cool expression, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, bright cheerful pose, red hair
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic frog, four legs
 ```
 
-### fired → `mio.v1.fired.png`
+### fired → `mio.v2.fired.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, long straight navy-blue hair, calm half-lidded eyes, cool composure, dark outfit with blue accents, minimalist style, holding a bass guitar, Ba of a metal band, cool stoic bassist, quietly intense, eyes sharp, focused and locked in, subtle intensity, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic frog, bipedal kemono character, smooth blue-green frog skin, wide-set calm half-lidded eyes, cool composure, slender webbed hands, subtle darker spots along the back, dark outfit with blue accents, minimalist style, holding a bass guitar, Ba of a metal band, cool stoic bassist frog, quietly intense, unshakably calm, eyes sharp, focused and locked in, subtle intensity, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, bright cheerful pose, red hair
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic frog, four legs
 ```
 
-### happy → `mio.v1.happy.png`
+### happy → `mio.v2.happy.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, long straight navy-blue hair, calm half-lidded eyes, cool composure, dark outfit with blue accents, minimalist style, holding a bass guitar, Ba of a metal band, cool stoic bassist, quietly intense, soft pleased smile, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic frog, bipedal kemono character, smooth blue-green frog skin, wide-set calm half-lidded eyes, cool composure, slender webbed hands, subtle darker spots along the back, dark outfit with blue accents, minimalist style, holding a bass guitar, Ba of a metal band, cool stoic bassist frog, quietly intense, unshakably calm, soft pleased smile, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, bright cheerful pose, red hair
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic frog, four legs
 ```
 
-### sad → `mio.v1.sad.png`
+### sad → `mio.v2.sad.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, long straight navy-blue hair, calm half-lidded eyes, cool composure, dark outfit with blue accents, minimalist style, holding a bass guitar, Ba of a metal band, cool stoic bassist, quietly intense, quiet melancholic look, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic frog, bipedal kemono character, smooth blue-green frog skin, wide-set calm half-lidded eyes, cool composure, slender webbed hands, subtle darker spots along the back, dark outfit with blue accents, minimalist style, holding a bass guitar, Ba of a metal band, cool stoic bassist frog, quietly intense, unshakably calm, quiet melancholic look, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, bright cheerful pose, red hair
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human hair, full realistic frog, four legs
 ```
 
-## RYO（RYO / Vo） v1
+## RYO（RYO / Vo） v2
 - model: (未設定) ／ seed: 0
 
-### normal → `ryo.v1.normal.png`
+### normal → `ryo.v2.normal.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, spiky black hair with a single hot-pink streak, sharp confident eyes, slim tall build, black studded leather jacket, hot-pink band t-shirt underneath, silver chain accessories, holding a vocal microphone, Vo of a metal band, charismatic metal frontman, cocky grin, calm confident expression, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic lion, bipedal kemono character, big flowing golden mane styled like a rocker's wild hair, with a single hot-pink streak, feline face with a short muzzle, sharp confident amber eyes, tufted tail, black studded leather jacket, hot-pink band t-shirt underneath, silver chain accessories, holding a vocal microphone, Vo of a metal band, charismatic metal frontman lion, cocky grin, king-of-the-stage aura, calm confident expression, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, blonde hair, glasses
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human ears, full realistic animal on all fours
 ```
 
-### fired → `ryo.v1.fired.png`
+### fired → `ryo.v2.fired.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, spiky black hair with a single hot-pink streak, sharp confident eyes, slim tall build, black studded leather jacket, hot-pink band t-shirt underneath, silver chain accessories, holding a vocal microphone, Vo of a metal band, charismatic metal frontman, cocky grin, screaming into the mic, mouth wide open, fierce eyes, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic lion, bipedal kemono character, big flowing golden mane styled like a rocker's wild hair, with a single hot-pink streak, feline face with a short muzzle, sharp confident amber eyes, tufted tail, black studded leather jacket, hot-pink band t-shirt underneath, silver chain accessories, holding a vocal microphone, Vo of a metal band, charismatic metal frontman lion, cocky grin, king-of-the-stage aura, roaring into the mic, mouth wide open showing fangs, fierce eyes, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, blonde hair, glasses
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human ears, full realistic animal on all fours
 ```
 
-### happy → `ryo.v1.happy.png`
+### happy → `ryo.v2.happy.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, spiky black hair with a single hot-pink streak, sharp confident eyes, slim tall build, black studded leather jacket, hot-pink band t-shirt underneath, silver chain accessories, holding a vocal microphone, Vo of a metal band, charismatic metal frontman, cocky grin, big triumphant grin, sparkling eyes, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic lion, bipedal kemono character, big flowing golden mane styled like a rocker's wild hair, with a single hot-pink streak, feline face with a short muzzle, sharp confident amber eyes, tufted tail, black studded leather jacket, hot-pink band t-shirt underneath, silver chain accessories, holding a vocal microphone, Vo of a metal band, charismatic metal frontman lion, cocky grin, king-of-the-stage aura, big triumphant grin, sparkling eyes, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, blonde hair, glasses
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human ears, full realistic animal on all fours
 ```
 
-### sad → `ryo.v1.sad.png`
+### sad → `ryo.v2.sad.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, spiky black hair with a single hot-pink streak, sharp confident eyes, slim tall build, black studded leather jacket, hot-pink band t-shirt underneath, silver chain accessories, holding a vocal microphone, Vo of a metal band, charismatic metal frontman, cocky grin, frustrated downcast look, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, anthropomorphic lion, bipedal kemono character, big flowing golden mane styled like a rocker's wild hair, with a single hot-pink streak, feline face with a short muzzle, sharp confident amber eyes, tufted tail, black studded leather jacket, hot-pink band t-shirt underneath, silver chain accessories, holding a vocal microphone, Vo of a metal band, charismatic metal frontman lion, cocky grin, king-of-the-stage aura, frustrated downcast look, ears drooping, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
-realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, blonde hair, glasses
+realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, human skin, human ears, full realistic animal on all fours
 ```
 

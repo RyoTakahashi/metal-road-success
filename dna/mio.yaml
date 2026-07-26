@@ -2,9 +2,10 @@ id: MIO
 display_name: MIO
 part: Ba
 
-version: 1
+version: 2
 changelog:
-  - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠）" }
+  - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠・人間）" }
+  - { version: 2, date: "2026-07-26", note: "けものフレンズ的な擬人化動物へ刷新。カエル(ベース)" }
 
 generation:
   model: ""
@@ -14,8 +15,9 @@ generation:
   cfg: 0
 
 identity:
-  - "long straight navy-blue hair"
-  - "calm half-lidded eyes, cool composure"
+  - "anthropomorphic frog, bipedal kemono character"
+  - "smooth blue-green frog skin, wide-set calm half-lidded eyes, cool composure"
+  - "slender webbed hands, subtle darker spots along the back"
 
 outfit:
   - "dark outfit with blue accents"
@@ -25,10 +27,11 @@ props:
   - "holding a bass guitar"
 
 color_palette:
+  - "blue-green frog skin (#3f8a6e)"
   - "navy (#243a5e)"
   - "bright blue (#3aa0ff)"
 
-personality_vibe: "cool stoic bassist, quietly intense"
+personality_vibe: "cool stoic bassist frog, quietly intense, unshakably calm"
 
 expressions:
   normal: "calm cool expression"
@@ -37,4 +40,4 @@ expressions:
   sad: "quiet melancholic look"
 
 negatives:
-  - "bright cheerful pose, red hair"
+  - "human skin, human hair, full realistic frog, four legs"

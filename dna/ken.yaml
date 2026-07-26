@@ -2,9 +2,10 @@ id: KEN
 display_name: KEN
 part: Gt
 
-version: 1
+version: 2
 changelog:
-  - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠）" }
+  - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠・人間）" }
+  - { version: 2, date: "2026-07-26", note: "けものフレンズ的な擬人化動物へ刷新。トリ(ギター)" }
 
 generation:
   model: ""
@@ -14,9 +15,9 @@ generation:
   cfg: 0
 
 identity:
-  - "long wild brown hair"
-  - "gold headband across the forehead"
-  - "muscular build"
+  - "anthropomorphic bird, bipedal kemono character"
+  - "wild spiky feather crest on the head like a headbanger's mane, brown and gold plumage"
+  - "sharp beak, intense eyes, feathered wing-arms ending in clawed hands, a gold headband"
 
 outfit:
   - "sleeveless dark shirt"
@@ -26,17 +27,17 @@ props:
   - "holding a gold Flying-V electric guitar"
 
 color_palette:
-  - "brown hair"
+  - "brown feathers (#7a5a3a)"
   - "gold (#ffcf3a)"
   - "dark olive (#2c2418)"
 
-personality_vibe: "hot-blooded shredder guitarist, intense"
+personality_vibe: "hot-blooded shredder guitarist bird, intense and fiery"
 
 expressions:
   normal: "focused serious expression"
-  fired: "headbanging, shouting, eyes burning with passion"
+  fired: "headbanging, screeching, eyes burning with passion, feathers flaring"
   happy: "fierce satisfied smirk"
-  sad: "annoyed disappointed frown"
+  sad: "annoyed disappointed frown, feathers drooping"
 
 negatives:
-  - "short hair, clean shaven head"
+  - "human skin, human hair, full realistic bird, four legs"
