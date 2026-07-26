@@ -5,7 +5,7 @@ part: Dr
 version: 2
 changelog:
   - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠・人間）" }
-  - { version: 2, date: "2026-07-26", note: "けものフレンズ的な擬人化動物へ刷新。ウサギ(ドラム)" }
+  - { version: 2, date: "2026-07-26", note: "けものフレンズ方式（女の子＋動物モチーフ）へ刷新。ウサギ(ドラム)" }
 
 generation:
   model: ""
@@ -15,29 +15,29 @@ generation:
   cfg: 0
 
 identity:
-  - "anthropomorphic rabbit, bipedal kemono character"
-  - "long upright rabbit ears, fluffy white-and-grey fur, energetic friendly face"
-  - "athletic build, small cotton tail, a green cap between the ears"
+  - "energetic cheerful anime girl with a normal human body"
+  - "long upright white-and-grey rabbit ears on her head and a fluffy round rabbit tail"
+  - "short fluffy white-grey hair, big bright pretty eyes, a green cap between the ears"
 
 outfit:
   - "green tank top"
-  - "bare furry arms"
+  - "grey shorts and boots"
 
 props:
   - "holding a pair of drumsticks raised up"
 
 color_palette:
-  - "white-grey fur (#e6e6e6)"
+  - "white-grey (#e6e6e6)"
   - "green (#2fbf71)"
   - "dark green (#1d3324)"
 
-personality_vibe: "energetic powerhouse drummer rabbit, cheerful and bouncy"
+personality_vibe: "energetic little metal drummer girl, cheerful and bouncy"
 
 expressions:
   normal: "bright friendly expression"
   fired: "drumming furiously, big open-mouthed yell, ears flying back"
   happy: "huge cheerful grin, thumbs up energy"
-  sad: "deflated tired look, ears flopped down"
+  sad: "deflated tired look, rabbit ears flopped down"
 
 negatives:
-  - "human skin, human hair, full realistic rabbit, four legs"
+  - "full rabbit head, muzzle, masculine, adult tall body"

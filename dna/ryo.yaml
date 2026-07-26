@@ -5,7 +5,7 @@ part: Vo
 version: 2
 changelog:
   - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠・人間）" }
-  - { version: 2, date: "2026-07-26", note: "けものフレンズ的な擬人化動物へ刷新。ライオン(ボーカル)" }
+  - { version: 2, date: "2026-07-26", note: "けものフレンズ方式（女の子＋動物モチーフ）へ刷新。ライオン(ボーカル)" }
 
 generation:
   model: ""
@@ -15,30 +15,29 @@ generation:
   cfg: 0
 
 identity:
-  - "anthropomorphic lion, bipedal kemono character"
-  - "big flowing golden mane styled like a rocker's wild hair, with a single hot-pink streak"
-  - "feline face with a short muzzle, sharp confident amber eyes, tufted tail"
+  - "cute confident anime girl with a completely normal human body and human skin legs"
+  - "lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal)"
+  - "voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes"
 
 outfit:
-  - "black studded leather jacket"
-  - "hot-pink band t-shirt underneath"
-  - "silver chain accessories"
+  - "short black studded leather jacket over a hot-pink band t-shirt"
+  - "black shorts and brown boots"
 
 props:
   - "holding a vocal microphone"
 
 color_palette:
-  - "golden fur (#e8b84b)"
+  - "golden-orange (#e8a83b)"
   - "hot pink (#ff5577)"
   - "black"
 
-personality_vibe: "charismatic metal frontman lion, cocky grin, king-of-the-stage aura"
+personality_vibe: "charismatic little metal vocalist girl, cocky confident grin"
 
 expressions:
-  normal: "calm confident expression"
-  fired: "roaring into the mic, mouth wide open showing fangs, fierce eyes"
+  normal: "calm confident grin"
+  fired: "roaring into the mic, mouth wide open, fierce eyes"
   happy: "big triumphant grin, sparkling eyes"
-  sad: "frustrated downcast look, ears drooping"
+  sad: "frustrated downcast look, lion ears drooping"
 
 negatives:
-  - "human skin, human ears, full realistic animal on all fours"
+  - "furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body"

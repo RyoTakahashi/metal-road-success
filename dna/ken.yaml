@@ -5,7 +5,7 @@ part: Gt
 version: 2
 changelog:
   - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠・人間）" }
-  - { version: 2, date: "2026-07-26", note: "けものフレンズ的な擬人化動物へ刷新。トリ(ギター)" }
+  - { version: 2, date: "2026-07-26", note: "けものフレンズ方式（女の子＋動物モチーフ）へ刷新。トリ(ギター)" }
 
 generation:
   model: ""
@@ -15,13 +15,13 @@ generation:
   cfg: 0
 
 identity:
-  - "anthropomorphic bird, bipedal kemono character"
-  - "wild spiky feather crest on the head like a headbanger's mane, brown and gold plumage"
-  - "sharp beak, intense eyes, feathered wing-arms ending in clawed hands, a gold headband"
+  - "cute cool feminine anime girl with a normal human body"
+  - "bird animal ears (soft feather tufts) on her head, small folded feather wings and a few tail feathers"
+  - "medium-length wavy brown-and-gold feather-textured hair, a gold headband, big pretty eyes with long lashes"
 
 outfit:
-  - "sleeveless dark shirt"
-  - "leather wristbands"
+  - "sleeveless dark top with leather wristbands"
+  - "black shorts and boots"
 
 props:
   - "holding a gold Flying-V electric guitar"
@@ -31,13 +31,13 @@ color_palette:
   - "gold (#ffcf3a)"
   - "dark olive (#2c2418)"
 
-personality_vibe: "hot-blooded shredder guitarist bird, intense and fiery"
+personality_vibe: "cool feminine metal guitarist girl, focused and confident"
 
 expressions:
-  normal: "focused serious expression"
-  fired: "headbanging, screeching, eyes burning with passion, feathers flaring"
-  happy: "fierce satisfied smirk"
+  normal: "focused confident look"
+  fired: "headbanging, shouting, eyes burning with passion, feathers flaring"
+  happy: "bright satisfied smile"
   sad: "annoyed disappointed frown, feathers drooping"
 
 negatives:
-  - "human skin, human hair, full realistic bird, four legs"
+  - "masculine face, male, muscular, beak face, full bird head, old man face, adult tall body"

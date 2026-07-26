@@ -5,7 +5,7 @@ part: Ba
 version: 2
 changelog:
   - { version: 1, date: "2026-06-29", note: "初版（SVGプレースホルダ準拠・人間）" }
-  - { version: 2, date: "2026-07-26", note: "けものフレンズ的な擬人化動物へ刷新。カエル(ベース)" }
+  - { version: 2, date: "2026-07-26", note: "けものフレンズ方式（女の子＋動物モチーフ）へ刷新。カエル(ベース)。全体の画風基準" }
 
 generation:
   model: ""
@@ -15,29 +15,29 @@ generation:
   cfg: 0
 
 identity:
-  - "anthropomorphic frog, bipedal kemono character"
-  - "smooth blue-green frog skin, wide-set calm half-lidded eyes, cool composure"
-  - "slender webbed hands, subtle darker spots along the back"
+  - "calm cool feminine anime girl with a normal human body"
+  - "a frog-themed hood featuring big round frog eyes on top, blue-green frog-pattern accents"
+  - "short navy-blue hair, half-lidded relaxed eyes, webbed-glove accents"
 
 outfit:
-  - "dark outfit with blue accents"
-  - "minimalist style"
+  - "dark minimalist outfit with blue accents"
+  - "black shorts and boots"
 
 props:
-  - "holding a bass guitar"
+  - "holding a blue bass guitar"
 
 color_palette:
-  - "blue-green frog skin (#3f8a6e)"
+  - "blue-green (#3f8a6e)"
   - "navy (#243a5e)"
   - "bright blue (#3aa0ff)"
 
-personality_vibe: "cool stoic bassist frog, quietly intense, unshakably calm"
+personality_vibe: "cool stoic metal bassist girl, quietly intense, unshakably calm"
 
 expressions:
-  normal: "calm cool expression"
+  normal: "calm stoic expression"
   fired: "eyes sharp, focused and locked in, subtle intensity"
   happy: "soft pleased smile"
   sad: "quiet melancholic look"
 
 negatives:
-  - "human skin, human hair, full realistic frog, four legs"
+  - "full frog head, green skin face, masculine, adult tall body, overly cheerful pose"
