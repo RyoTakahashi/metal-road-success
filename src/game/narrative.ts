@@ -4,6 +4,7 @@
 // the training labels shown on the practice-choice screen.
 
 import { pick, sample } from "./flavor";
+import { nameOf } from "./state";
 import type { GameState, LiveDecision, LiveResult, Param, Scene, SceneChar } from "./types";
 
 interface Training {
@@ -61,12 +62,12 @@ const ALL = ["RYO", "KEN", "MIO", "GO"] as const;
 const ch = (member: string, pos: SceneChar["pos"], mood?: SceneChar["mood"]): SceneChar =>
   mood ? { member, pos, mood } : { member, pos };
 
-/** Instrument spotlight line per member (used mid-set). */
-const SOLO: Record<string, string> = {
-  RYO: "RYOのシャウトが会場を切り裂く！フロア全体が咆哮で応える。",
-  KEN: "KENの指が弦の上を疾走。唸るギターソロにフロアが沸騰する！",
-  MIO: "MIOの地を這うベースが腹の底を揺らす。静かに、確実に空気を掌握する。",
-  GO: "GOの手数の暴力！刻むビートが加速し、熱狂が渦を巻く。",
+/** Instrument spotlight line per member (used mid-set); `n` is the display name. */
+const SOLO: Record<string, (n: string) => string> = {
+  RYO: (n) => `${n}のシャウトが会場を切り裂く！フロア全体が咆哮で応える。`,
+  KEN: (n) => `${n}の指が弦の上を疾走。唸るギターソロにフロアが沸騰する！`,
+  MIO: (n) => `${n}の地を這うベースが腹の底を揺らす。静かに、確実に空気を掌握する。`,
+  GO: (n) => `${n}の手数の暴力！刻むビートが加速し、熱狂が渦を巻く。`,
 };
 
 const HUDDLE = [
@@ -78,7 +79,7 @@ const HUDDLE = [
 /** Scenes depicting the live, referencing the actual result. Variety in the
  *  huddle members, the instrument spotlight, trouble and encore beats. */
 export function buildLiveScenes(
-  _state: GameState,
+  state: GameState,
   decision: LiveDecision,
   r: LiveResult,
   rng: () => number = Math.random,
@@ -111,7 +112,7 @@ export function buildLiveScenes(
     {
       bg,
       chars: soloists.map((m, i) => ch(m, i === 0 ? "center" : "left", "fired")),
-      text: `${segWord[decision.target]}に向けてぶちかます。${soloists.map((m) => SOLO[m]).join("\n")}`,
+      text: `${segWord[decision.target]}に向けてぶちかます。${soloists.map((m) => SOLO[m](nameOf(state, m))).join("\n")}`,
       fx: "shake",
     },
   ];

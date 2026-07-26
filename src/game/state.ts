@@ -68,20 +68,20 @@ export const canRecruit = (s: GameState): boolean =>
 /** The four founding members (Vo/Gt/Ba/Dr). artKey is the sprite key. */
 function initialMembers(): Member[] {
   return [
-    { name: "RYO", artKey: "RYO", part: "Vo", isLeader: false, T: 48, P: 60, S: 52, V: 58, stamina: 100 },
-    { name: "KEN", artKey: "KEN", part: "Gt", isLeader: false, T: 64, P: 50, S: 55, V: 46, stamina: 100 },
-    { name: "MIO", artKey: "MIO", part: "Ba", isLeader: false, T: 58, P: 46, S: 50, V: 44, stamina: 100 },
-    { name: "GO", artKey: "GO", part: "Dr", isLeader: false, T: 62, P: 44, S: 42, V: 40, stamina: 100 },
+    { name: "RISA", artKey: "RYO", part: "Vo", isLeader: false, T: 48, P: 60, S: 52, V: 58, stamina: 100 },
+    { name: "NAO", artKey: "KEN", part: "Gt", isLeader: false, T: 64, P: 50, S: 55, V: 46, stamina: 100 },
+    { name: "MAKO", artKey: "MIO", part: "Ba", isLeader: false, T: 58, P: 46, S: 50, V: 44, stamina: 100 },
+    { name: "TOMO", artKey: "GO", part: "Dr", isLeader: false, T: 62, P: 44, S: 42, V: 40, stamina: 100 },
   ];
 }
 
 /** Which existing member plays a given part. */
 const PART_TO_ART: Record<string, string> = { Vo: "RYO", Gt: "KEN", Ba: "MIO", Dr: "GO" };
-export const PARTS: { part: string; label: string }[] = [
-  { part: "Vo", label: "ボーカル" },
-  { part: "Gt", label: "ギター" },
-  { part: "Ba", label: "ベース" },
-  { part: "Dr", label: "ドラム" },
+export const PARTS: { part: string; label: string; name: string }[] = [
+  { part: "Vo", label: "ボーカル", name: "RISA" },
+  { part: "Gt", label: "ギター", name: "NAO" },
+  { part: "Ba", label: "ベース", name: "MAKO" },
+  { part: "Dr", label: "ドラム", name: "TOMO" },
 ];
 
 /** Start a fresh game as the leader of the chosen part (optionally renamed). */

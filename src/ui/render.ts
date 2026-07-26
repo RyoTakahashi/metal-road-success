@@ -567,7 +567,7 @@ function partSelectScreen(): string {
         <div class="partgrid">${opts}</div>
         <div class="namefield">
           <label>リーダー名（任意）</label>
-          <input id="leader-name" type="text" maxlength="12" value="NAOYA" placeholder="NAOYA" />
+          <input id="leader-name" type="text" maxlength="12" placeholder="パートを選ぶと初期名が入ります" />
         </div>
         <button class="btn partstart" id="confirm-part" disabled>この設定で結成！</button>
       </div>
@@ -595,6 +595,9 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
         part = el.dataset.part!;
         root.querySelectorAll(".partopt").forEach((o) => o.classList.remove("sel"));
         el.classList.add("sel");
+        // Show that part's default name (used if the player leaves the field blank).
+        const def = PARTS.find((p) => p.part === part)?.name ?? "";
+        if (nameEl) nameEl.placeholder = def;
         if (startBtn) startBtn.disabled = false;
       }),
     );
