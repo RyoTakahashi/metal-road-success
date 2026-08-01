@@ -135,6 +135,9 @@ body {
 .center .btn { margin: 0 5px; }
 .buffnote { color: var(--accent); font-weight: 700; }
 .leadtag { font-size: 10px; background: var(--accent-2); color: #fff; padding: 1px 7px; border-radius: 999px; }
+.love { font-size: 13px; letter-spacing: 1px; margin-left: 6px; vertical-align: middle; }
+.love .hf { color: var(--accent-2); }
+.love .he { color: #ffffff2e; }
 .opt.locked { opacity: 0.45; cursor: not-allowed; }
 .opt .capn { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }
 
@@ -372,6 +375,15 @@ body {
 .dots { display: flex; gap: 6px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffffff33; }
 .dot.on { background: var(--accent); }
+/* Reply choices inside a scene (branching event). */
+.sc-choices { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.sc-choice {
+  width: 100%; text-align: left; white-space: normal; line-height: 1.5;
+  background: linear-gradient(180deg, #2a1c33, #1c1424); border: 2px solid var(--accent);
+  padding: 11px 14px; font-size: 15px; font-weight: 800;
+}
+.sc-choice:hover { border-color: var(--accent-2); background: linear-gradient(180deg, #37223f, #241832); }
+.sc-choice::before { content: "▶ "; color: var(--accent-2); }
 
 /* ---- Title screen ---- */
 .title-screen {

@@ -32,6 +32,7 @@ export const K = {
   ticketPrice: 4000, // yen per attendee
   streamRate: 0.5, // yen per stream
   venueCostPerSeat: 1200, // venue cost scales with capacity (背伸びの痛み)
+  loveSatCoef: 8, // full band 愛情度 adds this many satisfaction points (絆の後押し)
   freshnessFloor: 0.7, // live output at 0 practice freshness
   freshnessRange: 0.3, // added at full freshness (D3: practice decay)
   songStalePerMonth: 0.12, // per-month decay of a song's pull (D3: new songs)
@@ -130,8 +131,11 @@ export function resolveLive(
     const chance = roadie ? 0.25 : 0.5; // a roadie halves the trouble odds
     trouble = rng() < chance;
   }
+  // A tight, well-loved band lifts the room a little (愛情度の後押し).
+  const avgLove = state.members.reduce((a, m) => a + m.love, 0) / (state.members.length || 1);
+  const loveBonus = K.loveSatCoef * (avgLove / 100);
   const satisfaction = clamp(
-    0.55 * aAdj + 0.3 * match * 100 + 0.15 * atmosphere + paBonus - (trouble ? 18 : 0) + state.buffs.liveSat,
+    0.55 * aAdj + 0.3 * match * 100 + 0.15 * atmosphere + paBonus - (trouble ? 18 : 0) + state.buffs.liveSat + loveBonus,
   );
 
   // Step 5: new fans (KPI ②) — capacity × 出来栄え + ファン層.

@@ -4,12 +4,12 @@
 
 import { bandParam } from "./coreLoop";
 import {
-  bondScenes,
   composeScenes,
   contactScenes,
   itemFindScenes,
   moneyScenes,
   performScenes,
+  pick,
   practiceScenes,
   promoScenes,
   restScenes,
@@ -68,10 +68,10 @@ export const canRecruit = (s: GameState): boolean =>
 /** The four founding members (Vo/Gt/Ba/Dr). artKey is the sprite key. */
 function initialMembers(): Member[] {
   return [
-    { name: "RISA", artKey: "RYO", part: "Vo", isLeader: false, T: 48, P: 60, S: 52, V: 58, stamina: 100 },
-    { name: "NAO", artKey: "KEN", part: "Gt", isLeader: false, T: 64, P: 50, S: 55, V: 46, stamina: 100 },
-    { name: "MAKO", artKey: "MIO", part: "Ba", isLeader: false, T: 58, P: 46, S: 50, V: 44, stamina: 100 },
-    { name: "TOMO", artKey: "GO", part: "Dr", isLeader: false, T: 62, P: 44, S: 42, V: 40, stamina: 100 },
+    { name: "RISA", artKey: "RYO", part: "Vo", isLeader: false, T: 48, P: 60, S: 52, V: 58, stamina: 100, love: 30 },
+    { name: "NAO", artKey: "KEN", part: "Gt", isLeader: false, T: 64, P: 50, S: 55, V: 46, stamina: 100, love: 30 },
+    { name: "MAKO", artKey: "MIO", part: "Ba", isLeader: false, T: 58, P: 46, S: 50, V: 44, stamina: 100, love: 30 },
+    { name: "TOMO", artKey: "GO", part: "Dr", isLeader: false, T: 62, P: 44, S: 42, V: 40, stamina: 100, love: 30 },
   ];
 }
 
@@ -173,6 +173,15 @@ const addStamina = (s: GameState, d: number) =>
   forEachMember(s, (m) => (m.stamina = Math.max(0, Math.min(100, m.stamina + d))));
 const addParam = (s: GameState, p: Param, d: number) =>
   forEachMember(s, (m) => (m[p] = clampStat(m[p] + d)));
+
+/** Nudge one member's 愛情度 by artKey (clamped 0–100). */
+export const addLove = (s: GameState, artKey: string, d: number): void => {
+  const m = s.members.find((x) => x.artKey === artKey);
+  if (m) m.love = Math.max(0, Math.min(100, m.love + d));
+};
+/** Average 愛情度 across the band (0–100). */
+export const avgLove = (s: GameState): number =>
+  s.members.reduce((a, m) => a + m.love, 0) / (s.members.length || 1);
 
 /** A roadie eases the stamina cost of an action. */
 const roadieRelief = (s: GameState): number => {
@@ -310,13 +319,167 @@ function resolveNetwork(state: GameState, sub: string, rng: () => number): { sce
     pushLog(state, `新たな人脈：業界の知り合いが増えた（人脈+1 → ${state.contacts} / マーケ力・知名度↑）`);
     return { scenes: contactScenes(`人脈 +1（計${state.contacts}）・マーケ力UP・知名度 +1`, rng) };
   }
-  state.bond = Math.min(100, state.bond + 8);
-  addStamina(state, 12);
-  // Time with the crew also warms up any hired staff (親密度).
+  // Time with the crew warms up any hired staff (親密度) no matter what's said;
+  // the heart-to-heart itself is an interactive talk (結束/愛情度 vary by reply).
   for (const st of state.staff) st.intimacy = Math.min(100, st.intimacy + 8);
-  const staffNote = state.staff.length ? "・サポート陣との親密度も上昇" : "";
-  pushLog(state, `バンド関係者との交流：結束が高まった（結束+8 → ${state.bond} / 体力+12${state.staff.length ? " / 親密度↑" : ""}）`);
-  return { scenes: bondScenes(`結束 +8（計${state.bond}）・体力 +12（全員）${staffNote}`, rng) };
+  return { scenes: bondTalkScenes(state, rng) };
+}
+
+// --- Interactive member events (発言選択 + 愛情度) --------------------------
+
+type Mood = "normal" | "fired" | "happy" | "sad";
+
+/** One reply option: its effects and how the featured member reacts. */
+interface Reply {
+  label: string; // the leader's line (button text)
+  love: number; // Δ愛情度 for the featured member
+  bond?: number; // Δ結束 (band-wide)
+  stam?: number; // Δ体力 (all members)
+  funds?: number; // Δ資金
+  stat?: { p: Param; d: number }; // small Δ to one skill (all members)
+  react: string; // the member's reaction line
+  mood: Mood;
+}
+interface Topic {
+  line: string; // what the member opens with
+  replies: Reply[];
+}
+
+const nonLeaders = (s: GameState): Member[] => s.members.filter((m) => !m.isLeader);
+const sign = (n: number): string => (n >= 0 ? `+${n}` : `${n}`);
+
+/** Build a 1-scene prompt + branching reactions for a member talk. */
+function buildTalk(m: Member, topic: Topic, bg: BgKey): Scene[] {
+  const choices = topic.replies.map((r) => {
+    const bits: string[] = [`${m.name}の愛情度${sign(r.love)}`];
+    if (r.bond) bits.push(`結束${sign(r.bond)}`);
+    if (r.stam) bits.push(`体力${sign(r.stam)}`);
+    if (r.funds) bits.push(`資金${sign(r.funds)}`);
+    if (r.stat) bits.push(`${PARAM_LABEL[r.stat.p]}${sign(r.stat.d)}`);
+    const summary = bits.join("・");
+    return {
+      label: r.label,
+      apply: (s: GameState) => {
+        addLove(s, m.artKey, r.love);
+        if (r.bond) s.bond = Math.max(0, Math.min(100, s.bond + r.bond));
+        if (r.stam) addStamina(s, r.stam);
+        if (r.funds) s.funds += r.funds;
+        if (r.stat) addParam(s, r.stat.p, r.stat.d);
+        pushLog(s, `${m.name}と語らった：${summary}`);
+      },
+      next: [
+        {
+          bg,
+          chars: [{ member: m.artKey, pos: "center" as const, mood: r.mood }],
+          speaker: m.name,
+          text: `${r.react}\n\n（${summary}）`,
+          fx: (r.love > 0 ? "flash" : undefined) as Scene["fx"],
+        },
+      ],
+    };
+  });
+  return [
+    {
+      bg,
+      chars: [{ member: m.artKey, pos: "center" as const, mood: "normal" }],
+      speaker: m.name,
+      text: topic.line,
+      choices,
+    },
+  ];
+}
+
+/** 交流（バンド関係者）：a random bandmate opens up; the reply shapes 結束/愛情度. */
+const BOND_TOPICS: Topic[] = [
+  {
+    line: "「なあ、最近ちゃんと前に進めてるのかな……ふと不安になる時があってさ」",
+    replies: [
+      { label: "「大丈夫、ちゃんと進んでる。俺が保証する」", love: 9, bond: 8, mood: "happy", react: "「……そっか。あんたがそう言うなら、信じられるよ」" },
+      { label: "「不安なら練習で埋めろ。手を動かせ」", love: 2, bond: 10, stam: -4, mood: "fired", react: "「……くっ、違いない。やってやるよ！」" },
+      { label: "「わかる。俺も同じだよ」と弱音を共有", love: 6, bond: 6, mood: "normal", react: "「なんだ、あんたもか。ちょっと安心した」" },
+    ],
+  },
+  {
+    line: "「ねえ、今夜このあと軽く飲みに行かない？ たまには馬鹿な話がしたい」",
+    replies: [
+      { label: "「いいね、行こう。今日は付き合うよ」", love: 8, bond: 9, stam: 6, mood: "happy", react: "「よっしゃ！ こういう時間が一番効くんだって」" },
+      { label: "「悪い、今日は曲作りたい」", love: -3, bond: 4, mood: "sad", react: "「……はいはい、真面目だこと。まあ、無理すんなよ」" },
+      { label: "「一杯だけな」と付き合う", love: 5, bond: 7, mood: "normal", react: "「一杯って言うやつに限って朝までなんだよなあ」" },
+    ],
+  },
+  {
+    line: "「正直さ、あんたがリーダーで良かったって思ってる。……柄じゃないけど、言っときたくて」",
+    replies: [
+      { label: "「……ありがとう。お前がいるからだよ」", love: 12, bond: 8, mood: "happy", react: "「うわ、照れるからやめろって！ ……でも、うん」" },
+      { label: "「当たり前だろ、ついてこい」", love: 4, bond: 9, mood: "fired", react: "「ははっ、その強気、嫌いじゃないよ」" },
+      { label: "「急にどうした、気持ち悪いな」と茶化す", love: -2, bond: 5, mood: "sad", react: "「……せっかく良いこと言ったのに。もう知らね」" },
+    ],
+  },
+];
+
+/** Return an interactive bond talk with a random bandmate. */
+export function bondTalkScenes(state: GameState, rng: () => number = Math.random): Scene[] {
+  const m = pick(rng, nonLeaders(state));
+  return buildTalk(m, pick(rng, BOND_TOPICS), "backstage");
+}
+
+/** Standalone “member moment” events, keyed to a member's personality. */
+interface MemberEvent extends Topic {
+  art: string;
+  bg: BgKey;
+}
+const MEMBER_EVENTS: MemberEvent[] = [
+  {
+    art: "KEN", // NAO — stoic shredder
+    bg: "studio",
+    line: "「このリフ、どうしても納得いかない。……なあ、正直どう思う？」",
+    replies: [
+      { label: "「めちゃくちゃ良い。自信持て」", love: 8, stat: { p: "S", d: 1 }, mood: "happy", react: "「……そうか。あんたがそう言うなら、これでいく」" },
+      { label: "「まだ甘い。一緒に詰めよう」", love: 5, stat: { p: "T", d: 1 }, stam: -3, mood: "fired", react: "「……っ、やっぱそう思うよな。よし、朝までやるぞ」" },
+      { label: "「考えすぎ。手癖で弾け」", love: -2, mood: "sad", react: "「……お前に聞いた俺が馬鹿だった」" },
+    ],
+  },
+  {
+    art: "GO", // TOMO — bouncy drummer
+    bg: "street",
+    line: "「ねえねえ！ 次のライブ、ドラムソロで新技ぶっこんでいい！？ めっちゃ練習したの！」",
+    replies: [
+      { label: "「最高じゃん、やっちゃえ！」", love: 9, stat: { p: "P", d: 1 }, mood: "happy", react: "「やった〜！ 絶対ウケさせるからね、見てて！」" },
+      { label: "「いいけど、失敗すんなよ？」", love: 4, mood: "normal", react: "「うっ……で、でも大丈夫！ たぶん！」" },
+      { label: "「まだ早い。基礎を固めろ」", love: -3, stat: { p: "T", d: 1 }, mood: "sad", react: "「……はーい。ちぇっ、分かってるってば」" },
+    ],
+  },
+  {
+    art: "MIO", // MAKO — cool, quiet worrier
+    bg: "backstage",
+    line: "「……お金、足りてる？ わたし、バイト増やそうか」",
+    replies: [
+      { label: "「気にすんな。ここは俺が持つ」", love: 8, funds: -20_000, mood: "happy", react: "「……そう。じゃあ、甘えとく。ありがと」" },
+      { label: "「助かる。頼めるか？」", love: 5, funds: 30_000, stam: -4, mood: "normal", react: "「ん。……たまには頼ってくれて、嬉しい」" },
+      { label: "「金の心配より練習しろ」", love: -3, mood: "sad", react: "「……そうだね。余計なこと言った」" },
+    ],
+  },
+  {
+    art: "RYO", // RISA — cocky frontwoman
+    bg: "studio",
+    line: "「ねえ、あたしのステージング、ちゃんと『ヤバい』って言える？ 忖度なしで」",
+    replies: [
+      { label: "「ヤバい。会場全部持ってける」", love: 9, stat: { p: "V", d: 1 }, mood: "happy", react: "「でしょ！？ ……ふふ、あんたに言われると悪くないね」" },
+      { label: "「まだ伸びる。もっと化けろ」", love: 4, stat: { p: "P", d: 1 }, stam: -3, mood: "fired", react: "「上等。あたしの限界、見せてやる」" },
+      { label: "「普通じゃない？」と流す", love: -4, mood: "sad", react: "「……は？ 今の発言、後悔するよあんた」" },
+    ],
+  },
+];
+
+/** ~28% at the start of a turn: a bandmate pulls the leader aside (choice event). */
+export function maybeMemberEvent(state: GameState, rng: () => number = Math.random): Scene[] | null {
+  if (rng() >= 0.28) return null;
+  const leaderKey = state.members.find((m) => m.isLeader)?.artKey;
+  const pool = MEMBER_EVENTS.filter((e) => e.art !== leaderKey && state.members.some((m) => m.artKey === e.art));
+  if (pool.length === 0) return null;
+  const e = pick(rng, pool);
+  const m = state.members.find((mm) => mm.artKey === e.art)!;
+  return buildTalk(m, { line: e.line, replies: e.replies }, e.bg);
 }
 
 /** Scout a support member, spending 人脈. Returns the intro scenes. */

@@ -10,6 +10,7 @@ import {
   checkProgress,
   isCardLocked,
   maybeFindItem,
+  maybeMemberEvent,
   newGame,
   pushLog,
   resolveAction,
@@ -82,6 +83,18 @@ function finishSlides(): void {
     return;
   }
   const next = advanceTurn(state); // "live" when the month's turns are done
+  if (next === "board") {
+    // Occasionally a bandmate pulls the leader aside before the next turn.
+    const ev = maybeMemberEvent(state);
+    if (ev) {
+      afterSlides = "board";
+      ui.sceneSeq = ev;
+      ui.sceneIndex = 0;
+      ui.mode = "slides";
+      redraw();
+      return;
+    }
+  }
   ui.mode = next === "live" ? "live" : "board";
   redraw();
 }
@@ -97,7 +110,9 @@ async function autoLoop(): Promise<void> {
   try {
     while (ui.auto) {
       if (ui.mode === "slides") {
-        handlers.onSlideNext();
+        const sc = ui.sceneSeq[ui.sceneIndex];
+        if (sc?.choices?.length) handlers.onChooseReply(0);
+        else handlers.onSlideNext();
         await wait(650);
       } else if (ui.mode === "result") {
         await wait(800);
@@ -170,6 +185,20 @@ const handlers: Handlers = {
       return;
     }
     finishSlides();
+  },
+  onChooseReply(index) {
+    const sc = ui.sceneSeq[ui.sceneIndex];
+    const choice = sc?.choices?.[index];
+    if (!choice) return;
+    choice.apply?.(state);
+    // Splice the picked reaction scenes in right after the prompt, then advance.
+    if (choice.next?.length) ui.sceneSeq.splice(ui.sceneIndex + 1, 0, ...choice.next);
+    if (ui.sceneIndex < ui.sceneSeq.length - 1) {
+      ui.sceneIndex += 1;
+      redraw();
+    } else {
+      finishSlides();
+    }
   },
   onOpenPanel(panel) {
     ui.panel = panel;

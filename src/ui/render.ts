@@ -54,6 +54,7 @@ export interface Handlers {
   onRecruit: (role: StaffRole) => void;
   onChooseTraining: (param: Param) => void;
   onSlideNext: () => void;
+  onChooseReply: (index: number) => void;
   onOpenPanel: (panel: UiState["panel"]) => void;
   onClosePanel: () => void;
   onLiveChange: (patch: Partial<LiveDecision>) => void;
@@ -134,6 +135,12 @@ function statBar(state: GameState): string {
     </div>`;
 }
 
+/** 愛情度 as five hearts (each = 20 points). */
+function loveHearts(love: number): string {
+  const filled = Math.max(0, Math.min(5, Math.round(love / 20)));
+  return `<span class="hf">${"♥".repeat(filled)}</span><span class="he">${"♡".repeat(5 - filled)}</span>`;
+}
+
 function memberCard(m: Member): string {
   const color = PART_COLOR[m.part] ?? "#888";
   return `
@@ -144,7 +151,7 @@ function memberCard(m: Member): string {
         <div class="part">${esc(m.part)}</div>
       </div>
       <div class="minfo">
-        <div class="mname">${esc(m.name)}${m.isLeader ? ' <span class="leadtag">YOU</span>' : ""}</div>
+        <div class="mname">${esc(m.name)}${m.isLeader ? ' <span class="leadtag">YOU</span>' : `<span class="love">${loveHearts(m.love)}</span>`}</div>
         <div class="gauges">
           ${PARAMS.map((p) => gaugeRow(PARAM_LABEL[p], m[p])).join("")}
           ${gaugeRow("体力", m.stamina, "stamina")}
@@ -408,6 +415,14 @@ function sceneModal(state: GameState, ui: UiState): string {
     .join("");
   const speaker = s.speaker ? `<div class="sc-speaker">${esc(nameOf(state, s.speaker))}</div>` : "";
   const fx = s.fx === "flash" ? `<div class="sc-flash"></div>` : "";
+  const foot = s.choices?.length
+    ? `<div class="sc-choices">${s.choices
+        .map((c, i) => `<button class="btn sc-choice" data-choice="${i}">${esc(c.label)}</button>`)
+        .join("")}</div>`
+    : `<div class="sc-foot">
+            <div class="dots">${dots}</div>
+            <button class="btn" id="scene-next">${last ? "完了" : "次へ ▶"}</button>
+          </div>`;
   return `
     <div class="overlay scene-overlay">
       <div class="scene ${s.fx === "shake" ? "shake" : ""}" style="background-image:url('${bgSrc(s.bg)}')">
@@ -416,10 +431,7 @@ function sceneModal(state: GameState, ui: UiState): string {
         <div class="sc-textbox">
           ${speaker}
           <div class="sc-text">${esc(s.text)}</div>
-          <div class="sc-foot">
-            <div class="dots">${dots}</div>
-            <button class="btn" id="scene-next">${last ? "完了" : "次へ ▶"}</button>
-          </div>
+          ${foot}
         </div>
       </div>
     </div>`;
@@ -656,6 +668,9 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   );
   root.querySelector("#close-panel")?.addEventListener("click", () => h.onClosePanel());
   root.querySelector("#scene-next")?.addEventListener("click", () => h.onSlideNext());
+  root.querySelectorAll<HTMLButtonElement>("[data-choice]").forEach((el) =>
+    el.addEventListener("click", () => h.onChooseReply(Number(el.dataset.choice))),
+  );
   root.querySelectorAll<HTMLButtonElement>("[data-cap]").forEach((el) =>
     el.addEventListener("click", () => h.onLiveChange({ cap: Number(el.dataset.cap) })),
   );

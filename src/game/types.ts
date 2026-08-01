@@ -36,6 +36,7 @@ export interface Member {
   S: number;
   V: number;
   stamina: number; // 0–100
+  love: number; // 愛情度: the member's bond with the leader (0–100)
 }
 
 /** Support staff effects, pre-aggregated for the slice. See core-loop.md §2.4. */
@@ -153,6 +154,13 @@ export interface SceneChar {
   mood?: "normal" | "fired" | "happy" | "sad";
 }
 
+/** A reply the player can pick inside a scene (branching event). */
+export interface SceneChoice {
+  label: string; // the button text (the leader's line)
+  apply?: (s: GameState) => void; // effect + affection change
+  next?: Scene[]; // follow-up scenes played after picking
+}
+
 /** One panel of a VN-style story scene (event narration). */
 export interface Scene {
   bg: BgKey;
@@ -160,6 +168,7 @@ export interface Scene {
   text: string;
   speaker?: string; // name shown on the textbox tag (dialogue)
   fx?: "shake" | "flash"; // optional punch-up effect
+  choices?: SceneChoice[]; // if set, the player picks a reply instead of 次へ
 }
 
 /** Practice outcome = stat changes (for the board floats) + a scene sequence. */
