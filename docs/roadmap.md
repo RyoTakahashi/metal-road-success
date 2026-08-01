@@ -126,9 +126,14 @@ B1/B2 サウンド, A1 ビジュアル選択 ── 独立（いつでも差し�
 - **友情イベント**〔実装済〕：愛情度が閾値（`FRIENDSHIP_THRESHOLD`=70）に達したメンバーごとに
   1回だけ特別シーンが発火し、**永続の能力ボーナス+6＋結束+6**（`FRIENDSHIPS`/`pendingFriendshipScenes`）。
   ターン開始時に友情イベントを最優先で処理（`nextTurnEvent`）。
-- **ライブ中のMC/パフォーマンス選択**〔実装済〕：ライブ確定後、まず「MCの第一声」「演奏の魅せ方」を
-  その場で選ぶ（`buildLivePreScenes`）。選択が満足度へ加点（`buffs.liveSat`）＝出来栄えが少し変わる。
-  選択→ライブ解決→ライブ描写→結果、の順（`main.ts` afterSlides="liveResolve"）。
+- **ライブ中のMC/パフォーマンス選択**〔実装済〕：ライブ確定後、**具体的なMCのセリフ**（客席への第一声）と
+  **ソロ回し**（メンバーを名指しで指名）をその場で選ぶ（`buildLivePreScenes`）。選択ごとに**掛け合いの反応**
+  （ファンの咆哮・指名メンバーのソロ炸裂）が返り、満足度へ加点（`buffs.liveSat`）＝出来栄えが変わる。
+  選択→ライブ解決→ライブ描写→結果の順（`main.ts` afterSlides="liveResolve"）。
+- **練習中の発言選択**〔実装済〕：練習の約50%で、メンバーが手を止めて話しかけてくる（`practiceTalk`/
+  `PRACTICE_TOPICS`）。返答で愛情度・体力・能力が小変動＋反応。
+- **選択の反応**：全ての発言選択（人脈交流・メンバーイベント・練習・ライブMC/ソロ・打ち上げ）で、
+  選んだ項目に応じた専用リアクションと効果サマリを表示。
 - **ライブ後の打ち上げ**〔実装済〕：結果画面の「次の月へ」で打ち上げイベント（`buildAfterPartyScenes`）。
   ライブの出来でトーンが変化し、返答で全員の愛情度・結束・体力が動く（afterSlides="month"→月送り）。
 - 実装：`state.ts`（`buildTalk`/`BOND_TOPICS`/`MEMBER_EVENTS`/`FRIENDSHIPS`/`buildLivePreScenes`/

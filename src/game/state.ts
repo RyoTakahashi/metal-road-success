@@ -297,7 +297,10 @@ function resolveMusic(
   spend(state, 16);
   state.practiceFreshness = 100;
   pushLog(state, `練習：${PARAM_LABEL[p]}を強化（+${gain} / 全員）・練習の鮮度MAX`);
-  return { scenes: practiceScenes(p, gain, rng) };
+  const scenes = practiceScenes(p, gain, rng);
+  // Sometimes a bandmate turns to the leader mid-session for a word (choice event).
+  if (rng() < 0.5) scenes.splice(2, 0, ...practiceTalk(state, rng));
+  return { scenes };
 }
 
 function resolvePromo(state: GameState, rng: () => number): { scenes: Scene[] } {
@@ -331,6 +334,8 @@ function resolveNetwork(state: GameState, sub: string, rng: () => number): { sce
 // --- Interactive member events (発言選択 + 愛情度) --------------------------
 
 type Mood = "normal" | "fired" | "happy" | "sad";
+/** A choice minus its label (label is added at the call site). */
+type SceneChoiceLite = { apply: (s: GameState) => void; next: Scene[] };
 
 /** One reply option: its effects and how the featured member reacts. */
 interface Reply {
@@ -424,6 +429,32 @@ const BOND_TOPICS: Topic[] = [
 export function bondTalkScenes(state: GameState, rng: () => number = Math.random): Scene[] {
   const m = pick(rng, nonLeaders(state));
   return buildTalk(m, pick(rng, BOND_TOPICS), "backstage");
+}
+
+/** 練習中の発言選択：a bandmate turns to the leader mid-session for feedback. */
+const PRACTICE_TOPICS: Topic[] = [
+  {
+    line: "「なあ、今の私の演奏……正直どうだった？ 忖度なしで頼む」",
+    replies: [
+      { label: "「すごく良い。ちゃんと伸びてる」", love: 6, stat: { p: "P", d: 1 }, mood: "happy", react: "「……っ、よし！ もっと上いく！」" },
+      { label: "「ここ、こう変えたら化ける」と指摘", love: 3, stat: { p: "T", d: 1 }, stam: -2, mood: "fired", react: "「なるほど……たしかに。さすが、よく見てる」" },
+      { label: "「まあ、こんなもんじゃない？」と流す", love: -3, mood: "sad", react: "「……ちょっと、ちゃんと聞いてってば」" },
+    ],
+  },
+  {
+    line: "「行き詰まってきた……ここで休憩する？ それとも、もう一本いく？」",
+    replies: [
+      { label: "「もう一本だけ付き合って」", love: 4, stat: { p: "S", d: 1 }, stam: -3, mood: "fired", react: "「ふふ、鬼だね。……その本気、嫌いじゃないよ」" },
+      { label: "「休もう。根詰めすぎも良くない」", love: 6, stam: 6, mood: "happy", react: "「……ありがと。ちょっと肩の力、抜けたわ」" },
+      { label: "「集中切れてるなら帰れば？」と突き放す", love: -4, mood: "sad", react: "「……そういう言い方は、ないでしょ」" },
+    ],
+  },
+];
+
+/** An in-practice reply moment with a random bandmate (state helpers apply). */
+export function practiceTalk(state: GameState, rng: () => number = Math.random): Scene[] {
+  const m = pick(rng, nonLeaders(state));
+  return buildTalk(m, pick(rng, PRACTICE_TOPICS), "studio");
 }
 
 /** Standalone “member moment” events, keyed to a member's personality. */
@@ -556,38 +587,66 @@ export function nextTurnEvent(state: GameState, rng: () => number = Math.random)
 
 /** Pre-show beats: huddle + two in-the-moment choices that nudge the live. The
  *  choices bank satisfaction into buffs.liveSat, consumed by resolveLive. */
-export function buildLivePreScenes(state: GameState, decision: LiveDecision): Scene[] {
-  const venue = decision.cap <= 300 ? "小箱ライブハウス" : decision.cap <= 600 ? "ライブホール" : "大ホール";
+const SOLO_INSTR: Record<string, string> = { RYO: "ボーカル", KEN: "ギター", MIO: "ベース", GO: "ドラム" };
+const SOLO_BURST: Record<string, string> = {
+  RYO: "の絶叫がPAを突き破り、フロアが総立ちで咆哮を返す",
+  KEN: "の指が指板を疾走、速弾きに指笛と歓声が突き刺さる",
+  MIO: "の重低音が地面ごと客を揺らし、地鳴りの縦ノリが起きる",
+  GO: "の連打がBPMをねじ上げ、モッシュの渦が爆ぜる",
+};
+
+export function buildLivePreScenes(state: GameState, decision: LiveDecision, rng: () => number = Math.random): Scene[] {
+  const venue = decision.cap <= 300 ? "小箱" : decision.cap <= 600 ? "ホール" : "アリーナ";
   const bg: BgKey = decision.cap >= 1000 ? "venueBig" : "venueSmall";
-  const nudge = (satDelta: number, extra?: (s: GameState) => void) => (s: GameState) => {
-    s.buffs.liveSat += satDelta;
-    extra?.(s);
-  };
+  const L = leaderArt(state);
+  const lname = nameOf(state, L);
+  const others = nonLeaders(state).map((m) => m.artKey);
+  const bud = pick(rng, others); // a bandmate to bounce off in the MC reactions
+  const react = (member: string, mood: Mood, text: string, fx?: Scene["fx"]): Scene => ({
+    bg, chars: [{ member, pos: "center", mood }], speaker: nameOf(state, member), text, fx,
+  });
+
   return [
     {
       bg: "backstage",
-      chars: [{ member: "RYO", pos: "left", mood: "fired" }, { member: "GO", pos: "right", mood: "normal" }],
-      text: `${venue}、開演直前。ステージ袖で息を合わせる。——さあ、どう攻める？`,
+      chars: [{ member: L, pos: "center", mood: "fired" }],
+      text: `${venue}の袖。深呼吸ひとつ。照明が落ち、歓声が膨らむ——行くぞ。`,
     },
     {
+      // MC: concrete opening lines, each with a crowd / bandmate call-and-response.
       bg,
-      chars: [{ member: leaderArt(state), pos: "center", mood: "fired" }],
-      text: "【MC】客席を煽る。第一声、どう出る？",
+      chars: [{ member: L, pos: "center", mood: "fired" }],
+      speaker: lname,
+      text: "【MC】ステージに立つ。マイクを握り、客席を見渡す——第一声は？",
       choices: [
-        { label: "「声出していこうぜ！」王道のコール&レスポンス", apply: nudge(7), next: [] },
-        { label: "限界まで挑発して焚きつける", apply: nudge(12, (s) => addStamina(s, -6)), next: [] },
-        { label: "新曲への想いを静かに語る", apply: nudge(5, (s) => (s.bond = Math.min(100, s.bond + 4))), next: [] },
+        {
+          label: "「準備はいいかァ——ッ!? 声、聞かせろォ!!」",
+          apply: (s) => { s.buffs.liveSat += 10; addStamina(s, -4); },
+          next: [react(bud, "fired", `「うおおおッ、いくぞォ!!」${nameOf(state, bud)}が咆哮で応え、客席が地鳴りで吠え返す。掴みは最高だ！（満足度↑）`, "shake")],
+        },
+        {
+          label: "「俺たちがMetal Roadだ！ 名前、刻んで帰れ！」",
+          apply: (s) => { s.buffs.liveSat += 8; s.fame = Math.min(100, s.fame + 1); },
+          next: [react(L, "fired", `フロアから「メタルロード！メタルロード！」の大合唱。バンド名が会場にこだまする。（満足度↑・知名度+1）`, "flash")],
+        },
+        {
+          label: "「……来てくれてありがとう。この一曲に全部込める」",
+          apply: (s) => { s.buffs.liveSat += 6; s.bond = Math.min(100, s.bond + 4); },
+          next: [react(bud, "happy", `一瞬の静寂——次の瞬間、割れんばかりの歓声。${nameOf(state, bud)}と目を合わせ、深く頷き合う。（満足度↑・結束+4）`, "flash")],
+        },
       ],
     },
     {
+      // Solo hand-off: call a specific bandmate out for the spotlight (掛け合い).
       bg,
-      chars: [{ member: "KEN", pos: "center", mood: "fired" }],
-      text: "【演奏】このセット、どう魅せる？",
-      choices: [
-        { label: "とにかく激しく、暴れ倒す", apply: nudge(8, (s) => addStamina(s, -6)), next: [] },
-        { label: "タイトに、正確さで魅せる", apply: nudge(7), next: [] },
-        { label: "観客を巻き込んで一体になる", apply: nudge(6, (s) => (s.fame = Math.min(100, s.fame + 1))), next: [] },
-      ],
+      chars: [{ member: L, pos: "center", mood: "fired" }],
+      speaker: lname,
+      text: "【ソロ回し】曲が最高潮へ。ここぞの見せ場、誰に振る？",
+      choices: others.map((art) => ({
+        label: `「${SOLO_INSTR[art] ?? "ソロ"}——${nameOf(state, art)}ッ!!」`,
+        apply: (s: GameState) => { s.buffs.liveSat += 7; addLove(s, art, 3); },
+        next: [react(art, "fired", `${nameOf(state, art)}${SOLO_BURST[art] ?? "のソロが炸裂する"}！（満足度↑・${nameOf(state, art)}の愛情度+3）`, "shake")],
+      })),
     },
   ];
 }
@@ -616,24 +675,38 @@ export function buildAfterPartyScenes(state: GameState, r: LiveResult, rng: () =
     if (stam) addStamina(s, stam);
     pushLog(s, `打ち上げ：${summary(love, bond, stam)}`);
   };
+  const hname = nameOf(state, host);
+  const react = (mood: Mood, text: string, love: number, bond: number, stam = 0): SceneChoiceLite => ({
+    apply: applyAll(love, bond, stam),
+    next: [
+      {
+        bg: "backstage",
+        chars: [{ member: host, pos: "center", mood }],
+        speaker: hname,
+        text: `${text}\n\n（${summary(love, bond, stam)}）`,
+        fx: "flash",
+      },
+    ],
+  });
+  const opts = great
+    ? [
+        { label: "「全員のおかげだ。ありがとう」と労う", ...react("happy", "「へへっ、リーダーにそう言われると照れるな。……よし、次もいくぞ！」", 6, 8, 6) },
+        { label: "「まだ通過点。次はもっと上だ」と鼓舞", ...react("fired", "「上等！ その意気だよ。もっとデカい景色、見せてくれ」", 4, 10) },
+        { label: "「今夜は無礼講だ、朝まで飲むぞ」", ...react("happy", "「よっしゃァ！ 言質とったからな、朝までコースだ！」", 8, 6, -4) },
+      ]
+    : [
+        { label: "「次は絶対リベンジする」と前を向く", ...react("fired", "「……そうだね。悔しさは、次でぶつけ返す」", 5, 8) },
+        { label: "一人ひとりの良かった所を伝える", ...react("happy", "「そこ、見ててくれたんだ……ありがと。救われる」", 8, 6) },
+        { label: "「今日は飲んで忘れよう」と笑い飛ばす", ...react("normal", "「あはは、違いない。ほら、しけた面すんなって。飲も飲も」", 6, 5, 4) },
+      ];
   return [
     { bg: "backstage", chars, text: opener, fx: great ? "flash" : undefined },
     {
       bg: "backstage",
       chars: [{ member: host, pos: "center", mood: great ? "happy" : "normal" }],
-      speaker: nameOf(state, host),
+      speaker: hname,
       text: great ? "「ねえ、次はもっとデカい会場でやろうよ！ ……で、リーダーは今どんな気分？」" : "「正直、今日は悔しいよね。……リーダーはどう立て直す？」",
-      choices: great
-        ? [
-            { label: "「全員のおかげだ。ありがとう」と労う", apply: applyAll(6, 8, 6), next: [] },
-            { label: "「まだ通過点。次はもっと上だ」と鼓舞", apply: applyAll(4, 10), next: [] },
-            { label: "朝まで飲み明かす", apply: applyAll(8, 6, -4), next: [] },
-          ]
-        : [
-            { label: "「次は絶対リベンジする」と前を向く", apply: applyAll(5, 8), next: [] },
-            { label: "一人ひとりの良かった所を伝える", apply: applyAll(8, 6), next: [] },
-            { label: "「今日は飲んで忘れよう」と笑い飛ばす", apply: applyAll(6, 5, 4), next: [] },
-          ],
+      choices: opts,
     },
   ];
 }
