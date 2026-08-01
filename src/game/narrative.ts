@@ -45,11 +45,6 @@ export const TRAININGS: Record<Param, Training> = {
 function venueBg(cap: number): "venueSmall" | "venueBig" {
   return cap >= 1000 ? "venueBig" : "venueSmall";
 }
-function venueName(cap: number): string {
-  if (cap <= 300) return "小箱ライブハウス";
-  if (cap <= 600) return "ライブホール";
-  return "大ホール";
-}
 
 const segWord: Record<LiveDecision["target"], string> = {
   core: "コアなメタラー",
@@ -70,14 +65,9 @@ const SOLO: Record<string, (n: string) => string> = {
   GO: (n) => `${n}の手数の暴力！刻むビートが加速し、熱狂が渦を巻く。`,
 };
 
-const HUDDLE = [
-  "円陣を組む。「いくぞ——！」",
-  "肩を組んで気合を入れる。「今日、全部ぶつけるよ」",
-  "拳を突き合わせる。「最高の夜にしよう」",
-] as const;
-
 /** Scenes depicting the live, referencing the actual result. Variety in the
- *  huddle members, the instrument spotlight, trouble and encore beats. */
+ *  instrument spotlight, trouble and encore beats (the huddle/MC live in the
+ *  pre-show choices, see buildLivePreScenes). */
 export function buildLiveScenes(
   state: GameState,
   decision: LiveDecision,
@@ -96,18 +86,10 @@ export function buildLiveScenes(
         ? "手応えは悪くない。確かな爪痕を残した。"
         : "盛り上がりは今ひとつ…次への課題が残った。";
 
-  // Huddle: two random members backstage.
-  const [h1, h2] = sample(rng, ALL, 2);
   // Spotlight: one or two random members take the solo.
   const soloists = sample(rng, ALL, 1 + Math.floor(rng() * 2));
 
   const scenes: Scene[] = [
-    {
-      bg: "backstage",
-      chars: [ch(h1, "left", "fired"), ch(h2, "right", "normal")],
-      speaker: h1,
-      text: `開演前。${venueName(decision.cap)}のステージ袖。${pick(rng, HUDDLE)}`,
-    },
     { bg, chars: [ch(pick(rng, ALL), "center", happy ? "fired" : "normal")], text: crowd },
     {
       bg,

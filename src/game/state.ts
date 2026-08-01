@@ -19,6 +19,8 @@ import type {
   ActionKind,
   BgKey,
   GameState,
+  LiveDecision,
+  LiveResult,
   Member,
   Param,
   Scene,
@@ -113,6 +115,7 @@ export function newGame(part = "Vo", leaderName = "", rng: () => number = Math.r
     practiceFreshness: 80,
     contacts: 0,
     bond: 30,
+    friendship: {},
     funds: 300_000,
     totalFans: 1200,
     segFans: { core: 600, light: 300, visual: 150, expert: 150 },
@@ -480,6 +483,159 @@ export function maybeMemberEvent(state: GameState, rng: () => number = Math.rand
   const e = pick(rng, pool);
   const m = state.members.find((mm) => mm.artKey === e.art)!;
   return buildTalk(m, { line: e.line, replies: e.replies }, e.bg);
+}
+
+// --- 友情イベント（愛情度が一定に達すると発火・1回きり）---------------------
+
+/** 愛情度がこの値以上になったメンバーと、特別な友情イベントが起きる。 */
+export const FRIENDSHIP_THRESHOLD = 70;
+
+/** Per-member friendship payoff: a heartfelt scene + a permanent boon. */
+interface Friendship {
+  bg: BgKey;
+  line: string; // the member's heartfelt line
+  boon: string; // human-readable reward
+  apply: (s: GameState) => void; // the permanent effect
+}
+const FRIENDSHIPS: Record<string, Friendship> = {
+  RYO: {
+    bg: "backstage",
+    line: "「あたしさ、あんたとバンド組めて本気で良かったと思ってる。……一生ついてく。だからさ、絶対てっぺん獲るよ」",
+    boon: "RISAとの絆が深まった：パフォーマンス+6（永続）",
+    apply: (s) => { const m = s.members.find((x) => x.artKey === "RYO"); if (m) m.P = clampStat(m.P + 6); },
+  },
+  KEN: {
+    bg: "studio",
+    line: "「……柄じゃないけど言わせてくれ。お前の音楽を信じてる。俺のギター、全部お前に預ける」",
+    boon: "NAOとの絆が深まった：演奏基礎+6（永続）",
+    apply: (s) => { const m = s.members.find((x) => x.artKey === "KEN"); if (m) m.T = clampStat(m.T + 6); },
+  },
+  MIO: {
+    bg: "backstage",
+    line: "「わたし、あんまり喋らないけど……ちゃんと見てる。あなたの隣が、いちばん落ち着く。ずっと弾かせて」",
+    boon: "MAKOとの絆が深まった：音楽センス+6（永続）",
+    apply: (s) => { const m = s.members.find((x) => x.artKey === "MIO"); if (m) m.S = clampStat(m.S + 6); },
+  },
+  GO: {
+    bg: "street",
+    line: "「あたしね、このバンドが世界でいちばん好き！ みんなと叩いてると無敵になれるの。ずーっと一緒だよ！」",
+    boon: "TOMOとの絆が深まった：ビジュ力+6（永続）",
+    apply: (s) => { const m = s.members.find((x) => x.artKey === "GO"); if (m) m.V = clampStat(m.V + 6); },
+  },
+};
+
+/** If any bandmate has crossed the affection threshold, fire their (one-time)
+ *  friendship event: a special scene + a permanent boon. Marks it done. */
+export function pendingFriendshipScenes(state: GameState): Scene[] | null {
+  const m = state.members.find(
+    (x) => !x.isLeader && x.love >= FRIENDSHIP_THRESHOLD && !state.friendship[x.artKey] && FRIENDSHIPS[x.artKey],
+  );
+  if (!m) return null;
+  const f = FRIENDSHIPS[m.artKey];
+  state.friendship[m.artKey] = true;
+  f.apply(state);
+  state.bond = Math.min(100, state.bond + 6);
+  pushLog(state, `💞 友情イベント：${m.name}との絆が深まった！（${f.boon}・結束+6）`);
+  return [
+    { bg: f.bg, chars: [{ member: m.artKey, pos: "center", mood: "happy" }], speaker: m.name, text: f.line, fx: "flash" },
+    {
+      bg: f.bg,
+      chars: [{ member: m.artKey, pos: "center", mood: "fired" }],
+      text: `💞 ${m.name}との友情が深まった——！\n\n${f.boon}\n結束 +6`,
+      fx: "flash",
+    },
+  ];
+}
+
+/** The event to show at the start of a turn: friendship (priority) or a moment. */
+export function nextTurnEvent(state: GameState, rng: () => number = Math.random): Scene[] | null {
+  return pendingFriendshipScenes(state) ?? maybeMemberEvent(state, rng);
+}
+
+// --- ライブ中のMC/パフォーマンス選択（出来栄えが少し変わる）-----------------
+
+/** Pre-show beats: huddle + two in-the-moment choices that nudge the live. The
+ *  choices bank satisfaction into buffs.liveSat, consumed by resolveLive. */
+export function buildLivePreScenes(state: GameState, decision: LiveDecision): Scene[] {
+  const venue = decision.cap <= 300 ? "小箱ライブハウス" : decision.cap <= 600 ? "ライブホール" : "大ホール";
+  const bg: BgKey = decision.cap >= 1000 ? "venueBig" : "venueSmall";
+  const nudge = (satDelta: number, extra?: (s: GameState) => void) => (s: GameState) => {
+    s.buffs.liveSat += satDelta;
+    extra?.(s);
+  };
+  return [
+    {
+      bg: "backstage",
+      chars: [{ member: "RYO", pos: "left", mood: "fired" }, { member: "GO", pos: "right", mood: "normal" }],
+      text: `${venue}、開演直前。ステージ袖で息を合わせる。——さあ、どう攻める？`,
+    },
+    {
+      bg,
+      chars: [{ member: leaderArt(state), pos: "center", mood: "fired" }],
+      text: "【MC】客席を煽る。第一声、どう出る？",
+      choices: [
+        { label: "「声出していこうぜ！」王道のコール&レスポンス", apply: nudge(7), next: [] },
+        { label: "限界まで挑発して焚きつける", apply: nudge(12, (s) => addStamina(s, -6)), next: [] },
+        { label: "新曲への想いを静かに語る", apply: nudge(5, (s) => (s.bond = Math.min(100, s.bond + 4))), next: [] },
+      ],
+    },
+    {
+      bg,
+      chars: [{ member: "KEN", pos: "center", mood: "fired" }],
+      text: "【演奏】このセット、どう魅せる？",
+      choices: [
+        { label: "とにかく激しく、暴れ倒す", apply: nudge(8, (s) => addStamina(s, -6)), next: [] },
+        { label: "タイトに、正確さで魅せる", apply: nudge(7), next: [] },
+        { label: "観客を巻き込んで一体になる", apply: nudge(6, (s) => (s.fame = Math.min(100, s.fame + 1))), next: [] },
+      ],
+    },
+  ];
+}
+
+// --- ライブ後の打ち上げ（選択で結束・愛情度が動く）--------------------------
+
+/** After-party at the month-end live: tone shifts with how the show went. */
+export function buildAfterPartyScenes(state: GameState, r: LiveResult, rng: () => number = Math.random): Scene[] {
+  const great = r.satisfaction >= 65;
+  const crew = state.members.map((m) => m.artKey);
+  const host = pick(rng, state.members.filter((m) => !m.isLeader)).artKey;
+  const opener = great
+    ? "打ち上げへ繰り出す。「今日は最高だった！ 乾杯——！」グラスがぶつかる。"
+    : "打ち上げへ。「まあ、こういう日もある」ぬるいビールで小さく乾杯。";
+  const partyMood: Mood = great ? "happy" : "normal";
+  const chars: Scene["chars"] = crew.map((a, i) => ({
+    member: a,
+    pos: (["left", "center", "right", "left"] as const)[i] ?? "center",
+    mood: partyMood,
+  }));
+  const summary = (love: number, bond: number, stam = 0) =>
+    `全員の愛情度+${love}・結束+${bond}${stam ? `・体力+${stam}` : ""}`;
+  const applyAll = (love: number, bond: number, stam = 0) => (s: GameState) => {
+    s.members.forEach((m) => { if (!m.isLeader) m.love = Math.min(100, m.love + love); });
+    s.bond = Math.min(100, s.bond + bond);
+    if (stam) addStamina(s, stam);
+    pushLog(s, `打ち上げ：${summary(love, bond, stam)}`);
+  };
+  return [
+    { bg: "backstage", chars, text: opener, fx: great ? "flash" : undefined },
+    {
+      bg: "backstage",
+      chars: [{ member: host, pos: "center", mood: great ? "happy" : "normal" }],
+      speaker: nameOf(state, host),
+      text: great ? "「ねえ、次はもっとデカい会場でやろうよ！ ……で、リーダーは今どんな気分？」" : "「正直、今日は悔しいよね。……リーダーはどう立て直す？」",
+      choices: great
+        ? [
+            { label: "「全員のおかげだ。ありがとう」と労う", apply: applyAll(6, 8, 6), next: [] },
+            { label: "「まだ通過点。次はもっと上だ」と鼓舞", apply: applyAll(4, 10), next: [] },
+            { label: "朝まで飲み明かす", apply: applyAll(8, 6, -4), next: [] },
+          ]
+        : [
+            { label: "「次は絶対リベンジする」と前を向く", apply: applyAll(5, 8), next: [] },
+            { label: "一人ひとりの良かった所を伝える", apply: applyAll(8, 6), next: [] },
+            { label: "「今日は飲んで忘れよう」と笑い飛ばす", apply: applyAll(6, 5, 4), next: [] },
+          ],
+    },
+  ];
 }
 
 /** Scout a support member, spending 人脈. Returns the intro scenes. */

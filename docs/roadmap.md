@@ -123,8 +123,17 @@ B1/B2 サウンド, A1 ビジュアル選択 ── 独立（いつでも差し�
   - ターン開始時 ~28% で、いずれかのメンバーが個別に話しかけてくる小イベント（`maybeMemberEvent`、
     `MEMBER_EVENTS`。リーダー本人は対象外）。
 - **見返り**：平均愛情度がライブ満足度を最大+8底上げ（`K.loveSatCoef`、暫定・調整可）。
-- 実装：`state.ts`（`buildTalk`/`BOND_TOPICS`/`MEMBER_EVENTS`/`addLove`/`avgLove`）、`main.ts`
-  （`onChooseReply` と分岐挿入）、`render.ts`（選択UI・ハート）、`coreLoop.ts`（満足度加点）。
+- **友情イベント**〔実装済〕：愛情度が閾値（`FRIENDSHIP_THRESHOLD`=70）に達したメンバーごとに
+  1回だけ特別シーンが発火し、**永続の能力ボーナス+6＋結束+6**（`FRIENDSHIPS`/`pendingFriendshipScenes`）。
+  ターン開始時に友情イベントを最優先で処理（`nextTurnEvent`）。
+- **ライブ中のMC/パフォーマンス選択**〔実装済〕：ライブ確定後、まず「MCの第一声」「演奏の魅せ方」を
+  その場で選ぶ（`buildLivePreScenes`）。選択が満足度へ加点（`buffs.liveSat`）＝出来栄えが少し変わる。
+  選択→ライブ解決→ライブ描写→結果、の順（`main.ts` afterSlides="liveResolve"）。
+- **ライブ後の打ち上げ**〔実装済〕：結果画面の「次の月へ」で打ち上げイベント（`buildAfterPartyScenes`）。
+  ライブの出来でトーンが変化し、返答で全員の愛情度・結束・体力が動く（afterSlides="month"→月送り）。
+- 実装：`state.ts`（`buildTalk`/`BOND_TOPICS`/`MEMBER_EVENTS`/`FRIENDSHIPS`/`buildLivePreScenes`/
+  `buildAfterPartyScenes`/`addLove`/`avgLove`/`nextTurnEvent`）、`main.ts`（`onChooseReply`・分岐挿入・
+  `proceedMonth`）、`render.ts`（選択UI・ハート）、`coreLoop.ts`（満足度加点）。
 
 ## ストーリー / チュートリアル〔実装済〕
 - **オープニング・モノローグ**：パート選択後、選んだリーダー（表示名反映）を主軸に、バンドへの

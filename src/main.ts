@@ -6,12 +6,14 @@ import { applyLiveResult, resolveLive } from "./game/coreLoop";
 import { buildLiveScenes } from "./game/narrative";
 import {
   advanceTurn,
+  buildAfterPartyScenes,
   buildIntroSequence,
+  buildLivePreScenes,
   checkProgress,
   isCardLocked,
   maybeFindItem,
-  maybeMemberEvent,
   newGame,
+  nextTurnEvent,
   pushLog,
   resolveAction,
   resolveRecruit,
@@ -46,7 +48,7 @@ const ui: UiState = {
 };
 
 // What to do once the current slideshow finishes.
-let afterSlides: "turn" | "result" | "board" | "clear" = "turn";
+let afterSlides: "turn" | "result" | "board" | "clear" | "liveResolve" | "month" = "turn";
 
 function redraw(): void {
   render(root, state, ui, handlers);
@@ -66,6 +68,23 @@ function playAction(kind: ActionKind, subId: string | undefined, param: Param | 
 }
 
 function finishSlides(): void {
+  if (afterSlides === "liveResolve") {
+    // Pre-show MC/performance choices are locked in; now resolve the live.
+    const result = resolveLive(state, ui.liveDecision);
+    applyLiveResult(state, ui.liveDecision, result);
+    ui.liveResult = result;
+    pushLog(state, `ライブ実施：動員${result.draw} / 満足度${result.satisfaction} / 新規ファン+${result.newFans}`);
+    afterSlides = "result";
+    ui.sceneSeq = buildLiveScenes(state, ui.liveDecision, result);
+    ui.sceneIndex = 0;
+    ui.mode = "slides";
+    redraw();
+    return;
+  }
+  if (afterSlides === "month") {
+    proceedMonth();
+    return;
+  }
   if (afterSlides === "result") {
     ui.mode = "result";
     redraw();
@@ -84,8 +103,8 @@ function finishSlides(): void {
   }
   const next = advanceTurn(state); // "live" when the month's turns are done
   if (next === "board") {
-    // Occasionally a bandmate pulls the leader aside before the next turn.
-    const ev = maybeMemberEvent(state);
+    // A friendship milestone, or occasionally a bandmate pulling you aside.
+    const ev = nextTurnEvent(state);
     if (ev) {
       afterSlides = "board";
       ui.sceneSeq = ev;
@@ -96,6 +115,24 @@ function finishSlides(): void {
     }
   }
   ui.mode = next === "live" ? "live" : "board";
+  redraw();
+}
+
+// Advance to the next month: recover/decay, then check the milestone ladder.
+function proceedMonth(): void {
+  startNewMonth(state);
+  ui.liveResult = undefined;
+  const prog = checkProgress(state); // milestone advance / clear / game over
+  if (prog.kind === "gameover") {
+    ui.mode = "gameover";
+  } else if (prog.kind === "advance" || prog.kind === "clear") {
+    afterSlides = prog.kind === "clear" ? "clear" : "board";
+    ui.sceneSeq = prog.scenes;
+    ui.sceneIndex = 0;
+    ui.mode = "slides";
+  } else {
+    ui.mode = "board";
+  }
   redraw();
 }
 
@@ -215,31 +252,24 @@ const handlers: Handlers = {
     redraw();
   },
   onConfirmLive() {
-    const result = resolveLive(state, ui.liveDecision);
-    applyLiveResult(state, ui.liveDecision, result);
-    ui.liveResult = result;
-    pushLog(state, `ライブ実施：動員${result.draw} / 満足度${result.satisfaction} / 新規ファン+${result.newFans}`);
-    afterSlides = "result";
-    ui.sceneSeq = buildLiveScenes(state, ui.liveDecision, result);
+    // The live is resolved only after the in-the-moment MC/performance choices.
+    afterSlides = "liveResolve";
+    ui.sceneSeq = buildLivePreScenes(state, ui.liveDecision);
     ui.sceneIndex = 0;
     ui.mode = "slides";
     redraw();
   },
   onNextMonth() {
-    startNewMonth(state);
-    ui.liveResult = undefined;
-    const prog = checkProgress(state); // milestone advance / clear / game over
-    if (prog.kind === "gameover") {
-      ui.mode = "gameover";
-    } else if (prog.kind === "advance" || prog.kind === "clear") {
-      afterSlides = prog.kind === "clear" ? "clear" : "board";
-      ui.sceneSeq = prog.scenes;
+    // Leaving the result screen: an after-party (choice event), then the month.
+    if (ui.liveResult) {
+      afterSlides = "month";
+      ui.sceneSeq = buildAfterPartyScenes(state, ui.liveResult);
       ui.sceneIndex = 0;
       ui.mode = "slides";
+      redraw();
     } else {
-      ui.mode = "board";
+      proceedMonth();
     }
-    redraw();
   },
   onRestart() {
     state = newGame();

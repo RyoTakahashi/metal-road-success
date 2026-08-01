@@ -122,6 +122,7 @@ export interface GameState {
   practiceFreshness: number; // 0–100, decays monthly; low = worse live
   contacts: number; // 人脈ポイント: gates support staff / better deals (P2)
   bond: number; // 0–100 バンドの結束: boosts recovery, eases friction (P2)
+  friendship: Record<string, boolean>; // artKey -> whether that member's 友情イベント fired
   funds: number;
   totalFans: number;
   segFans: Record<Segment, number>;
