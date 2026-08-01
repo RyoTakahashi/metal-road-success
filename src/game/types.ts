@@ -123,6 +123,7 @@ export interface GameState {
   contacts: number; // 人脈ポイント: gates support staff / better deals (P2)
   bond: number; // 0–100 バンドの結束: boosts recovery, eases friction (P2)
   friendship: Record<string, boolean>; // artKey -> whether that member's 友情イベント fired
+  recent: Record<string, number>; // pattern key -> last-used index (no back-to-back repeats)
   funds: number;
   totalFans: number;
   segFans: Record<Segment, number>;
