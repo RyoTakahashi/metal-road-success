@@ -39,5 +39,44 @@ expressions:
   happy: "soft pleased smile"
   sad: "quiet melancholic look"
 
+# --- 見た目の進化（バンド共通の4ジャンル。identityの核＝カエルフード/青緑柄・紺髪・青ベースは固定）---
+evolutions:
+  goth:
+    label_ja: "幽艶ゴシック"
+    segment: visual
+    genre: "gothic / symphonic metal (Evanescence-inspired)"
+    look:
+      - "black gothic corset dress with blue-green lace accents and a dark crimson underskirt"
+      - "black rose choker, dark smoky eye makeup, keeps the frog-themed hood"
+      - "lace sleeves and elegant dark boots"
+    aura: "moody violet-and-black stage haze with drifting dark rose petals and faint candlelight"
+  hard:
+    label_ja: "鋼鉄ハードロック"
+    segment: core
+    genre: "classic heavy metal / hard rock"
+    look:
+      - "black leather jacket over a band tee, studded belt and bullet-belt"
+      - "blue denim, silver-studded wristbands, chunky boots"
+      - "cool planted bassist stance"
+    aura: "warm amber stage-light glow with sparks and a hint of pyro flame"
+  kawaii:
+    label_ja: "紅黒カワメタ"
+    segment: light
+    genre: "kawaii metal / idol metal (BABYMETAL-inspired), cute but heavy"
+    look:
+      - "black-and-red frilly gothic-idol stage dress with teal accents"
+      - "cross-laced corset bodice, black-and-red striped arm warmers, ribbons"
+      - "cool-cute fierce pose"
+    aura: "red-and-black sparkles with dark hearts, small stars and a burst of confetti"
+  death:
+    label_ja: "戦鬼デスメタル"
+    segment: expert
+    genre: "war metal / death metal, brutal and grim"
+    look:
+      - "corpse-paint face makeup with murky blue-green war streaks, cold glare"
+      - "black battle armor with spiked pauldrons and bracers"
+      - "bullet-belt, draped chains and tattered war garb"
+    aura: "grim dark smoke with blood-red glow, jagged embers and an ominous backlight"
+
 negatives:
   - "full frog head, green skin face, masculine, adult tall body, overly cheerful pose"

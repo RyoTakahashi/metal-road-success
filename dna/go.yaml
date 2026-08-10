@@ -39,5 +39,44 @@ expressions:
   happy: "huge cheerful grin, thumbs up energy"
   sad: "deflated tired look, rabbit ears flopped down"
 
+# --- 見た目の進化（バンド共通の4ジャンル。identityの核＝ウサギ耳/尻尾・白灰髪＋緑キャップ・スティックは固定）---
+evolutions:
+  goth:
+    label_ja: "幽艶ゴシック"
+    segment: visual
+    genre: "gothic / symphonic metal (Evanescence-inspired)"
+    look:
+      - "black gothic dress with grey-white lace and a deep-crimson trim"
+      - "black rose choker, dark smoky eye makeup, keeps the green cap between the ears"
+      - "black lace gloves and dark boots"
+    aura: "moody violet-and-black stage haze with drifting dark rose petals and faint candlelight"
+  hard:
+    label_ja: "鋼鉄ハードロック"
+    segment: core
+    genre: "classic heavy metal / hard rock"
+    look:
+      - "black leather vest over a band tee, studded belt and bullet-belt"
+      - "denim shorts, silver-studded wristbands, chunky boots"
+      - "energetic drummer stance"
+    aura: "warm amber stage-light glow with sparks and a hint of pyro flame"
+  kawaii:
+    label_ja: "紅黒カワメタ"
+    segment: light
+    genre: "kawaii metal / idol metal (BABYMETAL-inspired), cute but heavy"
+    look:
+      - "black-and-red frilly gothic-idol stage dress with white frills"
+      - "cross-laced bodice, black-and-red striped socks, ribbons"
+      - "bouncy cheerful fierce pose"
+    aura: "red-and-black sparkles with dark hearts, small stars and a burst of confetti"
+  death:
+    label_ja: "戦鬼デスメタル"
+    segment: expert
+    genre: "war metal / death metal, brutal and grim"
+    look:
+      - "black-and-white corpse-paint face makeup, wild grin"
+      - "black battle armor with spiked pauldrons and bracers"
+      - "bullet-belt, tattered war garb and spiked boots"
+    aura: "grim dark smoke with blood-red glow, jagged embers and an ominous backlight"
+
 negatives:
   - "full rabbit head, muzzle, masculine, adult tall body"
