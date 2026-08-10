@@ -55,9 +55,14 @@ async function genOne(evo, mood, attempt = 1) {
   const refs = [BASE_REF, ...(mood !== "normal" ? [evoNormal] : [])];
   const fullPrompt =
     spec.positive +
-    "\n\nKeep the SAME character identity as the reference image (lion ears/tail, golden-orange mane with a pink streak, amber eyes), only changing outfit/pose/expression as described." +
+    // Sprite framing + clean-cutout control: full body on a plain flat backdrop
+    // with NO baked scenery/aura, so background removal yields a crisp cutout.
+    // (The per-look aura is applied in-game as an FX layer, like moods.)
+    "\n\nFULL-BODY standing pose, head to toe, both feet fully visible at the very bottom edge, centered, not a bust or portrait crop." +
+    "\n\nRender the character ISOLATED on a plain flat neutral light-gray studio backdrop. Absolutely NO scenery, stage, background smoke, haze, glow, sparkles, rose petals, flames, embers or floating particles behind the character — a clean empty backdrop only." +
+    "\n\nKeep the SAME character identity as the reference image (lion ears/tail, golden-orange mane with a pink streak, amber eyes), changing only outfit and expression." +
     "\n\nAspect ratio: 2:3 (vertical)." +
-    `\n\nAvoid: ${spec.negative}.`;
+    `\n\nAvoid: ${spec.negative}, cropped at the waist, cut-off legs, busy background, scenery, smoke, particles.`;
   const parts = [{ text: fullPrompt }, ...refParts(refs)];
   const res = await ai.models.generateContent({
     model: MODEL,

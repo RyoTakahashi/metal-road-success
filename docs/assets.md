@@ -71,6 +71,15 @@ dna/
 - **試作プレビュー**: `npm run art:risa-evo` で 4進化のプレースホルダSVG（`public/assets/chars/evolutions/ryo.v2.{evo}.svg`）とビューア `public/risa-evolution.html` を生成。`npm run dev` 後 `/risa-evolution.html` で確認できる。
 - 本番PNGが揃ったら `assets.ts` の `EVO_ART_READY` を `true` にすると、ゲーム内スプライトが現在の進化に追従する。
 
+#### 本番PNG生成 → 透過切り抜き（RISAで実施済み）
+`gemini-3.1-flash-image` は透過を返さない（不透明JPEG）ので、**生成→背景除去**の2段構え。
+1. **生成**: `GEMINI_API_KEY=... node tools/image-mcp/gen-risa.mjs [evo.mood ...]`（既定＝4進化のnormal）。
+   ベース `ryo.v2.normal.png` を参照に一貫性を確保し、全身・無地背景・オーラ無しで描かせる
+   （オーラは焼き込まず、ゲーム内FXに回す）。生の出力は `evolutions/samples/*.trial.jpg` へ。
+2. **切り抜き**: `python3 tools/image-mcp/cutout.py <in.jpg> <out.png> ...`（rembg/u2net）。
+   透過余白をトリムし縦長スプライト枠に再パッド → `public/assets/chars/ryo.v2.{evo}.{mood}.png`（RGBA）。
+- 現状 normal の4枚が生成・切り抜き済み。残り表情（fired/happy/sad）は同手順で追加する。
+
 ---
 
 ## AI生成プロンプト雛形（手動で書く場合の参考）
