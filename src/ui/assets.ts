@@ -31,7 +31,8 @@ export const EVO_INFIX: Record<string, string> = {
 // Flip to true once the evolution sprites actually exist on disk (per member ×
 // per evolution × per mood). Until then the game shows the base look even when
 // an evolution is "unlocked", so nothing 404s.
-const EVO_ART_READY = false;
+// Enabled: all 4 members × 4 evolutions (goth/hard/kawaii/death) × 4 moods exist.
+const EVO_ART_READY = true;
 
 // The band's current evolution (a segment key, or "" for base). Set once per
 // render from state.evolution so charSrc callers don't each need to thread it.
