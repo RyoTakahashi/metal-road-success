@@ -39,5 +39,45 @@ expressions:
   happy: "big triumphant grin, sparkling eyes"
   sad: "frustrated downcast look, lion ears drooping"
 
+# --- 見た目の進化（客層でS評価＝満足度80+ を取ると解禁）--------------------
+# identity（ライオン耳/尻尾・金橙マネ髪＋ピンクメッシュ・琥珀眼）は不変の核。
+# ここでは衣装・装飾・髪型アレンジ・オーラ「だけ」を段階的に盛る。
+# key は src/ui/assets.ts の EVO_INFIX と一致させること（客層→ルック）:
+#   glam=ビジュ / heavy=コア / pop=ライト / virtuoso=玄人
+# 出力名: {id}.v{version}.{evo}.{expression}.png（例 ryo.v2.glam.fired.png）
+evolutions:
+  glam:            # ビジュ層でS → 妖艶グラム
+    label_ja: "妖艶グラム"
+    segment: visual
+    look:
+      - "glamorous magenta sequined corset dress with sparkling gold trim"
+      - "styled glossy mane with a glittering star hairpin, bold stage makeup and pink eyeshadow"
+      - "gemstone choker and dangling earrings, elegant heeled boots"
+    aura: "shimmering pink sparkles and a glamorous spotlight glow"
+  heavy:           # コア層でS → 重鋼ヘヴィ
+    label_ja: "重鋼ヘヴィ"
+    segment: core
+    look:
+      - "battle-worn black leather with heavy spiked shoulder pauldrons and draped chains"
+      - "wilder darkened mane, spiked collar, fingerless studded gauntlets, red war-paint stripe"
+      - "torn band tee, bullet-belt, chunky steel-toe boots"
+    aura: "dark smoke and crimson ember glow"
+  pop:             # ライト層でS → 煌ポップ
+    label_ja: "煌ポップ"
+    segment: light
+    look:
+      - "bright colorful idol-pop outfit, pastel frilly layered skirt with ribbons"
+      - "cheerful mane with a big star hairclip and heart accessories, striped arm sleeves"
+      - "colorful high-top sneakers, glitter star-topped microphone"
+    aura: "rainbow sparkles with floating hearts and stars, bright cheerful glow"
+  virtuoso:        # 玄人層でS → 静玄ヴィルトゥオーゾ
+    label_ja: "静玄ヴィルトゥオーゾ"
+    segment: expert
+    look:
+      - "refined dark-elegant tailored coat with silver filigree embroidery"
+      - "sleek smoothed mane with deep-purple accents, a single silver earring, poised composed stance"
+      - "minimalist black waistcoat and slim trousers, polished shoes"
+    aura: "a subtle deep-purple glow and refined drifting particles"
+
 negatives:
   - "furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body"

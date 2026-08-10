@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "prompts": "node scripts/build-prompts.mjs"
+    "prompts": "node scripts/build-prompts.mjs",
+    "art:risa-evo": "node scripts/build-risa-evolution.mjs"
   },
   "devDependencies": {
     "typescript": "^5.5.4",

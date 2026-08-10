@@ -20,22 +20,34 @@ const charFiles = readdirSync(dnaDir)
   .filter((f) => f.endsWith(".yaml") && !f.startsWith("_"))
   .sort();
 
-/** Compose the positive + negative prompt for one expression. */
-function compose(char, mood) {
+/** Compose the positive + negative prompt for one expression.
+ *  Pass an `evo` object to swap the base outfit for that evolution's `look`
+ *  and append its `aura` — identity/props/part stay fixed (the constant core). */
+function compose(char, mood, evo = null) {
   const positive = [
     ...style.style,
     ...char.identity,
-    ...char.outfit,
+    ...(evo ? evo.look : char.outfit),
     ...(char.props ?? []),
     `${char.part} of a metal band`,
     char.personality_vibe,
     char.expressions[mood],
+    ...(evo?.aura ? [evo.aura] : []),
     ...style.quality,
   ]
     .filter(Boolean)
     .join(", ");
   const negative = [...style.negatives_global, ...(char.negatives ?? [])].join(", ");
   return { positive, negative };
+}
+
+/** Output filename, with an optional evolution infix
+ *  (`ryo.v2.glam.fired.png`). Base art has no infix (`ryo.v2.fired.png`). */
+function outName(char, mood, evoKey = "") {
+  return style.output.naming
+    .replace("{id}", char.id.toLowerCase())
+    .replace("{version}", char.version)
+    .replace("{expression}", evoKey ? `${evoKey}.${mood}` : mood);
 }
 
 let md = "# 生成プロンプト（dna/ から自動生成）\n\n";
@@ -53,16 +65,36 @@ for (const file of charFiles) {
   };
   md += `## ${char.id}（${char.display_name} / ${char.part}） v${char.version}\n`;
   md += `- model: ${char.generation?.model || "(未設定)"} ／ seed: ${char.generation?.seed ?? "(未設定)"}\n\n`;
-  for (const mood of Object.keys(char.expressions)) {
+  const moods = Object.keys(char.expressions);
+  for (const mood of moods) {
     const { positive, negative } = compose(char, mood);
-    const outName = style.output.naming
-      .replace("{id}", char.id.toLowerCase())
-      .replace("{version}", char.version)
-      .replace("{expression}", mood);
-    out[char.id].expressions[mood] = { file: outName, positive, negative };
-    md += `### ${mood} → \`${outName}\`\n`;
+    const name = outName(char, mood);
+    out[char.id].expressions[mood] = { file: name, positive, negative };
+    md += `### ${mood} → \`${name}\`\n`;
     md += "**prompt**\n```text\n" + positive + "\n```\n";
     md += "**negative**\n```text\n" + negative + "\n```\n\n";
+  }
+
+  // Appearance evolutions (optional): one look per unlocked audience layer,
+  // reusing the same expression set on the fixed identity core.
+  if (char.evolutions) {
+    out[char.id].evolutions = {};
+    for (const [key, evo] of Object.entries(char.evolutions)) {
+      out[char.id].evolutions[key] = {
+        label_ja: evo.label_ja,
+        segment: evo.segment,
+        expressions: {},
+      };
+      md += `### 🔥 進化: ${key}【${evo.label_ja ?? key}】（${evo.segment ?? "?"}層でS）\n\n`;
+      for (const mood of moods) {
+        const { positive, negative } = compose(char, mood, evo);
+        const name = outName(char, mood, key);
+        out[char.id].evolutions[key].expressions[mood] = { file: name, positive, negative };
+        md += `#### ${key}.${mood} → \`${name}\`\n`;
+        md += "**prompt**\n```text\n" + positive + "\n```\n";
+        md += "**negative**\n```text\n" + negative + "\n```\n\n";
+      }
+    }
   }
 }
 

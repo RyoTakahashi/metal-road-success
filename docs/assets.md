@@ -63,6 +63,14 @@ dna/
 `dna/ryo.yaml` の identity/outfit/props/expressions が、共通styleと連結されて
 `ryo.v1.fired.png` 用のプロンプト1本に組み上がる。全文は `dna/prompts.generated.md` を参照。
 
+### 見た目の進化アート（客層S評価で解禁）
+`dna/*.yaml` に任意の `evolutions` ブロックを持たせると、**identityの核を固定したまま**衣装・装飾・オーラだけを差し替えた進化ルックのプロンプトが生成される。keyは `src/ui/assets.ts` の `EVO_INFIX`（`glam`=ビジュ / `heavy`=コア / `pop`=ライト / `virtuoso`=玄人）と一致させる。
+
+- 出力名は `{id}.v{version}.{evo}.{expression}.png`（例 `ryo.v2.glam.fired.png`）。
+- RISA（artKey `RYO`）に4進化を定義済み。プロンプトは `npm run prompts` で再生成。
+- **試作プレビュー**: `npm run art:risa-evo` で 4進化のプレースホルダSVG（`public/assets/chars/evolutions/ryo.v2.{evo}.svg`）とビューア `public/risa-evolution.html` を生成。`npm run dev` 後 `/risa-evolution.html` で確認できる。
+- 本番PNGが揃ったら `assets.ts` の `EVO_ART_READY` を `true` にすると、ゲーム内スプライトが現在の進化に追従する。
+
 ---
 
 ## AI生成プロンプト雛形（手動で書く場合の参考）
