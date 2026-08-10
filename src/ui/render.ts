@@ -171,7 +171,7 @@ function staffRow(role: StaffRole, intimacy: number, cut: number): string {
     </div>`;
 }
 
-const EVO_NAME: Record<string, string> = { visual: "妖艶グラム", core: "重鋼ヘヴィ", light: "煌ポップ", expert: "静玄" };
+const EVO_NAME: Record<string, string> = { visual: "幽艶ゴシック", core: "鋼鉄ハードロック", light: "紅黒カワメタ", expert: "戦鬼デスメタル" };
 
 function evolutionRow(state: GameState): string {
   const chips = SEGMENTS.filter((s) => s in EVO_INFIX)

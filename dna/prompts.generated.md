@@ -176,168 +176,168 @@ realistic photo, 3d render, text, watermark, signature, logo, cropped, out of fr
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-### 🔥 進化: glam【妖艶グラム】（visual層でS）
+### 🔥 進化: goth【幽艶ゴシック】（visual層でS）
 
-#### glam.normal → `ryo.v2.glam.normal.png`
+#### goth.normal → `ryo.v2.goth.normal.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, glamorous magenta sequined corset dress with sparkling gold trim, styled glossy mane with a glittering star hairpin, bold stage makeup and pink eyeshadow, gemstone choker and dangling earrings, elegant heeled boots, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, calm confident grin, shimmering pink sparkles and a glamorous spotlight glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, elegant black gothic corset gown with dark crimson underskirt and lace trim, long lace sleeves, black rose choker and a small ornate silver tiara, dramatic dark smoky eye makeup, pale complexion, mournful beautiful aura, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, calm confident grin, moody violet-and-black stage haze with drifting dark rose petals and faint candlelight, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### glam.fired → `ryo.v2.glam.fired.png`
+#### goth.fired → `ryo.v2.goth.fired.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, glamorous magenta sequined corset dress with sparkling gold trim, styled glossy mane with a glittering star hairpin, bold stage makeup and pink eyeshadow, gemstone choker and dangling earrings, elegant heeled boots, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, roaring into the mic, mouth wide open, fierce eyes, shimmering pink sparkles and a glamorous spotlight glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, elegant black gothic corset gown with dark crimson underskirt and lace trim, long lace sleeves, black rose choker and a small ornate silver tiara, dramatic dark smoky eye makeup, pale complexion, mournful beautiful aura, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, roaring into the mic, mouth wide open, fierce eyes, moody violet-and-black stage haze with drifting dark rose petals and faint candlelight, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### glam.happy → `ryo.v2.glam.happy.png`
+#### goth.happy → `ryo.v2.goth.happy.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, glamorous magenta sequined corset dress with sparkling gold trim, styled glossy mane with a glittering star hairpin, bold stage makeup and pink eyeshadow, gemstone choker and dangling earrings, elegant heeled boots, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, big triumphant grin, sparkling eyes, shimmering pink sparkles and a glamorous spotlight glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, elegant black gothic corset gown with dark crimson underskirt and lace trim, long lace sleeves, black rose choker and a small ornate silver tiara, dramatic dark smoky eye makeup, pale complexion, mournful beautiful aura, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, big triumphant grin, sparkling eyes, moody violet-and-black stage haze with drifting dark rose petals and faint candlelight, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### glam.sad → `ryo.v2.glam.sad.png`
+#### goth.sad → `ryo.v2.goth.sad.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, glamorous magenta sequined corset dress with sparkling gold trim, styled glossy mane with a glittering star hairpin, bold stage makeup and pink eyeshadow, gemstone choker and dangling earrings, elegant heeled boots, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, frustrated downcast look, lion ears drooping, shimmering pink sparkles and a glamorous spotlight glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, elegant black gothic corset gown with dark crimson underskirt and lace trim, long lace sleeves, black rose choker and a small ornate silver tiara, dramatic dark smoky eye makeup, pale complexion, mournful beautiful aura, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, frustrated downcast look, lion ears drooping, moody violet-and-black stage haze with drifting dark rose petals and faint candlelight, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-### 🔥 進化: heavy【重鋼ヘヴィ】（core層でS）
+### 🔥 進化: hard【鋼鉄ハードロック】（core層でS）
 
-#### heavy.normal → `ryo.v2.heavy.normal.png`
+#### hard.normal → `ryo.v2.hard.normal.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, battle-worn black leather with heavy spiked shoulder pauldrons and draped chains, wilder darkened mane, spiked collar, fingerless studded gauntlets, red war-paint stripe, torn band tee, bullet-belt, chunky steel-toe boots, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, calm confident grin, dark smoke and crimson ember glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, open black leather biker jacket over a band tee, studded belt and bullet-belt, blue denim, silver-studded wristbands and fingerless gloves, chunky boots, confident planted power stance, roaring energy, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, calm confident grin, warm amber stage-light glow with sparks and a hint of pyro flame, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### heavy.fired → `ryo.v2.heavy.fired.png`
+#### hard.fired → `ryo.v2.hard.fired.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, battle-worn black leather with heavy spiked shoulder pauldrons and draped chains, wilder darkened mane, spiked collar, fingerless studded gauntlets, red war-paint stripe, torn band tee, bullet-belt, chunky steel-toe boots, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, roaring into the mic, mouth wide open, fierce eyes, dark smoke and crimson ember glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, open black leather biker jacket over a band tee, studded belt and bullet-belt, blue denim, silver-studded wristbands and fingerless gloves, chunky boots, confident planted power stance, roaring energy, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, roaring into the mic, mouth wide open, fierce eyes, warm amber stage-light glow with sparks and a hint of pyro flame, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### heavy.happy → `ryo.v2.heavy.happy.png`
+#### hard.happy → `ryo.v2.hard.happy.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, battle-worn black leather with heavy spiked shoulder pauldrons and draped chains, wilder darkened mane, spiked collar, fingerless studded gauntlets, red war-paint stripe, torn band tee, bullet-belt, chunky steel-toe boots, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, big triumphant grin, sparkling eyes, dark smoke and crimson ember glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, open black leather biker jacket over a band tee, studded belt and bullet-belt, blue denim, silver-studded wristbands and fingerless gloves, chunky boots, confident planted power stance, roaring energy, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, big triumphant grin, sparkling eyes, warm amber stage-light glow with sparks and a hint of pyro flame, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### heavy.sad → `ryo.v2.heavy.sad.png`
+#### hard.sad → `ryo.v2.hard.sad.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, battle-worn black leather with heavy spiked shoulder pauldrons and draped chains, wilder darkened mane, spiked collar, fingerless studded gauntlets, red war-paint stripe, torn band tee, bullet-belt, chunky steel-toe boots, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, frustrated downcast look, lion ears drooping, dark smoke and crimson ember glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, open black leather biker jacket over a band tee, studded belt and bullet-belt, blue denim, silver-studded wristbands and fingerless gloves, chunky boots, confident planted power stance, roaring energy, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, frustrated downcast look, lion ears drooping, warm amber stage-light glow with sparks and a hint of pyro flame, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-### 🔥 進化: pop【煌ポップ】（light層でS）
+### 🔥 進化: kawaii【紅黒カワメタ】（light層でS）
 
-#### pop.normal → `ryo.v2.pop.normal.png`
+#### kawaii.normal → `ryo.v2.kawaii.normal.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, bright colorful idol-pop outfit, pastel frilly layered skirt with ribbons, cheerful mane with a big star hairclip and heart accessories, striped arm sleeves, colorful high-top sneakers, glitter star-topped microphone, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, calm confident grin, rainbow sparkles with floating hearts and stars, bright cheerful glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, black-and-red frilly gothic-idol stage dress, red tutu skirt over black lace, corset bodice with cross lacing, black-and-red striped arm warmers, red ribbons, playful fierce pose, energetic cute-yet-metal attitude, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, calm confident grin, red-and-black sparkles with dark hearts, small stars and a burst of confetti, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### pop.fired → `ryo.v2.pop.fired.png`
+#### kawaii.fired → `ryo.v2.kawaii.fired.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, bright colorful idol-pop outfit, pastel frilly layered skirt with ribbons, cheerful mane with a big star hairclip and heart accessories, striped arm sleeves, colorful high-top sneakers, glitter star-topped microphone, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, roaring into the mic, mouth wide open, fierce eyes, rainbow sparkles with floating hearts and stars, bright cheerful glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, black-and-red frilly gothic-idol stage dress, red tutu skirt over black lace, corset bodice with cross lacing, black-and-red striped arm warmers, red ribbons, playful fierce pose, energetic cute-yet-metal attitude, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, roaring into the mic, mouth wide open, fierce eyes, red-and-black sparkles with dark hearts, small stars and a burst of confetti, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### pop.happy → `ryo.v2.pop.happy.png`
+#### kawaii.happy → `ryo.v2.kawaii.happy.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, bright colorful idol-pop outfit, pastel frilly layered skirt with ribbons, cheerful mane with a big star hairclip and heart accessories, striped arm sleeves, colorful high-top sneakers, glitter star-topped microphone, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, big triumphant grin, sparkling eyes, rainbow sparkles with floating hearts and stars, bright cheerful glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, black-and-red frilly gothic-idol stage dress, red tutu skirt over black lace, corset bodice with cross lacing, black-and-red striped arm warmers, red ribbons, playful fierce pose, energetic cute-yet-metal attitude, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, big triumphant grin, sparkling eyes, red-and-black sparkles with dark hearts, small stars and a burst of confetti, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### pop.sad → `ryo.v2.pop.sad.png`
+#### kawaii.sad → `ryo.v2.kawaii.sad.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, bright colorful idol-pop outfit, pastel frilly layered skirt with ribbons, cheerful mane with a big star hairclip and heart accessories, striped arm sleeves, colorful high-top sneakers, glitter star-topped microphone, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, frustrated downcast look, lion ears drooping, rainbow sparkles with floating hearts and stars, bright cheerful glow, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, black-and-red frilly gothic-idol stage dress, red tutu skirt over black lace, corset bodice with cross lacing, black-and-red striped arm warmers, red ribbons, playful fierce pose, energetic cute-yet-metal attitude, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, frustrated downcast look, lion ears drooping, red-and-black sparkles with dark hearts, small stars and a burst of confetti, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-### 🔥 進化: virtuoso【静玄ヴィルトゥオーゾ】（expert層でS）
+### 🔥 進化: death【戦鬼デスメタル】（expert層でS）
 
-#### virtuoso.normal → `ryo.v2.virtuoso.normal.png`
+#### death.normal → `ryo.v2.death.normal.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, refined dark-elegant tailored coat with silver filigree embroidery, sleek smoothed mane with deep-purple accents, a single silver earring, poised composed stance, minimalist black waistcoat and slim trousers, polished shoes, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, calm confident grin, a subtle deep-purple glow and refined drifting particles, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, black-and-white corpse-paint face makeup, fierce snarl, black battle armor with heavy spiked shoulder pauldrons, spiked gauntlets and bracers, bullet-belt, draped chains, tattered war garb, menacing stance, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, calm confident grin, grim dark smoke with blood-red glow, jagged embers and an ominous backlight, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### virtuoso.fired → `ryo.v2.virtuoso.fired.png`
+#### death.fired → `ryo.v2.death.fired.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, refined dark-elegant tailored coat with silver filigree embroidery, sleek smoothed mane with deep-purple accents, a single silver earring, poised composed stance, minimalist black waistcoat and slim trousers, polished shoes, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, roaring into the mic, mouth wide open, fierce eyes, a subtle deep-purple glow and refined drifting particles, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, black-and-white corpse-paint face makeup, fierce snarl, black battle armor with heavy spiked shoulder pauldrons, spiked gauntlets and bracers, bullet-belt, draped chains, tattered war garb, menacing stance, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, roaring into the mic, mouth wide open, fierce eyes, grim dark smoke with blood-red glow, jagged embers and an ominous backlight, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### virtuoso.happy → `ryo.v2.virtuoso.happy.png`
+#### death.happy → `ryo.v2.death.happy.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, refined dark-elegant tailored coat with silver filigree embroidery, sleek smoothed mane with deep-purple accents, a single silver earring, poised composed stance, minimalist black waistcoat and slim trousers, polished shoes, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, big triumphant grin, sparkling eyes, a subtle deep-purple glow and refined drifting particles, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, black-and-white corpse-paint face makeup, fierce snarl, black battle armor with heavy spiked shoulder pauldrons, spiked gauntlets and bracers, bullet-belt, draped chains, tattered war garb, menacing stance, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, big triumphant grin, sparkling eyes, grim dark smoke with blood-red glow, jagged embers and an ominous backlight, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text
 realistic photo, 3d render, text, watermark, signature, logo, cropped, out of frame, multiple views, extra limbs, extra fingers, deformed hands, blurry, low quality, jpeg artifacts, furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body
 ```
 
-#### virtuoso.sad → `ryo.v2.virtuoso.sad.png`
+#### death.sad → `ryo.v2.death.sad.png`
 **prompt**
 ```text
-2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, refined dark-elegant tailored coat with silver filigree embroidery, sleek smoothed mane with deep-purple accents, a single silver earring, poised composed stance, minimalist black waistcoat and slim trousers, polished shoes, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, frustrated downcast look, lion ears drooping, a subtle deep-purple glow and refined drifting particles, high quality, clean lineart, consistent character design
+2.5-head chibi anime character, full body standing pose, front view, feet at bottom edge, flat color cel shading, thick clean outline, transparent background, centered composition, single character, video game character sprite, cute confident anime girl with a completely normal human body and human skin legs, lion ears on top of her head and a slim tufted lion tail (only ears/hair/tail are animal), voluminous golden-orange mane-like hair with a single hot-pink streak, big amber eyes, black-and-white corpse-paint face makeup, fierce snarl, black battle armor with heavy spiked shoulder pauldrons, spiked gauntlets and bracers, bullet-belt, draped chains, tattered war garb, menacing stance, holding a vocal microphone, Vo of a metal band, charismatic little metal vocalist girl, cocky confident grin, frustrated downcast look, lion ears drooping, grim dark smoke with blood-red glow, jagged embers and an ominous backlight, high quality, clean lineart, consistent character design
 ```
 **negative**
 ```text

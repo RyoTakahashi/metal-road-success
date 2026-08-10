@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="560" viewBox="0 0 360 560">
+  <!-- RISA (artKey RYO) — evolution: kawaii 【紅黒カワメタ】 / ライト層でS評価 -->
+
+    <defs><radialGradient id="kawA" cx="50%" cy="46%" r="62%">
+      <stop offset="0%" stop-color="#ff466e" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#ff466e" stop-opacity="0"/>
+    </radialGradient></defs>
+    <rect width="360" height="560" fill="url(#kawA)"/>
+    <path transform="translate(62 110) scale(7)" d="M0 -1 L0.29 -0.31 L1 -0.31 L0.42 0.12 L0.62 0.81 L0 0.38 L-0.62 0.81 L-0.42 0.12 L-1 -0.31 L-0.29 -0.31 Z" fill="#ffffff"/><path transform="translate(300 140) scale(8)" d="M0 -1 L0.29 -0.31 L1 -0.31 L0.42 0.12 L0.62 0.81 L0 0.38 L-0.62 0.81 L-0.42 0.12 L-1 -0.31 L-0.29 -0.31 Z" fill="#d81f3a"/><path transform="translate(48 290) scale(6)" d="M0 -1 L0.29 -0.31 L1 -0.31 L0.42 0.12 L0.62 0.81 L0 0.38 L-0.62 0.81 L-0.42 0.12 L-1 -0.31 L-0.29 -0.31 Z" fill="#ffffff"/><path transform="translate(314 300) scale(7)" d="M0 -1 L0.29 -0.31 L1 -0.31 L0.42 0.12 L0.62 0.81 L0 0.38 L-0.62 0.81 L-0.42 0.12 L-1 -0.31 L-0.29 -0.31 Z" fill="#d81f3a"/><path transform="translate(300 440) scale(6)" d="M0 -1 L0.29 -0.31 L1 -0.31 L0.42 0.12 L0.62 0.81 L0 0.38 L-0.62 0.81 L-0.42 0.12 L-1 -0.31 L-0.29 -0.31 Z" fill="#ffffff"/><path transform="translate(50 440) scale(6)" d="M0 -1 L0.29 -0.31 L1 -0.31 L0.42 0.12 L0.62 0.81 L0 0.38 L-0.62 0.81 L-0.42 0.12 L-1 -0.31 L-0.29 -0.31 Z" fill="#d81f3a"/>
+    <path transform="translate(92 70) scale(4)" d="M0 6 C-9 -2 -8 -10 -3 -10 C0 -10 0 -6 0 -6 C0 -6 0 -10 3 -10 C8 -10 9 -2 0 6 Z" fill="#181018"/><path transform="translate(280 80) scale(4)" d="M0 6 C-9 -2 -8 -10 -3 -10 C0 -10 0 -6 0 -6 C0 -6 0 -10 3 -10 C8 -10 9 -2 0 6 Z" fill="#d81f3a"/><path transform="translate(70 200) scale(3.5)" d="M0 6 C-9 -2 -8 -10 -3 -10 C0 -10 0 -6 0 -6 C0 -6 0 -10 3 -10 C8 -10 9 -2 0 6 Z" fill="#181018"/><path transform="translate(306 230) scale(4)" d="M0 6 C-9 -2 -8 -10 -3 -10 C0 -10 0 -6 0 -6 C0 -6 0 -10 3 -10 C8 -10 9 -2 0 6 Z" fill="#d81f3a"/>
+    <g><rect x="110" y="150" width="7" height="12" rx="2" transform="rotate(24 110 150)" fill="#ffd257"/><rect x="250" y="120" width="7" height="12" rx="2" transform="rotate(24 250 120)" fill="#5fd1e6"/><rect x="130" y="430" width="7" height="12" rx="2" transform="rotate(24 130 430)" fill="#d81f3a"/><rect x="240" y="420" width="7" height="12" rx="2" transform="rotate(24 240 420)" fill="#181018"/></g>
+  <g stroke="#1a1320" stroke-width="3" stroke-linejoin="round">
+    <path d="M250 430 Q322 430 320 356 Q318 322 296 322 Q312 336 306 360 Q300 396 250 402 Z" fill="#d98a26"/>
+    <path d="M300 316 q22 -6 26 18 q4 24 -18 30 q14 -18 2 -34 q-6 -10 -10 -14 z" fill="#d81f3a"/>
+  </g>
+  <g stroke="#1a1320" stroke-width="3" stroke-linejoin="round">
+    <!-- ears -->
+    <path d="M96 118 q-16 -54 26 -60 q30 -2 30 34 z" fill="#f0a63a"/>
+    <path d="M118 96 q-6 -26 16 -30 q14 0 12 20 z" fill="#caa06a" stroke="none"/>
+    <path d="M264 118 q16 -54 -26 -60 q-30 -2 -30 34 z" fill="#f0a63a"/>
+    <path d="M242 96 q6 -26 -16 -30 q-14 0 -12 20 z" fill="#caa06a" stroke="none"/>
+    <!-- mane blob -->
+    <path d="M84 190 Q68 92 132 74 Q150 44 180 58 Q210 44 228 74 Q292 92 276 190
+             Q300 248 270 292 L256 250 L246 292 L236 246 L224 292 L214 248 L202 292
+             L192 246 L180 292 L168 246 L158 292 L146 248 L136 292 L126 246 L116 292
+             L104 250 L90 292 Q60 248 84 190 Z" fill="#f0a63a"/>
+    <!-- inner mane shading -->
+    <path d="M110 176 Q104 250 118 288 L128 250 Q120 210 128 176 Z" fill="#d98a26" stroke="none" opacity="0.55"/>
+    <path d="M250 176 Q256 250 242 288 L232 250 Q240 210 232 176 Z" fill="#d98a26" stroke="none" opacity="0.55"/>
+    <!-- signature pink streak (right side) -->
+    <path d="M236 120 Q262 150 250 250 L228 250 Q236 160 216 128 Z" fill="#ff4f8b" stroke="none"/>
+  </g>
+  <g stroke="#1a1320" stroke-width="3" stroke-linejoin="round">
+    
+  <path d="M150 396 L142 500 L172 500 L178 402 Z" fill="#ffe0c0"/>
+  <path d="M212 396 L200 402 L192 500 L222 500 L226 396 Z" fill="#ffe0c0"/>
+    <!-- black-and-red striped thigh socks -->
+    <g stroke="none"><rect x="142" y="426" width="34" height="7" fill="#181018"/><rect x="142" y="440" width="34" height="7" fill="#d81f3a"/><rect x="142" y="454" width="34" height="7" fill="#181018"/><rect x="142" y="468" width="34" height="7" fill="#d81f3a"/><rect x="142" y="482" width="34" height="7" fill="#181018"/><rect x="192" y="426" width="34" height="7" fill="#181018"/><rect x="192" y="440" width="34" height="7" fill="#d81f3a"/><rect x="192" y="454" width="34" height="7" fill="#181018"/><rect x="192" y="468" width="34" height="7" fill="#d81f3a"/><rect x="192" y="482" width="34" height="7" fill="#181018"/></g>
+    <!-- red mary-jane boots -->
+    <path d="M138 500 L136 528 L178 528 L176 500 Z" fill="#d81f3a"/>
+    <path d="M190 500 L190 528 L228 528 L226 500 Z" fill="#d81f3a"/>
+    <rect x="134" y="522" width="46" height="7" rx="3" fill="#101010"/>
+    <rect x="188" y="522" width="42" height="7" rx="3" fill="#101010"/>
+    <!-- black lace underskirt + red tutu with scalloped hem -->
+    <path d="M124 336 Q181 318 238 336 L254 404 Q181 388 108 404 Z" fill="#161018"/>
+    <path d="M120 336 Q181 320 242 336 L248 372 q-16 18 -30 2 q-14 18 -30 2 q-14 18 -30 2 q-14 18 -30 2 q-14 16 -30 0 z" fill="#d81f3a"/>
+    <path d="M118 366 q15 16 30 2 q15 16 30 2 q15 16 30 2 q15 16 30 2" stroke="#fff" stroke-width="3" fill="none" opacity="0.85"/>
+    <!-- corset bodice: black with red center panel + white cross lacing -->
+    <path d="M134 250 Q181 236 228 250 L236 340 L126 340 Z" fill="#171018"/>
+    <path d="M158 250 Q181 244 204 250 L204 336 L158 336 Z" fill="#d81f3a"/>
+    <g stroke="#fff" stroke-width="1.8" opacity="0.9">
+      <path d="M166 266 L196 274 M196 266 L166 274" fill="none"/><path d="M166 282 L196 290 M196 282 L166 290" fill="none"/><path d="M166 298 L196 306 M196 298 L166 306" fill="none"/><path d="M166 314 L196 322 M196 314 L166 322" fill="none"/>
+    </g>
+    <!-- red ribbon bow -->
+    <path d="M181 258 l-18 -11 l0 22 z" fill="#ff3d68"/>
+    <path d="M181 258 l18 -11 l0 22 z" fill="#ff3d68"/>
+    <circle cx="181" cy="258" r="6" fill="#fff"/>
+    <!-- black-red striped arm warmers -->
+    <path d="M132 256 L108 336 L130 344 L152 272 Z" fill="#171018"/>
+    <path d="M228 256 L252 336 L230 344 L210 272 Z" fill="#171018"/>
+    <g stroke="#d81f3a" stroke-width="4">
+      <path d="M118 300 l16 4 M114 318 l16 4" fill="none"/>
+      <path d="M244 300 l-16 4 M248 318 l-16 4" fill="none"/>
+    </g>
+    <circle cx="120" cy="342" r="13" fill="#ffe0c0"/>
+    <circle cx="240" cy="342" r="13" fill="#ffe0c0"/>
+  </g>
+  <g stroke="#1a1320" stroke-width="3" stroke-linejoin="round">
+    <rect x="166" y="222" width="30" height="30" rx="8" fill="#f4c79a"/>
+    <circle cx="181" cy="168" r="72" fill="#ffe0c0"/>
+  </g>
+  
+  <g stroke="none">
+    <!-- eyes -->
+    <ellipse cx="153" cy="176" rx="12" ry="16" fill="#fff"/>
+    <ellipse cx="209" cy="176" rx="12" ry="16" fill="#fff"/>
+    <circle cx="154" cy="178" r="9" fill="#c9781f"/>
+    <circle cx="210" cy="178" r="9" fill="#c9781f"/>
+    <circle cx="151" cy="174" r="3" fill="#fff"/>
+    <circle cx="207" cy="174" r="3" fill="#fff"/>
+    <!-- brows + nose + confident grin -->
+    <path d="M140 158 Q154 150 168 158" stroke="#1a1320" stroke-width="3" fill="none"/>
+    <path d="M194 158 Q208 150 222 158" stroke="#1a1320" stroke-width="3" fill="none"/>
+    <path d="M176 194 L186 194 L181 201 Z" fill="#f4c79a"/>
+    <path d="M162 208 Q181 224 200 208" stroke="#1a1320" stroke-width="3" fill="none"/>
+  </g>
+  <!-- front mane bangs -->
+  <g stroke="#1a1320" stroke-width="3" stroke-linejoin="round">
+    <path d="M112 150 Q120 96 181 92 Q242 96 250 150
+             L232 128 L224 156 L206 122 L196 154 L181 118 L166 154 L156 122 L138 156 L130 128 Z"
+          fill="#f0a63a"/>
+    <path d="M226 112 Q246 140 236 172 L220 150 Q230 130 214 116 Z" fill="#ff4f8b" stroke="none"/>
+  </g><path transform="translate(150 114) scale(12)" d="M0 -1 L0.29 -0.31 L1 -0.31 L0.42 0.12 L0.62 0.81 L0 0.38 L-0.62 0.81 L-0.42 0.12 L-1 -0.31 L-0.29 -0.31 Z" fill="#d81f3a"/><path transform="translate(150 114) scale(6)" d="M0 -1 L0.29 -0.31 L1 -0.31 L0.42 0.12 L0.62 0.81 L0 0.38 L-0.62 0.81 L-0.42 0.12 L-1 -0.31 L-0.29 -0.31 Z" fill="#fff"/>
+  <g stroke="#1a1320" stroke-width="3" stroke-linejoin="round">
+    <line x1="118" y1="300" x2="150" y2="238" stroke="#181018" stroke-width="9"/>
+    <circle cx="154" cy="230" r="16" fill="#d81f3a"/>
+    <circle cx="118" cy="300" r="15" fill="#ffe0c0"/>
+  </g>
+</svg>

@@ -930,10 +930,10 @@ export function buildAfterPartyScenes(state: GameState, r: LiveResult, rng: () =
 
 /** Appearance evolution per audience segment (single-layer, most recent wins). */
 const EVO_THEME: Record<Segment, { name: string; desc: string }> = {
-  visual: { name: "妖艶グラム", desc: "きらびやかな装飾とメイクで、艶やかに咲き誇る姿へ。" },
-  core: { name: "重鋼ヘヴィ", desc: "鋲とレザーを纏い、歴戦の風格をまとった無骨な姿へ。" },
-  light: { name: "煌ポップ", desc: "明るくカラフルに、誰もが手を伸ばしたくなる華やかな姿へ。" },
-  expert: { name: "静玄ヴィルトゥオーゾ", desc: "研ぎ澄まされたダークエレガンス。技巧派の洗練された姿へ。" },
+  visual: { name: "幽艶ゴシック", desc: "漆黒のレースと深紅を纏い、荘厳で物憂げな美へ。ゴシック/シンフォニックメタルの妖艶な姿へ。" },
+  core: { name: "鋼鉄ハードロック", desc: "革とスタッズ、王道の轟音。正統派ハードロック/ヘヴィメタルの風格ある姿へ。" },
+  light: { name: "紅黒カワメタ", desc: "黒と紅のフリルで可憐に暴れる。キュート×激烈のカワイイメタルの姿へ。" },
+  expert: { name: "戦鬼デスメタル", desc: "コープスペイントと鋲、戦装束。ウォー/デスメタルの獰猛な姿へ。" },
 };
 
 function buildEvolutionScenes(seg: Segment): Scene[] {

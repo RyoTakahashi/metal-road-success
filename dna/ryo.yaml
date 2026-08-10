@@ -41,43 +41,48 @@ expressions:
 
 # --- 見た目の進化（客層でS評価＝満足度80+ を取ると解禁）--------------------
 # identity（ライオン耳/尻尾・金橙マネ髪＋ピンクメッシュ・琥珀眼）は不変の核。
-# ここでは衣装・装飾・髪型アレンジ・オーラ「だけ」を段階的に盛る。
+# ここでは衣装・装飾・髪型アレンジ・オーラ「だけ」を盛る。核はメタルバンドのVo。
+# 各ルックは実在のメタル・サブジャンルに寄せる（genre 参照）。
 # key は src/ui/assets.ts の EVO_INFIX と一致させること（客層→ルック）:
-#   glam=ビジュ / heavy=コア / pop=ライト / virtuoso=玄人
-# 出力名: {id}.v{version}.{evo}.{expression}.png（例 ryo.v2.glam.fired.png）
+#   goth=ビジュ / hard=コア / kawaii=ライト / death=玄人
+# 出力名: {id}.v{version}.{evo}.{expression}.png（例 ryo.v2.goth.fired.png）
 evolutions:
-  glam:            # ビジュ層でS → 妖艶グラム
-    label_ja: "妖艶グラム"
+  goth:            # ビジュ層でS → 幽艶ゴシック（Evanescence系）
+    label_ja: "幽艶ゴシック"
     segment: visual
+    genre: "gothic / symphonic metal (Evanescence-inspired)"
     look:
-      - "glamorous magenta sequined corset dress with sparkling gold trim"
-      - "styled glossy mane with a glittering star hairpin, bold stage makeup and pink eyeshadow"
-      - "gemstone choker and dangling earrings, elegant heeled boots"
-    aura: "shimmering pink sparkles and a glamorous spotlight glow"
-  heavy:           # コア層でS → 重鋼ヘヴィ
-    label_ja: "重鋼ヘヴィ"
+      - "elegant black gothic corset gown with dark crimson underskirt and lace trim"
+      - "long lace sleeves, black rose choker and a small ornate silver tiara"
+      - "dramatic dark smoky eye makeup, pale complexion, mournful beautiful aura"
+    aura: "moody violet-and-black stage haze with drifting dark rose petals and faint candlelight"
+  hard:            # コア層でS → 鋼鉄ハードロック（正統派）
+    label_ja: "鋼鉄ハードロック"
     segment: core
+    genre: "classic heavy metal / hard rock (Judas Priest / Iron Maiden vibe)"
     look:
-      - "battle-worn black leather with heavy spiked shoulder pauldrons and draped chains"
-      - "wilder darkened mane, spiked collar, fingerless studded gauntlets, red war-paint stripe"
-      - "torn band tee, bullet-belt, chunky steel-toe boots"
-    aura: "dark smoke and crimson ember glow"
-  pop:             # ライト層でS → 煌ポップ
-    label_ja: "煌ポップ"
+      - "open black leather biker jacket over a band tee, studded belt and bullet-belt"
+      - "blue denim, silver-studded wristbands and fingerless gloves, chunky boots"
+      - "confident planted power stance, roaring energy"
+    aura: "warm amber stage-light glow with sparks and a hint of pyro flame"
+  kawaii:          # ライト層でS → 紅黒カワメタ（BABYMETAL系）
+    label_ja: "紅黒カワメタ"
     segment: light
+    genre: "kawaii metal / idol metal (BABYMETAL-inspired), cute but heavy"
     look:
-      - "bright colorful idol-pop outfit, pastel frilly layered skirt with ribbons"
-      - "cheerful mane with a big star hairclip and heart accessories, striped arm sleeves"
-      - "colorful high-top sneakers, glitter star-topped microphone"
-    aura: "rainbow sparkles with floating hearts and stars, bright cheerful glow"
-  virtuoso:        # 玄人層でS → 静玄ヴィルトゥオーゾ
-    label_ja: "静玄ヴィルトゥオーゾ"
+      - "black-and-red frilly gothic-idol stage dress, red tutu skirt over black lace"
+      - "corset bodice with cross lacing, black-and-red striped arm warmers, red ribbons"
+      - "playful fierce pose, energetic cute-yet-metal attitude"
+    aura: "red-and-black sparkles with dark hearts, small stars and a burst of confetti"
+  death:           # 玄人層でS → 戦鬼デスメタル（ウォー/デス）
+    label_ja: "戦鬼デスメタル"
     segment: expert
+    genre: "war metal / death metal, brutal and grim"
     look:
-      - "refined dark-elegant tailored coat with silver filigree embroidery"
-      - "sleek smoothed mane with deep-purple accents, a single silver earring, poised composed stance"
-      - "minimalist black waistcoat and slim trousers, polished shoes"
-    aura: "a subtle deep-purple glow and refined drifting particles"
+      - "black-and-white corpse-paint face makeup, fierce snarl"
+      - "black battle armor with heavy spiked shoulder pauldrons, spiked gauntlets and bracers"
+      - "bullet-belt, draped chains, tattered war garb, menacing stance"
+    aura: "grim dark smoke with blood-red glow, jagged embers and an ominous backlight"
 
 negatives:
   - "furry lion legs, animal paws, fur-covered body, animal lower body, full animal face, muzzle, masculine, adult tall body"

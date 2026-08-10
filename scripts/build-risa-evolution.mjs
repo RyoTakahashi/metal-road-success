@@ -6,8 +6,10 @@
 // preview each evolution look BEFORE the real per-evolution PNGs are generated.
 // The identity core — lion ears/tail, golden-orange mane + pink streak, amber
 // eyes, mic — is shared and held constant; only outfit / accessories / palette /
-// aura change per look. Mirrors dna/ryo.yaml `evolutions` and the game's
-// EVO_INFIX (glam=ビジュ / heavy=コア / pop=ライト / virtuoso=玄人).
+// aura change per look, each pinned to a real metal subgenre. Mirrors
+// dna/ryo.yaml `evolutions` and the game's EVO_INFIX:
+//   goth=ビジュ(Evanescence系) / hard=コア(正統派HR) /
+//   kawaii=ライト(BABYMETAL系) / death=玄人(ウォー/デス)
 //
 // Outputs:
 //   public/assets/chars/evolutions/ryo.v2.{evo}.svg   (4 reusable sprites)
@@ -108,125 +110,145 @@ const legsBare = () => `
   <path d="M150 396 L142 500 L172 500 L178 402 Z" fill="${SKIN}"/>
   <path d="M212 396 L200 402 L192 500 L222 500 L226 396 Z" fill="${SKIN}"/>`;
 
-// GLAM — 妖艶グラム: magenta sequin corset dress, gold trim, jewels, heels.
-function bodyGlam() {
+// GOTH — 幽艶ゴシック (Evanescence系): black lace gown, crimson underskirt, tiara.
+function bodyGoth() {
   return `
   <g stroke="${INK}" stroke-width="3" stroke-linejoin="round">
-    ${legsBare()}
-    <!-- heeled boots -->
-    <path d="M140 500 L138 528 L176 528 L176 500 Z" fill="#c9187a"/>
-    <path d="M190 500 L190 528 L228 528 L226 500 Z" fill="#c9187a"/>
-    <rect x="150" y="528" width="4" height="14" fill="${INK}"/>
-    <rect x="210" y="528" width="4" height="14" fill="${INK}"/>
-    <!-- corset dress -->
-    <path d="M130 250 Q181 232 232 250 L252 372 Q181 356 110 372 Z" fill="#d63a8f"/>
-    <path d="M132 300 Q181 288 230 300 L246 386 Q181 412 116 386 Z" fill="#b92a76"/>
-    <!-- gold trim + lacing -->
-    <path d="M130 250 Q181 232 232 250" stroke="#ffd257" stroke-width="5" fill="none"/>
-    <path d="M118 366 Q181 348 244 366" stroke="#ffd257" stroke-width="4" fill="none"/>
-    <line x1="181" y1="256" x2="181" y2="360" stroke="#ffd257" stroke-width="2"/>
-    <!-- arms + gloves -->
-    <path d="M132 256 L104 320 L128 330 L152 274 Z" fill="#e86bb0"/>
-    <path d="M230 256 L256 322 L232 332 L210 274 Z" fill="#e86bb0"/>
-    <circle cx="252" cy="330" r="14" fill="${SKIN}"/>
-    <!-- gemstone choker -->
-    <path d="M160 236 Q181 246 202 236" stroke="#ffd257" stroke-width="5" fill="none"/>
-    <path d="M181 240 l7 9 l-7 9 l-7 -9 z" fill="#ff9ed6" stroke="#ffd257" stroke-width="1.5"/>
+    <!-- dark stockings + heeled boots -->
+    <path d="M150 396 L144 500 L172 500 L178 402 Z" fill="#1a1526"/>
+    <path d="M212 396 L200 402 L192 500 L220 500 L226 396 Z" fill="#1a1526"/>
+    <path d="M140 500 L138 530 L176 530 L176 500 Z" fill="#0e0a16"/>
+    <path d="M190 500 L190 530 L228 530 L226 500 Z" fill="#0e0a16"/>
+    <rect x="150" y="530" width="4" height="14" fill="${INK}"/>
+    <rect x="210" y="530" width="4" height="14" fill="${INK}"/>
+    <!-- crimson underskirt then black overskirt with a center slit -->
+    <path d="M120 330 Q181 312 242 330 L268 478 Q181 458 94 478 Z" fill="#7a1030"/>
+    <path d="M120 330 Q150 320 174 322 L174 470 L94 478 Z" fill="#15111d"/>
+    <path d="M188 322 Q212 320 242 330 L268 478 L188 470 Z" fill="#15111d"/>
+    <path d="M120 330 Q181 314 242 330" stroke="#4a1730" stroke-width="3" fill="none"/>
+    <!-- corset bodice -->
+    <path d="M138 250 Q181 236 224 250 L234 340 L128 340 Z" fill="#0f0b16"/>
+    <path d="M152 256 Q181 248 210 256 L204 336 L158 336 Z" fill="#5a0c24"/>
+    <g stroke="#cfc8e6" stroke-width="1.6" opacity="0.85">
+      ${Array.from({length:4},(_,i)=>`<path d="M164 ${266+i*18} L198 ${276+i*18} M198 ${266+i*18} L164 ${276+i*18}" fill="none"/>`).join("")}
+    </g>
+    <!-- long lace sleeves -->
+    <path d="M136 256 L112 346 L136 352 L156 272 Z" fill="#15111d"/>
+    <path d="M226 256 L250 346 L226 352 L206 272 Z" fill="#15111d"/>
+    <rect x="110" y="340" width="28" height="12" fill="#cfc8e6" opacity="0.45"/>
+    <rect x="224" y="340" width="28" height="12" fill="#cfc8e6" opacity="0.45"/>
+    <circle cx="124" cy="352" r="13" fill="${SKIN}"/>
+    <circle cx="238" cy="352" r="13" fill="${SKIN}"/>
+    <!-- black rose choker -->
+    <path d="M158 236 Q181 247 204 236" stroke="#0e0a16" stroke-width="6" fill="none"/>
+    <circle cx="181" cy="244" r="7" fill="#7a1030" stroke="#2a0a14" stroke-width="1.5"/>
   </g>`;
 }
 
-// HEAVY — 重鋼ヘヴィ: spiked leather, chains, war-paint, steel-toe boots.
-function bodyHeavy() {
+// HARD — 鋼鉄ハードロック (正統派): open leather jacket, band tee, bullet belt, denim.
+function bodyHard() {
   return `
   <g stroke="${INK}" stroke-width="3" stroke-linejoin="round">
-    <path d="M150 396 L142 500 L172 500 L178 402 Z" fill="#171319"/>
-    <path d="M212 396 L200 402 L192 500 L222 500 L226 396 Z" fill="#171319"/>
-    <!-- steel-toe boots -->
-    <path d="M136 500 L134 528 L178 528 L176 500 Z" fill="#0d0b10"/>
-    <path d="M190 500 L190 528 L230 528 L226 500 Z" fill="#0d0b10"/>
-    <path d="M136 520 L178 520 L178 528 L134 528 Z" fill="#9aa0ad"/>
-    <path d="M190 520 L228 520 L230 528 L190 528 Z" fill="#9aa0ad"/>
-    <!-- torn band tee -->
-    <path d="M132 250 Q181 236 230 250 L240 398 L122 398 Z" fill="#231e29"/>
-    <path d="M156 250 Q181 244 206 250 L206 372 L156 386 Z" fill="#7a1420"/>
+    ${legsBare()}
+    <!-- chunky boots -->
+    <path d="M138 500 L136 530 L178 530 L176 500 Z" fill="#241a12"/>
+    <path d="M190 500 L190 530 L228 530 L226 500 Z" fill="#241a12"/>
+    <rect x="136" y="500" width="42" height="7" fill="#3a2a1c"/>
+    <rect x="190" y="500" width="38" height="7" fill="#3a2a1c"/>
+    <!-- denim shorts -->
+    <path d="M142 386 Q181 376 220 386 L224 424 Q181 436 138 424 Z" fill="#2f4a70"/>
+    <line x1="181" y1="392" x2="181" y2="428" stroke="#1e3350" stroke-width="2"/>
+    <!-- band tee -->
+    <path d="M136 250 Q181 238 226 250 L232 392 L130 392 Z" fill="#1a1620"/>
+    <path d="M164 288 h34 v6 h-34 z M170 300 l22 0 -6 14 -10 0 z" fill="#c62438"/>
     <!-- bullet belt -->
-    <rect x="120" y="376" width="122" height="12" fill="#2b2620"/>
-    <g fill="#d9b23a">${Array.from({length:8},(_,i)=>`<rect x="${126+i*14}" y="378" width="6" height="8" rx="2"/>`).join("")}</g>
-    <!-- leather jacket with spiked shoulders -->
-    <path d="M120 252 L96 372 L128 372 L140 268 Z" fill="#14121a"/>
-    <path d="M242 252 L266 372 L234 372 L222 268 Z" fill="#14121a"/>
-    <g fill="#c7ccd6">
-      <path d="M112 250 l10 -14 l10 14 z"/><path d="M96 268 l10 -14 l10 14 z"/>
-      <path d="M228 250 l10 -14 l10 14 z"/><path d="M244 268 l10 -14 l10 14 z"/>
-    </g>
-    <!-- chains -->
-    <path d="M132 300 Q181 330 230 300" stroke="#aeb4bf" stroke-width="4" fill="none" stroke-dasharray="3 3"/>
-    <!-- gauntlet hand + spiked collar -->
-    <circle cx="106" cy="366" r="14" fill="#14121a"/>
-    <circle cx="256" cy="366" r="14" fill="#14121a"/>
-    <path d="M156 236 Q181 248 206 236 L206 244 Q181 256 156 244 Z" fill="#0d0b10"/>
-    <g fill="#c7ccd6">${Array.from({length:5},(_,i)=>`<path d="M${162+i*10} 240 l4 -8 l4 8 z"/>`).join("")}</g>
+    <rect x="128" y="384" width="106" height="12" fill="#2b2620"/>
+    <g fill="#d9b23a">${Array.from({length:7},(_,i)=>`<rect x="${134+i*14}" y="386" width="6" height="8" rx="2"/>`).join("")}</g>
+    <!-- open leather jacket (front panels) -->
+    <path d="M120 250 L106 396 L148 396 L152 262 Z" fill="#14121a"/>
+    <path d="M242 250 L256 396 L214 396 L210 262 Z" fill="#14121a"/>
+    <!-- small silver studs on collar/shoulders (classic, not brutal) -->
+    <g fill="#c7ccd6">${[[124,262],[130,278],[238,262],[232,278]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3"/>`).join("")}</g>
+    <!-- jacket sleeves + studded wristbands -->
+    <path d="M124 256 L100 350 L124 360 L148 272 Z" fill="#14121a"/>
+    <path d="M238 256 L262 350 L238 360 L214 272 Z" fill="#14121a"/>
+    <rect x="98" y="346" width="26" height="12" fill="#3a3630"/>
+    <rect x="238" y="346" width="26" height="12" fill="#3a3630"/>
+    <g fill="#c7ccd6">${[[104,352],[112,352],[118,352],[244,352],[252,352],[258,352]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2"/>`).join("")}</g>
+    <circle cx="110" cy="366" r="13" fill="${SKIN}"/>
+    <circle cx="252" cy="366" r="13" fill="${SKIN}"/>
   </g>`;
 }
 
-// POP — 煌ポップ: pastel idol outfit, ribbons, star clip, sneakers, star mic.
-function bodyPop() {
+// KAWAII — 紅黒カワメタ (BABYMETAL系): black-and-red frilly idol dress, red tutu.
+function bodyKawaii() {
   return `
   <g stroke="${INK}" stroke-width="3" stroke-linejoin="round">
     ${legsBare()}
-    <!-- striped over-knee socks -->
-    <g stroke="none" fill="#ff8fc4">${[0,1].map(s=>Array.from({length:4},(_,i)=>`<rect x="${s?192:142}" y="${430+i*16}" width="34" height="7"/>`).join("")).join("")}</g>
-    <!-- high-top sneakers -->
-    <path d="M138 500 L136 528 L178 528 L176 500 Z" fill="#5fd1e6"/>
-    <path d="M190 500 L190 528 L228 528 L226 500 Z" fill="#ffe15a"/>
-    <rect x="134" y="522" width="46" height="8" rx="3" fill="#fff"/>
-    <rect x="188" y="522" width="42" height="8" rx="3" fill="#fff"/>
-    <!-- frilly layered skirt -->
-    <path d="M126 336 Q181 316 236 336 L252 400 Q181 384 110 400 Z" fill="#57d6e0"/>
-    <path d="M118 374 q16 22 32 0 q16 22 32 0 q16 22 32 0 q16 22 32 0 l-6 22 q-63 -18 -122 0 z" fill="#ffe15a"/>
-    <!-- top -->
-    <path d="M134 250 Q181 236 228 250 L236 340 L126 340 Z" fill="#ff8fc4"/>
-    <path d="M160 250 Q181 244 202 250 L202 336 L160 336 Z" fill="#fff" opacity="0.85"/>
-    <!-- ribbon bow -->
-    <path d="M181 260 l-20 -12 l0 24 z" fill="#ff5aa0"/>
-    <path d="M181 260 l20 -12 l0 24 z" fill="#ff5aa0"/>
-    <circle cx="181" cy="260" r="6" fill="#ffe15a"/>
-    <!-- striped arm sleeves -->
-    <path d="M132 256 L108 330 L130 338 L152 272 Z" fill="#5fd1e6"/>
-    <path d="M228 256 L252 330 L230 338 L210 272 Z" fill="#5fd1e6"/>
-    <circle cx="250" cy="336" r="14" fill="${SKIN}"/>
+    <!-- black-and-red striped thigh socks -->
+    <g stroke="none">${[0,1].map(s=>Array.from({length:5},(_,i)=>`<rect x="${s?192:142}" y="${426+i*14}" width="34" height="7" fill="${i%2?'#d81f3a':'#181018'}"/>`).join("")).join("")}</g>
+    <!-- red mary-jane boots -->
+    <path d="M138 500 L136 528 L178 528 L176 500 Z" fill="#d81f3a"/>
+    <path d="M190 500 L190 528 L228 528 L226 500 Z" fill="#d81f3a"/>
+    <rect x="134" y="522" width="46" height="7" rx="3" fill="#101010"/>
+    <rect x="188" y="522" width="42" height="7" rx="3" fill="#101010"/>
+    <!-- black lace underskirt + red tutu with scalloped hem -->
+    <path d="M124 336 Q181 318 238 336 L254 404 Q181 388 108 404 Z" fill="#161018"/>
+    <path d="M120 336 Q181 320 242 336 L248 372 q-16 18 -30 2 q-14 18 -30 2 q-14 18 -30 2 q-14 18 -30 2 q-14 16 -30 0 z" fill="#d81f3a"/>
+    <path d="M118 366 q15 16 30 2 q15 16 30 2 q15 16 30 2 q15 16 30 2" stroke="#fff" stroke-width="3" fill="none" opacity="0.85"/>
+    <!-- corset bodice: black with red center panel + white cross lacing -->
+    <path d="M134 250 Q181 236 228 250 L236 340 L126 340 Z" fill="#171018"/>
+    <path d="M158 250 Q181 244 204 250 L204 336 L158 336 Z" fill="#d81f3a"/>
+    <g stroke="#fff" stroke-width="1.8" opacity="0.9">
+      ${Array.from({length:4},(_,i)=>`<path d="M166 ${266+i*16} L196 ${274+i*16} M196 ${266+i*16} L166 ${274+i*16}" fill="none"/>`).join("")}
+    </g>
+    <!-- red ribbon bow -->
+    <path d="M181 258 l-18 -11 l0 22 z" fill="#ff3d68"/>
+    <path d="M181 258 l18 -11 l0 22 z" fill="#ff3d68"/>
+    <circle cx="181" cy="258" r="6" fill="#fff"/>
+    <!-- black-red striped arm warmers -->
+    <path d="M132 256 L108 336 L130 344 L152 272 Z" fill="#171018"/>
+    <path d="M228 256 L252 336 L230 344 L210 272 Z" fill="#171018"/>
+    <g stroke="#d81f3a" stroke-width="4">
+      <path d="M118 300 l16 4 M114 318 l16 4" fill="none"/>
+      <path d="M244 300 l-16 4 M248 318 l-16 4" fill="none"/>
+    </g>
+    <circle cx="120" cy="342" r="13" fill="${SKIN}"/>
+    <circle cx="240" cy="342" r="13" fill="${SKIN}"/>
   </g>`;
 }
 
-// VIRTUOSO — 静玄ヴィルトゥオーゾ: dark-elegant coat, silver filigree, purple.
-function bodyVirtuoso() {
+// DEATH — 戦鬼デスメタル (ウォー/デス): black armor, heavy spikes, bullet belt.
+function bodyDeath() {
   return `
   <g stroke="${INK}" stroke-width="3" stroke-linejoin="round">
-    <!-- slim trousers -->
-    <path d="M152 396 L146 502 L172 502 L180 402 Z" fill="#1b1730"/>
-    <path d="M210 396 L200 402 L192 502 L218 502 L224 396 Z" fill="#1b1730"/>
-    <!-- polished shoes -->
-    <path d="M140 502 L138 524 L178 524 L176 502 Z" fill="#0c0a16"/>
-    <path d="M192 502 L192 524 L226 524 L224 502 Z" fill="#0c0a16"/>
-    <!-- long tailored coat -->
-    <path d="M126 250 Q181 234 236 250 L250 470 L226 470 L214 356 L214 470 L148 470 L148 356 L136 470 L112 470 Z" fill="#2a1f47"/>
-    <path d="M150 250 Q181 240 212 250 L206 420 L181 432 L156 420 Z" fill="#171128"/>
-    <!-- waistcoat + silver filigree -->
-    <path d="M164 254 L181 262 L198 254 L198 346 L164 346 Z" fill="#0f0b1c"/>
-    <g stroke="#cfc8e6" stroke-width="2" fill="none">
-      <path d="M181 268 q14 10 0 22 q-14 12 0 24 q14 10 0 22"/>
-      <path d="M132 262 Q120 350 132 452" opacity="0.8"/>
-      <path d="M230 262 Q242 350 230 452" opacity="0.8"/>
+    <path d="M150 396 L142 500 L172 500 L178 402 Z" fill="#0f0d13"/>
+    <path d="M212 396 L200 402 L192 500 L222 500 L226 396 Z" fill="#0f0d13"/>
+    <!-- spiked steel boots -->
+    <path d="M136 500 L134 530 L178 530 L176 500 Z" fill="#08070a"/>
+    <path d="M190 500 L190 530 L230 530 L226 500 Z" fill="#08070a"/>
+    <g fill="#c7ccd6">${[[140,500],[152,500],[164,500],[194,500],[206,500],[218,500]].map(([x,y])=>`<path d="M${x} ${y} l5 -9 l5 9 z"/>`).join("")}</g>
+    <!-- tattered war garb -->
+    <path d="M130 250 Q181 236 232 250 L244 392 L236 402 L224 388 L210 402 L196 388 L181 402 L166 388 L152 402 L138 388 L130 400 L118 392 Z" fill="#141017"/>
+    <path d="M156 250 Q181 244 206 250 L206 360 L181 376 L156 360 Z" fill="#3a0a10"/>
+    <!-- bullet belt + chains -->
+    <rect x="118" y="376" width="126" height="12" fill="#241f1a"/>
+    <g fill="#d9b23a">${Array.from({length:9},(_,i)=>`<rect x="${124+i*13}" y="378" width="6" height="8" rx="2"/>`).join("")}</g>
+    <path d="M130 306 Q181 336 232 306" stroke="#8a9099" stroke-width="4" fill="none" stroke-dasharray="3 3"/>
+    <!-- black armor with HEAVY spiked shoulder pauldrons -->
+    <path d="M116 250 L88 372 L126 372 L140 266 Z" fill="#0e0c12"/>
+    <path d="M246 250 L274 372 L236 372 L222 266 Z" fill="#0e0c12"/>
+    <g fill="#c7ccd6">
+      <path d="M104 246 l12 -18 l12 18 z"/><path d="M86 268 l12 -18 l12 18 z"/><path d="M92 300 l12 -16 l12 16 z"/>
+      <path d="M234 246 l12 -18 l12 18 z"/><path d="M258 268 l12 -18 l12 18 z"/><path d="M246 300 l12 -16 l12 16 z"/>
     </g>
-    <line x1="181" y1="262" x2="181" y2="346" stroke="#cfc8e6" stroke-width="2"/>
-    <!-- arms + cuffs -->
-    <path d="M128 256 L108 356 L130 362 L150 272 Z" fill="#2a1f47"/>
-    <path d="M234 256 L254 356 L232 362 L212 272 Z" fill="#2a1f47"/>
-    <rect x="106" y="350" width="26" height="10" fill="#cfc8e6" opacity="0.5"/>
-    <circle cx="252" cy="358" r="13" fill="${SKIN}"/>
-    <!-- single silver earring -->
-    <line x1="120" y1="214" x2="120" y2="230" stroke="#cfc8e6" stroke-width="3"/>
-    <circle cx="120" cy="234" r="4" fill="#cfc8e6"/>
+    <!-- spiked gauntlets -->
+    <circle cx="104" cy="366" r="15" fill="#0e0c12"/>
+    <circle cx="258" cy="366" r="15" fill="#0e0c12"/>
+    <g fill="#c7ccd6">${[[92,360],[100,352],[110,354],[252,354],[262,352],[270,360]].map(([x,y])=>`<path d="M${x} ${y} l-4 -8 l8 2 z"/>`).join("")}</g>
+    <!-- spiked collar -->
+    <path d="M154 236 Q181 249 208 236 L208 245 Q181 258 154 245 Z" fill="#08070a"/>
+    <g fill="#c7ccd6">${Array.from({length:6},(_,i)=>`<path d="M${160+i*9} 240 l3 -9 l3 9 z"/>`).join("")}</g>
   </g>`;
 }
 
@@ -238,109 +260,132 @@ const star = (x, y, r, fill) =>
 const heart = (x, y, r, fill) =>
   `<path transform="translate(${x} ${y}) scale(${r})" d="M0 6 C-9 -2 -8 -10 -3 -10 C0 -10 0 -6 0 -6 C0 -6 0 -10 3 -10 C8 -10 9 -2 0 6 Z" fill="${fill}"/>`;
 
+const petal = (x, y, rot, fill) =>
+  `<path transform="translate(${x} ${y}) rotate(${rot})" d="M0 0 Q6 -7 0 -16 Q-6 -7 0 0 Z" fill="${fill}"/>`;
+
 const AURA = {
-  glam: `
-    <defs><radialGradient id="glamA" cx="50%" cy="42%" r="60%">
-      <stop offset="0%" stop-color="#ff8fd0" stop-opacity="0.55"/>
-      <stop offset="100%" stop-color="#ff8fd0" stop-opacity="0"/>
+  goth: `
+    <defs><radialGradient id="gothA" cx="50%" cy="44%" r="62%">
+      <stop offset="0%" stop-color="#4a2a63" stop-opacity="0.55"/>
+      <stop offset="70%" stop-color="#1a1020" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#1a1020" stop-opacity="0"/>
     </radialGradient></defs>
-    <rect width="360" height="560" fill="url(#glamA)"/>
-    ${[[60,120,7],[300,150,8],[52,300,6],[312,320,7],[80,60,5],[286,70,6],[40,430,6],[320,440,7]].map(([x,y,r])=>star(x,y,r,"#ffe27a")).join("")}
-    ${[[100,90,3],[268,110,3],[70,220,2.5],[300,240,3],[110,410,2.5],[262,400,3]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/>`).join("")}`,
-  heavy: `
-    <defs><radialGradient id="heavyA" cx="50%" cy="60%" r="65%">
-      <stop offset="0%" stop-color="#e2472b" stop-opacity="0.4"/>
-      <stop offset="70%" stop-color="#2a1a22" stop-opacity="0.55"/>
-      <stop offset="100%" stop-color="#2a1a22" stop-opacity="0"/>
+    <rect width="360" height="560" fill="url(#gothA)"/>
+    <g opacity="0.85">${[[66,120,18,"#7a1030"],[300,150,-24,"#7a1030"],[54,300,40,"#5a0c24"],[312,320,-40,"#5a0c24"],[80,440,10,"#7a1030"],[292,440,-14,"#5a0c24"],[120,70,60,"#6a0e2a"]].map(([x,y,r,c])=>petal(x,y,r,c)).join("")}</g>
+    ${[[100,90,2.5],[268,110,2.5],[70,220,2],[300,240,2.5],[110,410,2],[262,400,2.5]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#e6d8ff" opacity="0.8"/>`).join("")}`,
+  hard: `
+    <defs><radialGradient id="hardA" cx="50%" cy="52%" r="62%">
+      <stop offset="0%" stop-color="#ffb03a" stop-opacity="0.5"/>
+      <stop offset="70%" stop-color="#b5400f" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#b5400f" stop-opacity="0"/>
     </radialGradient></defs>
-    <rect width="360" height="560" fill="url(#heavyA)"/>
-    <g fill="#3a2f3a" opacity="0.6">
-      <ellipse cx="70" cy="360" rx="46" ry="70"/><ellipse cx="300" cy="330" rx="42" ry="66"/>
-      <ellipse cx="60" cy="180" rx="34" ry="50"/><ellipse cx="306" cy="200" rx="30" ry="46"/>
+    <rect width="360" height="560" fill="url(#hardA)"/>
+    <g fill="#ff7a1c" opacity="0.9">
+      <path d="M60 470 q-8 -30 8 -50 q4 22 16 28 q-6 14 -24 22 z"/>
+      <path d="M304 460 q10 -34 -6 -56 q-4 24 -16 30 q6 14 22 26 z"/>
     </g>
-    ${[[64,300,3],[300,280,3.5],[80,120,2.5],[292,140,3],[300,430,3]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#ff7a3c"/>`).join("")}`,
-  pop: `
-    <defs><radialGradient id="popA" cx="50%" cy="45%" r="62%">
-      <stop offset="0%" stop-color="#bff4ff" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#bff4ff" stop-opacity="0"/>
+    ${[[64,300,3],[300,280,3.5],[80,120,2.5],[292,140,3],[70,430,3],[300,430,3],[120,70,2.5],[262,70,2.5]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#ffd257"/>`).join("")}`,
+  kawaii: `
+    <defs><radialGradient id="kawA" cx="50%" cy="46%" r="62%">
+      <stop offset="0%" stop-color="#ff466e" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#ff466e" stop-opacity="0"/>
     </radialGradient></defs>
-    <rect width="360" height="560" fill="url(#popA)"/>
-    ${[[62,110,7,"#ffe15a"],[300,140,8,"#ff8fc4"],[48,290,6,"#5fd1e6"],[314,300,7,"#ffe15a"],[300,440,6,"#5fd1e6"],[50,440,6,"#ff8fc4"]].map(([x,y,r,c])=>star(x,y,r,c)).join("")}
-    ${[[92,70,4,"#ff7aa8"],[280,80,4,"#ff7aa8"],[70,200,3.5,"#ff9ec2"],[306,230,4,"#ff9ec2"]].map(([x,y,r,c])=>heart(x,y,r,c)).join("")}`,
-  virtuoso: `
-    <defs><radialGradient id="virtA" cx="50%" cy="46%" r="58%">
-      <stop offset="0%" stop-color="#6b4fa0" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="#6b4fa0" stop-opacity="0"/>
+    <rect width="360" height="560" fill="url(#kawA)"/>
+    ${[[62,110,7,"#ffffff"],[300,140,8,"#d81f3a"],[48,290,6,"#ffffff"],[314,300,7,"#d81f3a"],[300,440,6,"#ffffff"],[50,440,6,"#d81f3a"]].map(([x,y,r,c])=>star(x,y,r,c)).join("")}
+    ${[[92,70,4,"#181018"],[280,80,4,"#d81f3a"],[70,200,3.5,"#181018"],[306,230,4,"#d81f3a"]].map(([x,y,r,c])=>heart(x,y,r,c)).join("")}
+    <g>${[[110,150,"#ffd257"],[250,120,"#5fd1e6"],[130,430,"#d81f3a"],[240,420,"#181018"]].map(([x,y,c])=>`<rect x="${x}" y="${y}" width="7" height="12" rx="2" transform="rotate(24 ${x} ${y})" fill="${c}"/>`).join("")}</g>`,
+  death: `
+    <defs><radialGradient id="deathA" cx="50%" cy="56%" r="66%">
+      <stop offset="0%" stop-color="#c01522" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#1a0d10" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0a0509" stop-opacity="0"/>
     </radialGradient></defs>
-    <rect width="360" height="560" fill="url(#virtA)"/>
-    ${[[70,130,2.5],[300,150,3],[60,300,2],[312,320,2.5],[86,420,2],[296,430,2.5],[110,90,2],[262,100,2.2],[50,220,2],[318,240,2.4]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#cfc8e6"/>`).join("")}
-    ${[[80,240,4],[300,270,4.5]].map(([x,y,r])=>star(x,y,r,"#b79bff"))}`,
+    <rect width="360" height="560" fill="url(#deathA)"/>
+    <g fill="#241820" opacity="0.7">
+      <ellipse cx="66" cy="360" rx="48" ry="74"/><ellipse cx="300" cy="330" rx="44" ry="70"/>
+      <ellipse cx="58" cy="170" rx="34" ry="52"/><ellipse cx="308" cy="190" rx="30" ry="48"/>
+    </g>
+    <g fill="#12090c" opacity="0.9">${[[30,540,-16],[64,540,-10],[300,540,12],[332,540,18],[16,540,-22]].map(([x,y,r])=>`<path d="M${x} ${y} l14 -46 l14 46 z" transform="rotate(${r} ${x+14} ${y})"/>`).join("")}</g>
+    ${[[64,300,3],[300,280,3.5],[80,120,2.5],[292,140,3],[300,430,3.5],[72,440,3]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#ff3b26"/>`).join("")}`,
 };
 
 // ---------------------------------------------------------------------------
-// Look assembly. `mane`/`streak` tweaks let each look tint the hair subtly
-// while keeping the golden-orange + pink identity readable.
+// Look assembly. Identity core (mane+streak, ears, amber eyes, tail, mic) is
+// shared; each look tints the hair subtly and swaps outfit + face makeup.
 // ---------------------------------------------------------------------------
-const makeupGlam = `
+const gothMakeup = `
   <g stroke="none">
-    <path d="M141 190 q12 6 26 2" stroke="#ff6fb0" stroke-width="3" fill="none" opacity="0.7"/>
-    <path d="M197 192 q12 4 24 -2" stroke="#ff6fb0" stroke-width="3" fill="none" opacity="0.7"/>
-    <circle cx="146" cy="196" r="7" fill="#ff9ecb" opacity="0.5"/>
-    <circle cx="216" cy="196" r="7" fill="#ff9ecb" opacity="0.5"/>
+    <path d="M136 168 q18 -8 34 -2 l-2 12 q-16 -6 -32 0 z" fill="#2a1830" opacity="0.75"/>
+    <path d="M192 166 q16 -6 34 2 l-2 10 q-16 -6 -30 0 z" fill="#2a1830" opacity="0.75"/>
+    <path d="M148 210 q10 6 22 4" stroke="#7a1030" stroke-width="3" fill="none" opacity="0.6"/>
   </g>`;
 
-const glamHairpin = `${star(150, 118, 11, "#ffe27a")}<circle cx="150" cy="118" r="3" fill="#fff"/>`;
-const popHairclip = `${star(150, 116, 12, "#ffe15a")}${star(150,116,6,"#ff8fc4")}`;
+// Corpse paint: white face wash + black eye sockets + a vertical black stripe.
+const corpsePaint = `
+  <g stroke="none">
+    <circle cx="181" cy="168" r="69" fill="#eceaee"/>
+    <ellipse cx="153" cy="176" rx="21" ry="27" fill="#0c0910"/>
+    <ellipse cx="209" cy="176" rx="21" ry="27" fill="#0c0910"/>
+    <path d="M175 108 L170 236 L192 236 L187 108 Z" fill="#0c0910" opacity="0.5"/>
+  </g>`;
+
+const gothTiara = `
+  <g stroke="${INK}" stroke-width="1.5">
+    <path d="M150 108 l8 -14 l8 12 l8 -14 l8 12 l8 -12 l8 14 z" fill="#cfc8e6"/>
+    <circle cx="182" cy="100" r="3" fill="#7a1030"/>
+  </g>`;
+const kawaiiClip = `${star(150, 114, 12, "#d81f3a")}${star(150,114,6,"#fff")}`;
 
 const LOOKS = {
-  glam: {
-    label: "妖艶グラム",
+  goth: {
+    label: "幽艶ゴシック",
     seg: "ビジュ層",
+    genre: "ゴシック/シンフォニック (Evanescence系)",
     parts: () =>
-      AURA.glam +
-      tail("#ff8fd0") +
-      maneAndEars(MANE, MANE_SH, PINK) +
-      bodyGlam() +
-      head(makeupGlam) +
-      glamHairpin +
-      mic(SKIN, "#ffd257", "#7a1a4a"),
+      AURA.goth +
+      tail("#7a1030") +
+      maneAndEars("#d8912e", "#a86a14", PINK) +
+      bodyGoth() +
+      head(gothMakeup) +
+      gothTiara +
+      mic(SKIN, "#4a2a63", "#120a18"),
   },
-  heavy: {
-    label: "重鋼ヘヴィ",
+  hard: {
+    label: "鋼鉄ハードロック",
     seg: "コア層",
+    genre: "正統派ハードロック / メタル",
     parts: () =>
-      AURA.heavy +
-      tail("#b8621c") +
-      maneAndEars("#cf8b26", "#a86a14", PINK) +
-      bodyHeavy() +
-      head(`<path d="M138 150 l30 8" stroke="#e23b3b" stroke-width="4"/><path d="M224 158 l-28 6" stroke="#e23b3b" stroke-width="4"/>`) +
+      AURA.hard +
+      tail(MANE) +
+      maneAndEars(MANE, MANE_SH, PINK) +
+      bodyHard() +
+      head("") +
       mic(SKIN, "#8a8f9a", "#0d0b10"),
   },
-  pop: {
-    label: "煌ポップ",
+  kawaii: {
+    label: "紅黒カワメタ",
     seg: "ライト層",
+    genre: "カワイイメタル (BABYMETAL系)",
     parts: () =>
-      AURA.pop +
-      tail("#ff8fc4") +
+      AURA.kawaii +
+      tail("#d81f3a") +
       maneAndEars(MANE, MANE_SH, PINK) +
-      bodyPop() +
+      bodyKawaii() +
       head("") +
-      popHairclip +
-      // star-topped glitter mic
-      `<g stroke="${INK}" stroke-width="3" stroke-linejoin="round">
-         <line x1="118" y1="300" x2="150" y2="240" stroke="#ff8fc4" stroke-width="9"/>
-         <circle cx="118" cy="300" r="15" fill="${SKIN}"/></g>${star(153, 230, 18, "#ffe15a")}`,
+      kawaiiClip +
+      mic(SKIN, "#d81f3a", "#181018"),
   },
-  virtuoso: {
-    label: "静玄ヴィルトゥオーゾ",
+  death: {
+    label: "戦鬼デスメタル",
     seg: "玄人層",
+    genre: "ウォー / デスメタル",
     parts: () =>
-      AURA.virtuoso +
-      tail("#7a5aa8") +
-      maneAndEars("#e0a24a", "#b98a3a", "#a86bff") +
-      bodyVirtuoso() +
-      head("") +
-      mic(SKIN, "#cfc8e6", "#141024"),
+      AURA.death +
+      tail("#7a4a12") +
+      maneAndEars("#b9781e", "#7f5210", PINK) +
+      bodyDeath() +
+      head(corpsePaint) +
+      mic(SKIN, "#8a9099", "#0a0508"),
   },
 };
 
@@ -364,7 +409,7 @@ const cards = keys
     const L = LOOKS[key];
     return `      <figure class="card ${key}">
         <div class="art">${svgFor(key)}</div>
-        <figcaption><b>${L.label}</b><span>${L.seg} でS評価 → <code>${key}</code></span></figcaption>
+        <figcaption><b>${L.label}</b><span class="genre">${L.genre}</span><span>${L.seg} でS評価 → <code>${key}</code></span></figcaption>
       </figure>`;
   })
   .join("\n");
@@ -388,7 +433,8 @@ const html = `<!doctype html>
   .art svg { height: 300px; width: auto; }
   figcaption { padding: 10px 12px 14px; text-align: center; border-top: 1px solid #241b36; }
   figcaption b { display: block; font-size: 15px; }
-  figcaption span { color: #b6acc8; font-size: 12px; }
+  figcaption span { display: block; color: #b6acc8; font-size: 12px; }
+  figcaption .genre { color: #e6b3ff; font-size: 11px; margin: 2px 0 4px; }
   code { background: #2a2140; padding: 1px 6px; border-radius: 5px; font-size: 11px; }
   .glam { box-shadow: inset 0 -3px 0 #d63a8f; }
   .heavy { box-shadow: inset 0 -3px 0 #7a1420; }

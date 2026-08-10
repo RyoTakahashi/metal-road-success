@@ -17,15 +17,15 @@ export type Mood = "normal" | "fired" | "happy" | "sad";
 
 // Character version per member. Bump when the look changes (see docs/assets.md);
 // the filename is `{id}.v{version}.{mood}.png`, or with an evolution infix
-// `{id}.v{version}.{evo}.{mood}.png` (e.g. ryo.v2.glam.fired.png).
+// `{id}.v{version}.{evo}.{mood}.png` (e.g. ryo.v2.goth.fired.png).
 const CHAR_VER: Record<string, number> = { RYO: 2, KEN: 2, MIO: 2, GO: 2 };
 
-/** Live-audience segment -> appearance-evolution filename infix. */
+/** Live-audience segment -> appearance-evolution filename infix (metal subgenre). */
 export const EVO_INFIX: Record<string, string> = {
-  visual: "glam", // ビジュ: 妖艶 / グラム
-  core: "heavy", //  コア:  重鋼 / ヘヴィ
-  light: "pop", //   ライト: 煌ポップ
-  expert: "virtuoso", // 玄人: 静玄 / 技巧
+  visual: "goth", //  ビジュ: 幽艶ゴシック（ゴシック/シンフォニック, Evanescence系）
+  core: "hard", //    コア:   鋼鉄ハードロック（正統派ハードロック/メタル）
+  light: "kawaii", // ライト: 紅黒カワメタ（カワイイメタル, BABYMETAL系）
+  expert: "death", // 玄人:   戦鬼デスメタル（ウォー/デスメタル）
 };
 
 // Flip to true once the evolution sprites actually exist on disk (per member ×
