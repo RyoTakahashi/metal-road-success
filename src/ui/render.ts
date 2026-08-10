@@ -33,7 +33,7 @@ import type {
   StaffRole,
 } from "../game/types";
 import { ACTION_ICON, ACTION_LABEL, PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS, STAFF_LABEL } from "../game/types";
-import { bgSrc, charSrc } from "./assets";
+import { bgSrc, charSrc, EVO_INFIX, setEvolution } from "./assets";
 
 export interface UiState {
   mode: "title" | "partSelect" | "board" | "cardSub" | "staffPick" | "practiceChoice" | "slides" | "live" | "result" | "gameover" | "clear";
@@ -171,6 +171,21 @@ function staffRow(role: StaffRole, intimacy: number, cut: number): string {
     </div>`;
 }
 
+const EVO_NAME: Record<string, string> = { visual: "妖艶グラム", core: "重鋼ヘヴィ", light: "煌ポップ", expert: "静玄" };
+
+function evolutionRow(state: GameState): string {
+  const chips = SEGMENTS.filter((s) => s in EVO_INFIX)
+    .map((s) => {
+      const on = !!state.evoUnlocked[s];
+      const cur = state.evolution === s;
+      return `<span class="evochip ${on ? "on" : ""} ${cur ? "cur" : ""}">${SEGMENT_LABEL[s]}：${EVO_NAME[s]}${cur ? " ★" : on ? " ✓" : ""}</span>`;
+    })
+    .join("");
+  return `<h2 class="sub">✨ 見た目の進化</h2>
+    <div class="hint">客層ターゲットでS評価（満足度80+）を取るとその姿を解禁。★＝現在の姿（最後にSを取った層）</div>
+    <div class="evochips">${chips}</div>`;
+}
+
 function membersPanel(state: GameState): string {
   const staff = state.staff.length
     ? `<h2 class="sub">🎧 サポート陣</h2>${state.staff.map((s) => staffRow(s.role, s.intimacy, s.cut)).join("")}`
@@ -180,6 +195,7 @@ function membersPanel(state: GameState): string {
       <h2>🎸 メンバー</h2>
       ${state.members.map(memberCard).join("")}
       ${staff}
+      ${evolutionRow(state)}
       <div class="center"><button class="btn secondary" id="close-panel">閉じる</button></div>
     </div></div>`;
 }
@@ -587,6 +603,7 @@ function partSelectScreen(): string {
 }
 
 export function render(root: HTMLElement, state: GameState, ui: UiState, h: Handlers): void {
+  setEvolution(state.evolution); // pick the sprite variant for this frame
   if (ui.mode === "title") {
     root.innerHTML = titleScreen();
     root.querySelector("#start")?.addEventListener("click", () => h.onStart());

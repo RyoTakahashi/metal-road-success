@@ -14,26 +14,36 @@ export const BG_SRC: Record<BgKey, string> = {
 };
 
 export type Mood = "normal" | "fired" | "happy" | "sad";
-const MOODS: Mood[] = ["normal", "fired", "happy", "sad"];
 
 // Character version per member. Bump when the look changes (see docs/assets.md);
-// the filename is `{id}.v{version}.{mood}.png`, so old versions stay on disk.
+// the filename is `{id}.v{version}.{mood}.png`, or with an evolution infix
+// `{id}.v{version}.{evo}.{mood}.png` (e.g. ryo.v2.glam.fired.png).
 const CHAR_VER: Record<string, number> = { RYO: 2, KEN: 2, MIO: 2, GO: 2 };
 
-/** Standing art per member, with one image per mood. */
-export const CHAR_SRC: Record<string, Record<Mood, string>> = Object.fromEntries(
-  Object.entries(CHAR_VER).map(([member, v]) => [
-    member,
-    Object.fromEntries(
-      MOODS.map((m) => [m, `${base}assets/chars/${member.toLowerCase()}.v${v}.${m}.png`]),
-    ) as Record<Mood, string>,
-  ]),
-);
+/** Live-audience segment -> appearance-evolution filename infix. */
+export const EVO_INFIX: Record<string, string> = {
+  visual: "glam", // ビジュ: 妖艶 / グラム
+  core: "heavy", //  コア:  重鋼 / ヘヴィ
+  light: "pop", //   ライト: 煌ポップ
+  expert: "virtuoso", // 玄人: 静玄 / 技巧
+};
+
+// Flip to true once the evolution sprites actually exist on disk (per member ×
+// per evolution × per mood). Until then the game shows the base look even when
+// an evolution is "unlocked", so nothing 404s.
+const EVO_ART_READY = false;
+
+// The band's current evolution (a segment key, or "" for base). Set once per
+// render from state.evolution so charSrc callers don't each need to thread it.
+let currentEvo = "";
+export const setEvolution = (evo: string): void => { currentEvo = evo; };
 
 export const bgSrc = (k: BgKey): string => BG_SRC[k] ?? BG_SRC.studio;
 
-/** Resolve a member's standing art for a mood, falling back to normal / RYO. */
+/** Resolve a member's standing art for a mood (evolution-aware). */
 export const charSrc = (member: string, mood: Mood = "normal"): string => {
-  const set = CHAR_SRC[member] ?? CHAR_SRC.RYO;
-  return set[mood] ?? set.normal;
+  const key = member in CHAR_VER ? member : "RYO";
+  const v = CHAR_VER[key];
+  const infix = EVO_ART_READY && EVO_INFIX[currentEvo] ? `.${EVO_INFIX[currentEvo]}` : "";
+  return `${base}assets/chars/${key.toLowerCase()}.v${v}${infix}.${mood}.png`;
 };

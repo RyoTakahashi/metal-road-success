@@ -138,6 +138,10 @@ body {
 .love { font-size: 13px; letter-spacing: 1px; margin-left: 6px; vertical-align: middle; }
 .love .hf { color: var(--accent-2); }
 .love .he { color: #ffffff2e; }
+.evochips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.evochip { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #ffffff12; color: var(--muted); border: 1px solid #ffffff1f; }
+.evochip.on { color: var(--ink); background: #ffffff1f; }
+.evochip.cur { color: #fff; background: var(--accent); border-color: var(--accent); }
 .opt.locked { opacity: 0.45; cursor: not-allowed; }
 .opt .capn { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }
 

@@ -118,6 +118,8 @@ export function newGame(part = "Vo", leaderName = "", rng: () => number = Math.r
     bond: 30,
     friendship: {},
     recent: {},
+    evolution: "",
+    evoUnlocked: {},
     funds: 300_000,
     totalFans: 1200,
     segFans: { core: 600, light: 300, visual: 150, expert: 150 },
@@ -922,6 +924,39 @@ export function buildAfterPartyScenes(state: GameState, r: LiveResult, rng: () =
     { bg: "backstage", chars, text: opener, fx: great ? "flash" : undefined },
     { bg: "backstage", chars: [{ member: host, pos: "center", mood: partyMood }], speaker: hname, text: script.ask, choices },
   ];
+}
+
+// --- 見た目の進化（客層でS評価＝満足度80以上を取ると解禁）------------------
+
+/** Appearance evolution per audience segment (single-layer, most recent wins). */
+const EVO_THEME: Record<Segment, { name: string; desc: string }> = {
+  visual: { name: "妖艶グラム", desc: "きらびやかな装飾とメイクで、艶やかに咲き誇る姿へ。" },
+  core: { name: "重鋼ヘヴィ", desc: "鋲とレザーを纏い、歴戦の風格をまとった無骨な姿へ。" },
+  light: { name: "煌ポップ", desc: "明るくカラフルに、誰もが手を伸ばしたくなる華やかな姿へ。" },
+  expert: { name: "静玄ヴィルトゥオーゾ", desc: "研ぎ澄まされたダークエレガンス。技巧派の洗練された姿へ。" },
+};
+
+function buildEvolutionScenes(seg: Segment): Scene[] {
+  const t = EVO_THEME[seg];
+  const lineup = (mood: Mood): Scene["chars"] =>
+    (["RYO", "KEN", "MIO", "GO"] as const).map((a, i) => ({ member: a, pos: (["left", "center", "right", "left"] as const)[i], mood }));
+  return [
+    { bg: "venueBig", chars: lineup("fired"), text: `✨✨ 進化 ✨✨\n\n${SEGMENT_LABEL[seg]}層をS評価で熱狂させた衝撃が、バンドの姿を作り変えていく——！`, fx: "flash" },
+    { bg: "backstage", chars: lineup("happy"), text: `【${t.name}】\n\n${t.desc}\n\nメンバー全員の見た目が進化した！（客層でSを取るたびに、その姿へ変化する）`, fx: "flash" },
+  ];
+}
+
+/** After a live: an S rating (satisfaction ≥ 80) evolves the band's look to the
+ *  targeted layer's style. Multiple layers can be unlocked; the most-recent S
+ *  is the one shown. Returns evolution scenes only the first time each unlocks. */
+export function registerLiveEvolution(state: GameState, target: Segment, satisfaction: number): Scene[] {
+  if (satisfaction < 80) return [];
+  const firstTime = !state.evoUnlocked[target];
+  state.evoUnlocked[target] = true;
+  state.evolution = target; // display the most-recently earned look
+  if (!firstTime) return [];
+  pushLog(state, `✨ ${SEGMENT_LABEL[target]}層でS評価！ 見た目が「${EVO_THEME[target].name}」へ進化！`);
+  return buildEvolutionScenes(target);
 }
 
 /** Scout a support member, spending 人脈. Returns the intro scenes. */

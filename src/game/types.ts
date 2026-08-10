@@ -124,6 +124,8 @@ export interface GameState {
   bond: number; // 0–100 バンドの結束: boosts recovery, eases friction (P2)
   friendship: Record<string, boolean>; // artKey -> whether that member's 友情イベント fired
   recent: Record<string, number>; // pattern key -> last-used index (no back-to-back repeats)
+  evolution: string; // current appearance evolution (a Segment key, or "" = base)
+  evoUnlocked: Record<string, boolean>; // segment -> whether an S-rated live unlocked its look
   funds: number;
   totalFans: number;
   segFans: Record<Segment, number>;

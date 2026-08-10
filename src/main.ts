@@ -15,6 +15,7 @@ import {
   newGame,
   nextTurnEvent,
   pushLog,
+  registerLiveEvolution,
   resolveAction,
   resolveRecruit,
   startNewMonth,
@@ -74,8 +75,10 @@ function finishSlides(): void {
     applyLiveResult(state, ui.liveDecision, result);
     ui.liveResult = result;
     pushLog(state, `ライブ実施：動員${result.draw} / 満足度${result.satisfaction} / 新規ファン+${result.newFans}`);
+    // An S rating (satisfaction ≥ 80) evolves the band's look to that layer's style.
+    const evo = registerLiveEvolution(state, ui.liveDecision.target, result.satisfaction);
     afterSlides = "result";
-    ui.sceneSeq = buildLiveScenes(state, ui.liveDecision, result);
+    ui.sceneSeq = [...buildLiveScenes(state, ui.liveDecision, result), ...evo];
     ui.sceneIndex = 0;
     ui.mode = "slides";
     redraw();
