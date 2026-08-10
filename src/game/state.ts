@@ -1089,13 +1089,205 @@ function reqSummary(m: Milestone): string {
 }
 
 /** Opening monologue centered on the chosen leader (played after part select). */
-export function buildOpeningScenes(state: GameState): Scene[] {
+// --- リーダー個別ストーリー（パート＝選択キャラごとの物語）-------------------
+// 大枠（関門）は共通。開始時のバックストーリーと、各関門突破時の個別ビートで、
+// 選んだメンバーの性格・パート・過去を掘り下げる。他メンバーは固定名で登場。
+
+/** A one-character scene with a mood + speaker tag. */
+const solo = (state: GameState, bg: BgKey, art: string, mood: Mood, text: string, fx?: Scene["fx"]): Scene => ({
+  bg, chars: [{ member: art, pos: "center", mood }], speaker: nameOf(state, art), text, fx,
+});
+
+/** Per-part opening backstory (2 scenes). Leader = L, display name = nm. */
+const LEADER_INTRO: Record<string, (s: GameState, L: string, nm: string) => Scene[]> = {
+  Vo: (s, L, nm) => [
+    solo(s, "venueSmall", L, "fired", `——幼い頃、親に連れて行かれた小さなライブハウス。腹の底を殴るような轟音に、${nm}の心臓は鷲掴みにされた。`, "flash"),
+    solo(s, "street", L, "normal", "勉強も運動も、からっきし。でもいい。あたしにはメタルがある。この内臓に響くデスボイスで、世界をぶっ叩く。それだけだ。"),
+  ],
+  Gt: (s, L, nm) => [
+    solo(s, "studio", L, "normal", `——音楽一家に生まれ、物心つく前から楽器を握らされてきた。ピアノも、ヴァイオリンも。だが${nm}の心を灼いたのは、歪んだギターだった。`, "flash"),
+    solo(s, "studio", L, "fired", "「メタルなんて」と親族は眉をひそめる。……上等だ。速弾きで黙らせてやる。有名になんてならなくていい。俺は、俺の理想の音を追う。"),
+  ],
+  Ba: (s, L, nm) => [
+    solo(s, "studio", L, "normal", `——軽音部で組んだバンド。人が足りなくて、ギター志望だった${nm}が渋々握ったのがベースだった。`, "flash"),
+    solo(s, "studio", L, "happy", "……なのに今は、この低音がたまらなく愛おしい。売れなくてもいい。ただ、この仲間と、ずっと長くバンドを続けたい。それだけ。"),
+  ],
+  Dr: (s, L) => [
+    solo(s, "street", L, "happy", "——元・陸上部。ある日RISAに「速く走るにはドラムを練習するといい」と誘われて、あたしはこの世界に飛び込んだ！", "flash"),
+    solo(s, "studio", L, "fired", "メタル？ 正直よく分かんない！ でも叩くのは超楽しいし、体力には自信あり！ ……ところでこれ、ほんとに足、速くなるんだよね？"),
+  ],
+};
+
+/** Build the chosen leader's backstory intro (falls back to a generic line). */
+export function buildLeaderIntro(state: GameState): Scene[] {
   const L = leaderArt(state);
-  const name = nameOf(state, L);
+  const nm = nameOf(state, L);
+  const build = LEADER_INTRO[state.leaderPart];
+  return build ? build(state, L, nm) : [solo(state, "street", L, "normal", `——${nm}。歪んだ轟音だけが、生きる証だ。`, "flash")];
+}
+
+/** Per-part story beat fired when a checkpoint is cleared (keyed by its id). */
+const LEADER_ARC: Record<string, Record<string, (s: GameState, L: string, nm: string) => Scene[]>> = {
+  Vo: {
+    gateway: (s, L) => [
+      solo(s, "backstage", L, "normal", "打ち上げの喧騒が引いて、一人になった瞬間——ふっと、静けさが刺さる。（……にぎやかにしてないと、寂しさに飲まれそうになるんだ）"),
+      solo(s, "studio", "MIO", "happy", "「……RISA。次のスタジオ、いつもの時間でいい？」何気ないその一言に、少しだけ救われる。"),
+    ],
+    indiefes: (s, L) => [
+      solo(s, "backstage", L, "happy", "大事なライブ前だってのに、RISAはご機嫌で酒瓶を掲げている。「かたいこと言うなって〜！」……止める？"),
+      {
+        bg: "backstage", chars: [{ member: L, pos: "center", mood: "normal" }],
+        text: "Voはコンディションが命。でも、酒は彼女の相棒でもある——どうする？",
+        choices: [
+          { label: "「今日は喉を守れ」と止める", apply: (st) => { addStamina(st, 8); addLove(st, L, 2); pushLog(st, "個別STORY：RISAの喉を守った（体力+8・愛情度+2）"); },
+            next: [solo(s, "backstage", L, "normal", "「ちぇ〜っ、真面目か。……まあ、あんたがそう言うなら。」渋々ボトルを置いた。（体力+8・愛情度+2）", "flash")] },
+          { label: "「今日くらい付き合う」", apply: (st) => { addStamina(st, -6); addLove(st, L, 6); st.bond = Math.min(100, st.bond + 5); pushLog(st, "個別STORY：RISAと飲み明かした（愛情度+6・結束+5・体力-6）"); },
+            next: [solo(s, "backstage", L, "happy", "「そうこなくっちゃ！ 今夜はとことん付き合えよ〜！」笑い声が夜に溶ける。（愛情度+6・結束+5・体力-6）", "flash")] },
+        ],
+      },
+    ],
+    major: (s, L) => [
+      solo(s, "studio", "MIO", "sad", "メジャーデビュー直後。スーツの男がRISAに名刺を差し出した。「君、ソロでやる気はないか？ もっと売れるよ」"),
+      {
+        bg: "studio", chars: [{ member: L, pos: "center", mood: "normal" }],
+        text: "RISAがこちらを見る。「……あんたは、どう思う？」——バンドの、リーダーとして。",
+        choices: [
+          { label: "「お前の居場所はここだ」と引き止める", apply: (st) => { st.bond = Math.min(100, st.bond + 12); addLove(st, L, 8); pushLog(st, "個別STORY：RISAはバンドを選んだ（結束+12・愛情度+8）"); },
+            next: [solo(s, "backstage", L, "happy", "「……だよな。あたしもそう思ってた。」名刺を破り捨て、にっと笑う。「あたしの声は、この四人のためにある。」（結束+12・愛情度+8）", "flash")] },
+          { label: "「翼を広げてみろ」と背中を押す", apply: (st) => { st.fame = Math.min(100, st.fame + 3); addLove(st, L, 5); st.bond = Math.max(0, st.bond - 6); pushLog(st, "個別STORY：RISAはソロも少し経験（知名度+3・愛情度+5・結束-6）"); },
+            next: [solo(s, "street", L, "normal", "「……ちょっとだけ、外の風も浴びてくる。でも、帰る場所はここだからな。」少しの寂しさと、確かな信頼。（知名度+3・愛情度+5・結束-6）", "flash")] },
+        ],
+      },
+    ],
+    bigfes: (s, L) => [
+      solo(s, "venueBig", L, "happy", "満員の大観衆を前に、RISAはふと笑った。「……昔のあたしに教えてやりたいよ。お前、ちゃんと居場所を見つけるぞって。」\n\n寂しがり屋のフロントウーマンは、もう一人じゃない。", "flash"),
+    ],
+  },
+  Gt: {
+    gateway: (s, L) => [
+      {
+        bg: "backstage", chars: [{ member: L, pos: "center", mood: "sad" }],
+        text: "初勝利のあとの取材。NAOはマイクを向けられ、露骨に固まっている。（……人前で喋るのは、苦手なんだ）どうする？",
+        choices: [
+          { label: "代わりに前へ出て、支える", apply: (st) => { addLove(st, L, 6); pushLog(st, "個別STORY：NAOをそっと支えた（愛情度+6）"); },
+            next: [solo(s, "backstage", L, "normal", "「……助かった。」ぼそりと、でも確かに。人見知りの天才が、少しだけ肩の力を抜いた。（愛情度+6）", "flash")] },
+          { label: "「お前の言葉で話せ」と促す", apply: (st) => { addParam(st, "S", 1); addLove(st, L, 3); pushLog(st, "個別STORY：NAOが自分の言葉で語った（センス+1・愛情度+3）"); },
+            next: [solo(s, "backstage", L, "fired", "「……俺の音楽は、俺の言葉だ。」たどたどしくも、芯のある一言。少し、殻が破れた。（センス+1・愛情度+3）", "flash")] },
+        ],
+      },
+    ],
+    indiefes: (s, L) => [
+      solo(s, "studio", L, "sad", "楽屋にNAO宛ての手紙。差出人は親族——「いつまでそんな騒音を。そろそろ目を覚ましなさい」。NAOの手が、微かに震えている。"),
+      {
+        bg: "studio", chars: [{ member: L, pos: "center", mood: "normal" }],
+        text: "音楽一家に生まれ、メタルを選んだことがずっと彼女のコンプレックスだ。どう声をかける？",
+        choices: [
+          { label: "「音で黙らせてやれ」と焚きつける", apply: (st) => { addParam(st, "S", 1); addLove(st, L, 3); pushLog(st, "個別STORY：NAOに火がついた（センス+1・愛情度+3）"); },
+            next: [solo(s, "studio", L, "fired", "「……ああ。俺の速弾きが、本物だって証明してやる。」瞳に、静かな炎。（センス+1・愛情度+3）", "flash")] },
+          { label: "「気にするな。俺たちが家族だ」", apply: (st) => { addLove(st, L, 6); st.bond = Math.min(100, st.bond + 4); pushLog(st, "個別STORY：NAOに寄り添った（愛情度+6・結束+4）"); },
+            next: [solo(s, "studio", L, "happy", "「……そう、だな。ここが、俺の居場所か。」手紙をそっと畳んだ。（愛情度+6・結束+4）", "flash")] },
+        ],
+      },
+    ],
+    major: (s, L) => [
+      solo(s, "studio", "RYO", "sad", "メジャーの担当が言う。「もっとキャッチーに。速弾きは減らして、売れる曲を」。NAOの眉がぴくりと動いた。"),
+      {
+        bg: "studio", chars: [{ member: L, pos: "center", mood: "normal" }],
+        text: "有名になることより、理想の音を追ってきた天才肌。その理想を、曲げさせるか？",
+        choices: [
+          { label: "「理想を貫け。それがお前だ」", apply: (st) => { addParam(st, "S", 2); addLove(st, L, 8); pushLog(st, "個別STORY：NAOは理想を貫いた（センス+2・愛情度+8）"); },
+            next: [solo(s, "studio", L, "fired", "「……ありがとう。俺は、俺の音でてっぺんを獲る。」迷いが消えた指先が、加速する。（センス+2・愛情度+8）", "flash")] },
+          { label: "「売れ線も、武器のうちだ」", apply: (st) => { st.fame = Math.min(100, st.fame + 4); addLove(st, L, 2); st.bond = Math.max(0, st.bond - 3); pushLog(st, "個別STORY：NAOは折り合いをつけた（知名度+4・愛情度+2・結束-3）"); },
+            next: [solo(s, "studio", L, "normal", "「……一理ある。理想も、届かなきゃ意味がない、か。」複雑な顔で、新しい譜面を睨む。（知名度+4・愛情度+2・結束-3）", "flash")] },
+        ],
+      },
+    ],
+    bigfes: (s, L) => [
+      solo(s, "venueBig", L, "happy", "客席の隅に、あの親族の姿。演奏後、彼らは何も言わず、ただ深く頷いて帰っていった。\n\n「……認めさせた、のかな。」NAOの横顔が、憑き物が落ちたように穏やかだった。", "flash"),
+    ],
+  },
+  Ba: {
+    gateway: (s, L) => [
+      solo(s, "street", L, "happy", "MAKOのインディーズ知識が火を噴く。「あのハコの店長、昔◯◯ってバンドで…」——マニアックな縁が、思わぬ対バンを呼び込んだ。（人脈+1）"),
+      { bg: "street", chars: [{ member: L, pos: "center", mood: "normal" }], text: "地味だが、彼女の愛と知識がバンドを一歩前へ進めた。", fx: "flash", choices: undefined },
+    ],
+    indiefes: (s, L) => [
+      solo(s, "studio", L, "sad", "ふとしたとき、MAKOがぽつりと零す。「……あたし、売れなくてもいい。ただ、このバンドが、いつか終わっちゃうのが、こわい」"),
+      {
+        bg: "studio", chars: [{ member: L, pos: "center", mood: "normal" }],
+        text: "一番バンドにかける思いが強い、内気なベーシスト。何と返す？",
+        choices: [
+          { label: "「ずっと一緒だ。約束する」", apply: (st) => { st.bond = Math.min(100, st.bond + 10); addLove(st, L, 8); pushLog(st, "個別STORY：MAKOと約束を交わした（結束+10・愛情度+8）"); },
+            next: [solo(s, "studio", L, "happy", "「……うん。うん。指切り、して？」小さな小指が差し出される。ずっと、この音を。（結束+10・愛情度+8）", "flash")] },
+          { label: "「先は分からない。でも今を全力で」", apply: (st) => { addLove(st, L, 4); st.bond = Math.min(100, st.bond + 4); pushLog(st, "個別STORY：MAKOと今を誓った（愛情度+4・結束+4）"); },
+            next: [solo(s, "studio", L, "normal", "「……そうだね。今を、ちゃんと刻もう。」少し寂しげに、でも確かに頷いた。（愛情度+4・結束+4）", "flash")] },
+        ],
+      },
+    ],
+    major: (s, L) => [
+      solo(s, "venueBig", L, "sad", "規模が大きくなるほど、MAKOは不安げだ。「……大きくなると、みんな、変わっちゃうのかな」"),
+      {
+        bg: "studio", chars: [{ member: L, pos: "center", mood: "normal" }],
+        text: "売れることより、このメンバーで長く。彼女の願いに、どう応える？",
+        choices: [
+          { label: "「何があっても、この五人で行く」", apply: (st) => { st.bond = Math.min(100, st.bond + 12); addLove(st, L, 8); pushLog(st, "個別STORY：MAKOに絆を誓った（結束+12・愛情度+8）"); },
+            next: [solo(s, "studio", L, "happy", "「……えへへ。じゃあ、あたし、どこまでもついていく。」不安が、笑顔にほどけた。（結束+12・愛情度+8）", "flash")] },
+          { label: "「大きくなるのも、悪くないぞ」", apply: (st) => { st.fame = Math.min(100, st.fame + 4); st.bond = Math.max(0, st.bond - 4); addLove(st, L, 1); pushLog(st, "個別STORY：規模拡大を優先（知名度+4・結束-4）"); },
+            next: [solo(s, "street", L, "sad", "「……うん、わかってる。ついていく、けど。」少しだけ、俯いた。（知名度+4・結束-4）")] },
+        ],
+      },
+    ],
+    bigfes: (s, L) => [
+      solo(s, "venueBig", L, "happy", "大観衆の中、MAKOがはにかんで叫んだ。「あたし、このバンドが世界で一番好き——ッ！」\n\n内気な彼女の、精一杯の愛の告白。四人の音が、一つに溶けていく。", "flash"),
+    ],
+  },
+  Dr: {
+    gateway: (s, L) => [
+      solo(s, "backstage", L, "sad", "登竜門ライブ直前。天真爛漫なTOMOが、ガチガチに固まっている。「む、無理かも……人がいっぱい……」——実は、極度の上がり性なのだ。"),
+      {
+        bg: "backstage", chars: [{ member: L, pos: "center", mood: "normal" }],
+        text: "本番はもう目前。どう送り出す？",
+        choices: [
+          { label: "深呼吸させて、落ち着かせる", apply: (st) => { addStamina(st, 6); addLove(st, L, 6); pushLog(st, "個別STORY：TOMOを落ち着かせた（体力+6・愛情度+6）"); },
+            next: [solo(s, "backstage", L, "happy", "「……すぅ、はぁ。……うん、いける気がしてきた！ ありがと！」いつもの笑顔が戻った。（体力+6・愛情度+6）", "flash")] },
+          { label: "「陸上の本番と同じだ、走れ！」", apply: (st) => { addParam(st, "P", 2); addLove(st, L, 3); pushLog(st, "個別STORY：TOMOに気合が入った（パフォーマンス+2・愛情度+3）"); },
+            next: [solo(s, "backstage", L, "fired", "「……っ、そうだ、スタートの合図と同じ！ よぉし、走るよ——ッ!!」スティックを握り直す。（パフォーマンス+2・愛情度+3）", "flash")] },
+        ],
+      },
+    ],
+    indiefes: (s, L) => [
+      solo(s, "venueSmall", L, "happy", "客席にTOMOの友達がぎっしり。「TOMO——ッ！」の声援が飛ぶ。誰とでも仲良くなれる彼女の人徳が、会場を温めた。（知名度が広がった）", "flash"),
+    ],
+    major: (s, L) => [
+      solo(s, "street", "RYO", "normal", "陸上のコーチがTOMOを訪ねてきた。「君、まだ間に合う。オリンピックを本気で狙わないか」——TOMOの夢は、メダルだ。"),
+      {
+        bg: "studio", chars: [{ member: L, pos: "center", mood: "normal" }],
+        text: "（そういえば、あたし『走るためにドラム』始めたんだっけ…）バンドか、陸上か。彼女の背中を、どう押す？",
+        choices: [
+          { label: "「両方の夢、応援するよ」", apply: (st) => { addLove(st, L, 10); st.bond = Math.min(100, st.bond + 3); pushLog(st, "個別STORY：TOMOの両夢を応援（愛情度+10・結束+3）"); },
+            next: [solo(s, "studio", L, "happy", "「……ほんと！？ えへへ、あたし、欲張りでもいいんだ！ ドラムも走るのも、全部やる——ッ！」（愛情度+10・結束+3）", "flash")] },
+          { label: "「今は、バンドに集中してほしい」", apply: (st) => { st.bond = Math.min(100, st.bond + 8); addLove(st, L, -2); pushLog(st, "個別STORY：TOMOにバンド集中を頼んだ（結束+8・愛情度-2）"); },
+            next: [solo(s, "studio", L, "sad", "「……うん、わかった。今は、みんなとが一番だもんね。」笑顔の奥に、ほんの少しの迷い。（結束+8・愛情度-2）")] },
+        ],
+      },
+    ],
+    bigfes: (s, L) => [
+      solo(s, "venueBig", L, "happy", "大歓声の中、TOMOがからっと笑う。「あたし、そろそろ気づいちゃった。ドラム、たぶん足は速くならない！ でも——こんなに好きになれたんだから、ぜんぜんアリ！」\n\n嘘から始まった夢が、本物になった瞬間。", "flash"),
+    ],
+  },
+};
+
+/** Story beat for the chosen leader when checkpoint `clearedId` is cleared. */
+export function buildLeaderStoryBeat(state: GameState, clearedId: string): Scene[] {
+  const build = LEADER_ARC[state.leaderPart]?.[clearedId];
+  if (!build) return [];
+  return build(state, leaderArt(state), nameOf(state, leaderArt(state)));
+}
+
+export function buildOpeningScenes(state: GameState): Scene[] {
   return [
-    scene("street", [L], `——${name}。昼間はしがない社会人。だが胸の奥では、いつだって歪んだギターの轟音が鳴り止まない。`, { speaker: name, fx: "flash" }),
-    scene("studio", [L], "いつか、俺たちの音を世界に叩きつける。メジャーデビュー、そしてその先へ——。それが、ガキの頃からの夢だ。", { speaker: name }),
-    scene("studio", ["KEN", "RYO", "MIO", "GO"], "仲間はいる。時間も金も、いつだって足りない。それでも今日も、俺たちはスタジオに集まる。\n\n——さあ、伝説を始めよう。", { fx: "shake" }),
+    ...buildLeaderIntro(state),
+    scene("studio", ["KEN", "RYO", "MIO", "GO"], "仲間はいる。時間も金も、いつだって足りない。それでも今日も、あたしたちはスタジオに集まる。\n\n——さあ、伝説を始めよう。", { fx: "shake" }),
   ];
 }
 
@@ -1168,6 +1360,8 @@ export function checkProgress(state: GameState): ProgressResult {
     const next = MILESTONES[state.stage];
     const scenes: Scene[] = [
       scene(target.bg, ["KEN", "RYO", "MIO", "GO"], `【${target.label}】達成！\n\n${target.flavor}`, { fx: "flash" }),
+      // the chosen leader's personal arc advances at each checkpoint
+      ...buildLeaderStoryBeat(state, target.id),
       // when a new checkpoint appears, introduce it and hype the band up
       ...(!cleared && next ? buildMilestoneIntro(state, next) : []),
     ];
