@@ -32,7 +32,13 @@ const char = parse(readFileSync(join(ROOT, `dna/${yamlFile}.yaml`), "utf8"));
 const EVOS = char.evolutions; // keyed by infix: goth/hard/kawaii/death
 
 const PAIRS = ["goth-hard", "goth-kawaii", "goth-death", "hard-kawaii", "hard-death", "kawaii-death"];
-const combos = process.argv.slice(3).length ? process.argv.slice(3) : [...PAIRS, "ultimate"];
+const ALL_COMBOS = [...PAIRS, "ultimate"];
+// Targets are "combo" (→ normal) or "combo.mood". Combo names use "-" not ".",
+// so the last "." separates the mood. Default = all combos at normal.
+const targets = (process.argv.slice(3).length ? process.argv.slice(3) : ALL_COMBOS).map((a) => {
+  const i = a.lastIndexOf(".");
+  return i === -1 ? [a, "normal"] : [a.slice(0, i), a.slice(i + 1)];
+});
 
 const sprite =
   "FULL-BODY standing pose, head to toe, both feet fully visible at the very bottom edge, centered, not a bust crop. " +
@@ -45,10 +51,11 @@ function refParts(paths) {
   }));
 }
 
-function promptFor(combo) {
+function promptFor(combo, mood) {
   const identity = char.identity.join(", ");
   const base = `${style.style.join(", ")}, ${identity}`;
-  const tail = `, ${(char.props || []).join(", ")}, ${char.part} of a metal band, ${char.personality_vibe}, calm confident expression, ${style.quality.join(", ")}`;
+  const expr = char.expressions?.[mood] || "calm confident expression";
+  const tail = `, ${(char.props || []).join(", ")}, ${char.part} of a metal band, ${char.personality_vibe}, ${expr}, ${style.quality.join(", ")}`;
 
   const isUlt = combo === "ultimate";
   const keys = isUlt ? ["goth", "hard", "kawaii", "death"] : combo.split("-");
@@ -66,20 +73,24 @@ function promptFor(combo) {
     ...(isUlt ? ["corpse paint, face paint, war paint, skull face makeup, painted face, black-and-white face"] : []),
   ].join(", ");
 
-  // Gorgeous ultimate anchors on the elegant/frilly parents (not the corpse-paint death look).
-  const refKeys = isUlt ? ["goth", "kawaii"] : keys;
-  const refs = [
-    join(ROOT, `public/assets/chars/${ARTFILE}.v2.normal.png`),
-    ...refKeys.map((k) => join(ROOT, `public/assets/chars/${ARTFILE}.v2.${k}.normal.png`)),
-  ];
-  const positive = `${base}, ${fusionText}${tail}\n\n${sprite}\n\nKeep the SAME character identity (species ears/tail/hair and instrument) as the reference images.\n\nAspect ratio: 2:3 (vertical).\n\nAvoid: ${neg}.`;
+  // Non-normal moods lock onto this fusion's OWN normal sprite so the outfit
+  // stays identical and only the expression/pose changes.
+  const comboNormal = join(ROOT, `public/assets/chars/${ARTFILE}.v2.${combo}.normal.png`);
+  const refKeys = isUlt ? ["goth", "kawaii"] : keys; // gorgeous ultimate anchors on elegant/frilly parents
+  const refs =
+    mood === "normal"
+      ? [join(ROOT, `public/assets/chars/${ARTFILE}.v2.normal.png`), ...refKeys.map((k) => join(ROOT, `public/assets/chars/${ARTFILE}.v2.${k}.normal.png`))]
+      : [comboNormal, join(ROOT, `public/assets/chars/${ARTFILE}.v2.normal.png`)];
+
+  const moodNote = mood === "normal" ? "" : "\n\nKeep the EXACT SAME outfit, accessories, hair and makeup as the first reference image — change ONLY the facial expression and pose to match.";
+  const positive = `${base}, ${fusionText}${tail}\n\n${sprite}${moodNote}\n\nKeep the SAME character identity (species ears/tail/hair and instrument) as the reference images.\n\nAspect ratio: 2:3 (vertical).\n\nAvoid: ${neg}.`;
   return { positive, refs };
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function gen(combo, attempt = 1) {
-  const { positive, refs } = promptFor(combo);
+async function gen(combo, mood, attempt = 1) {
+  const { positive, refs } = promptFor(combo, mood);
   try {
     const res = await ai.models.generateContent({
       model: MODEL,
@@ -88,17 +99,17 @@ async function gen(combo, attempt = 1) {
     });
     const img = (res?.candidates?.[0]?.content?.parts || []).find((p) => p.inlineData?.data);
     if (!img) throw new Error("no image returned");
-    const out = join(ROOT, `public/assets/chars/${ARTFILE}.v2.${combo}.normal.png`);
+    const out = join(ROOT, `public/assets/chars/${ARTFILE}.v2.${combo}.${mood}.png`);
     writeFileSync(out, Buffer.from(img.inlineData.data, "base64"));
-    console.log(`  ✓ ${ARTFILE}.v2.${combo}.normal.png`);
+    console.log(`  ✓ ${ARTFILE}.v2.${combo}.${mood}.png`);
   } catch (e) {
     const rate = e?.status === 429 || /429|RESOURCE_EXHAUSTED/.test(String(e?.message));
-    if (rate && attempt <= 6) { const w = 15000 * attempt; console.warn(`  429 ${combo}, wait ${w / 1000}s (#${attempt})`); await sleep(w); return gen(combo, attempt + 1); }
-    if (attempt <= 2) { console.warn(`  retry ${combo}: ${String(e?.message).slice(0, 80)}`); await sleep(3000); return gen(combo, attempt + 1); }
+    if (rate && attempt <= 6) { const w = 15000 * attempt; console.warn(`  429 ${combo}.${mood}, wait ${w / 1000}s (#${attempt})`); await sleep(w); return gen(combo, mood, attempt + 1); }
+    if (attempt <= 2) { console.warn(`  retry ${combo}.${mood}: ${String(e?.message).slice(0, 80)}`); await sleep(3000); return gen(combo, mood, attempt + 1); }
     throw e;
   }
 }
 
-console.log(`member=${MEMBER} combos=${combos.join(", ")}`);
-for (const c of combos) { process.stdout.write(`gen ${c}...\n`); await gen(c); await sleep(2500); }
+console.log(`member=${MEMBER} targets=${targets.map((t) => t.join(".")).join(", ")}`);
+for (const [c, m] of targets) { process.stdout.write(`gen ${c}.${m}...\n`); await gen(c, m); await sleep(2500); }
 console.log("done");
