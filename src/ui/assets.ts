@@ -23,9 +23,9 @@ const CHAR_VER: Record<string, number> = { RYO: 2, KEN: 2, MIO: 2, GO: 2 };
 // Flip to true once the evolution sprites exist on disk. Enabled: all 4 members
 // × 4 single-genre looks × 4 moods, plus the 6 pair fusions + ultimate (normal).
 const EVO_ART_READY = true;
-// Fusion looks (pairs + ultimate) currently ship at `normal` only; their other
-// moods reuse the fusion's normal sprite. Single-genre looks have all four moods.
-const FUSION_MOOD_READY = false;
+// Fusion looks (pairs + ultimate) now have all four moods too, so use the
+// per-mood sprite directly (set false to fall back to the fusion's normal).
+const FUSION_MOOD_READY = true;
 
 // The band's current appearance infix, resolved from the unlocked set via
 // evolutionInfix (game/evolution): "" = base, "goth".. = single, "hard-kawaii"..
