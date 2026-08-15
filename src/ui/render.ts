@@ -33,7 +33,8 @@ import type {
   StaffRole,
 } from "../game/types";
 import { ACTION_ICON, ACTION_LABEL, PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS, STAFF_LABEL } from "../game/types";
-import { bgSrc, charSrc, EVO_INFIX, setEvolution } from "./assets";
+import { bgSrc, charSrc, setEvolution } from "./assets";
+import { EVO_LOOK, evolutionInfix, SEG_INFIX } from "../game/evolution";
 
 export interface UiState {
   mode: "title" | "partSelect" | "board" | "cardSub" | "staffPick" | "practiceChoice" | "slides" | "live" | "result" | "gameover" | "clear";
@@ -174,16 +175,17 @@ function staffRow(role: StaffRole, intimacy: number, cut: number): string {
 const EVO_NAME: Record<string, string> = { visual: "幽艶ゴシック", core: "鋼鉄ハードロック", light: "紅黒カワメタ", expert: "戦鬼デスメタル" };
 
 function evolutionRow(state: GameState): string {
-  const chips = SEGMENTS.filter((s) => s in EVO_INFIX)
+  const chips = SEGMENTS.filter((s) => s in SEG_INFIX)
     .map((s) => {
       const on = !!state.evoUnlocked[s];
-      const cur = state.evolution === s;
-      return `<span class="evochip ${on ? "on" : ""} ${cur ? "cur" : ""}">${SEGMENT_LABEL[s]}：${EVO_NAME[s]}${cur ? " ★" : on ? " ✓" : ""}</span>`;
+      return `<span class="evochip ${on ? "on" : ""}">${SEGMENT_LABEL[s]}：${EVO_NAME[s]}${on ? " ✓" : ""}</span>`;
     })
     .join("");
+  const cur = EVO_LOOK[evolutionInfix(state.evoUnlocked)]?.name;
+  const now = cur ? `<div class="evonow">現在の姿：<b>${cur}</b></div>` : "";
   return `<h2 class="sub">✨ 見た目の進化</h2>
-    <div class="hint">客層ターゲットでS評価（満足度80+）を取るとその姿を解禁。★＝現在の姿（最後にSを取った層）</div>
-    <div class="evochips">${chips}</div>`;
+    <div class="hint">客層ターゲットでS評価（満足度80+）を取ると解禁。複数解禁で姿が<b>融合</b>、3層以上で<b>究極形態</b>へ。</div>
+    <div class="evochips">${chips}</div>${now}`;
 }
 
 function membersPanel(state: GameState): string {
@@ -603,7 +605,7 @@ function partSelectScreen(): string {
 }
 
 export function render(root: HTMLElement, state: GameState, ui: UiState, h: Handlers): void {
-  setEvolution(state.evolution); // pick the sprite variant for this frame
+  setEvolution(evolutionInfix(state.evoUnlocked)); // pick the sprite variant for this frame
   if (ui.mode === "title") {
     root.innerHTML = titleScreen();
     root.querySelector("#start")?.addEventListener("click", () => h.onStart());

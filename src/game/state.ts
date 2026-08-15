@@ -3,6 +3,7 @@
 // See docs/phase1-cards.md.
 
 import { bandParam, SEG_WEIGHTS } from "./coreLoop";
+import { EVO_LOOK, evolutionInfix } from "./evolution";
 import {
   composeScenes,
   contactScenes,
@@ -926,37 +927,33 @@ export function buildAfterPartyScenes(state: GameState, r: LiveResult, rng: () =
   ];
 }
 
-// --- 見た目の進化（客層でS評価＝満足度80以上を取ると解禁）------------------
+// --- 見た目の進化（客層でS評価＝満足度80以上を取ると解禁。累積で融合）------
+// 姿は「解禁済みの層の集合」で決まる: 1層=単体ジャンル / 2層=そのペア融合 /
+// 3層以上=究極形態（look/名称の解決は game/evolution.ts）。
 
-/** Appearance evolution per audience segment (single-layer, most recent wins). */
-const EVO_THEME: Record<Segment, { name: string; desc: string }> = {
-  visual: { name: "幽艶ゴシック", desc: "漆黒のレースと深紅を纏い、荘厳で物憂げな美へ。ゴシック/シンフォニックメタルの妖艶な姿へ。" },
-  core: { name: "鋼鉄ハードロック", desc: "革とスタッズ、王道の轟音。正統派ハードロック/ヘヴィメタルの風格ある姿へ。" },
-  light: { name: "紅黒カワメタ", desc: "黒と紅のフリルで可憐に暴れる。キュート×激烈のカワイイメタルの姿へ。" },
-  expert: { name: "戦鬼デスメタル", desc: "コープスペイントと鋲、戦装束。ウォー/デスメタルの獰猛な姿へ。" },
-};
-
-function buildEvolutionScenes(seg: Segment): Scene[] {
-  const t = EVO_THEME[seg];
+function buildEvolutionScenes(infix: string, seg: Segment): Scene[] {
+  const t = EVO_LOOK[infix];
   const lineup = (mood: Mood): Scene["chars"] =>
     (["RYO", "KEN", "MIO", "GO"] as const).map((a, i) => ({ member: a, pos: (["left", "center", "right", "left"] as const)[i], mood }));
   return [
     { bg: "venueBig", chars: lineup("fired"), text: `✨✨ 進化 ✨✨\n\n${SEGMENT_LABEL[seg]}層をS評価で熱狂させた衝撃が、バンドの姿を作り変えていく——！`, fx: "flash" },
-    { bg: "backstage", chars: lineup("happy"), text: `【${t.name}】\n\n${t.desc}\n\nメンバー全員の見た目が進化した！（客層でSを取るたびに、その姿へ変化する）`, fx: "flash" },
+    { bg: "backstage", chars: lineup("happy"), text: `【${t.name}】\n\n${t.desc}\n\nメンバー全員の見た目が進化した！（客層でSを取るたびに、その要素が加わって姿が融合していく）`, fx: "flash" },
   ];
 }
 
-/** After a live: an S rating (satisfaction ≥ 80) evolves the band's look to the
- *  targeted layer's style. Multiple layers can be unlocked; the most-recent S
- *  is the one shown. Returns evolution scenes only the first time each unlocks. */
+/** After a live: an S rating (satisfaction ≥ 80) unlocks the targeted layer's
+ *  look. The band's appearance is the CUMULATIVE fusion of every unlocked layer
+ *  (2 = a pair fusion, 3+ = the ultimate). Returns evolution scenes only when a
+ *  live unlocks a NEW layer (i.e. the fused look actually changes). */
 export function registerLiveEvolution(state: GameState, target: Segment, satisfaction: number): Scene[] {
   if (satisfaction < 80) return [];
   const firstTime = !state.evoUnlocked[target];
   state.evoUnlocked[target] = true;
-  state.evolution = target; // display the most-recently earned look
+  state.evolution = target; // last-earned layer (scene focus / legacy field)
   if (!firstTime) return [];
-  pushLog(state, `✨ ${SEGMENT_LABEL[target]}層でS評価！ 見た目が「${EVO_THEME[target].name}」へ進化！`);
-  return buildEvolutionScenes(target);
+  const infix = evolutionInfix(state.evoUnlocked);
+  pushLog(state, `✨ ${SEGMENT_LABEL[target]}層でS評価！ 見た目が「${EVO_LOOK[infix].name}」へ進化！`);
+  return buildEvolutionScenes(infix, target);
 }
 
 /** Scout a support member, spending 人脈. Returns the intro scenes. */
