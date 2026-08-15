@@ -3,12 +3,14 @@
 // advance the turn. After the month's turns, a live decision -> result.
 
 import { applyLiveResult, resolveLive } from "./game/coreLoop";
+import { applyLiveToMarket } from "./game/market";
 import { buildLiveScenes } from "./game/narrative";
 import {
   advanceTurn,
   buildAfterPartyScenes,
   buildIntroSequence,
   buildLivePreScenes,
+  buildTieupOfferScenes,
   checkProgress,
   isCardLocked,
   maybeFindItem,
@@ -77,6 +79,8 @@ function finishSlides(): void {
     pushLog(state, `ライブ実施：動員${result.draw} / 満足度${result.satisfaction} / 新規ファン+${result.newFans}`);
     // An S rating (satisfaction ≥ 80) evolves the band's look to that layer's style.
     const evo = registerLiveEvolution(state, ui.liveDecision.target, result.satisfaction);
+    // A strong targeted show pushes that segment's rival band back.
+    applyLiveToMarket(state, ui.liveDecision.target, result.satisfaction);
     afterSlides = "result";
     ui.sceneSeq = [...buildLiveScenes(state, ui.liveDecision, result), ...evo];
     ui.sceneIndex = 0;
@@ -134,7 +138,16 @@ function proceedMonth(): void {
     ui.sceneIndex = 0;
     ui.mode = "slides";
   } else {
-    ui.mode = "board";
+    // Normal month: surface a tie-up offer (choice event) if one appeared.
+    const offer = buildTieupOfferScenes(state);
+    if (offer.length) {
+      afterSlides = "board";
+      ui.sceneSeq = offer;
+      ui.sceneIndex = 0;
+      ui.mode = "slides";
+    } else {
+      ui.mode = "board";
+    }
   }
   redraw();
 }

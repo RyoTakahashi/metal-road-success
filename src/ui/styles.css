@@ -144,6 +144,17 @@ body {
 .evochip.cur { color: #fff; background: var(--accent); border-color: var(--accent); }
 .evonow { margin-top: 8px; font-size: 13px; color: var(--muted); }
 .evonow b { color: var(--accent); font-size: 15px; }
+.segmk { font-size: 11px; opacity: 0.95; letter-spacing: 1px; }
+.marketstrip { background: #ffffff0d; border: 1px solid #ffffff1f; border-radius: 8px; padding: 8px 10px; }
+.marketstrip .legend { font-size: 10px; color: var(--muted); }
+.mkt { display: flex; flex-direction: column; gap: 5px; margin-top: 6px; }
+.mktrow { display: grid; grid-template-columns: 96px 1fr 70px 44px; align-items: center; gap: 8px; font-size: 12px; }
+.mktrow .mkseg b { color: var(--ink); margin-left: 2px; }
+.mktrow .mkriv { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mktrow .mkbar { height: 8px; background: #ffffff1a; border-radius: 999px; overflow: hidden; }
+.mktrow .mkbar i { display: block; height: 100%; background: linear-gradient(90deg, #ff8f5e, #e23b6d); }
+.mktrow .mkmo { text-align: right; color: var(--muted); font-weight: 700; }
+.mktrow .mkmo.lead { color: #8fe0a0; }
 .opt.locked { opacity: 0.45; cursor: not-allowed; }
 .opt .capn { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }
 

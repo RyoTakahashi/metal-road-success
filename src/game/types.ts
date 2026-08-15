@@ -53,6 +53,22 @@ export interface Song {
   age: number; // months since release (0 = brand new); older = stale
 }
 
+/** A rival band that dominates one audience segment (market pressure). */
+export interface Rival {
+  name: string;
+  seg: Segment; // the segment they own
+  momentum: number; // 0–100 dominance; high = they throttle your growth there
+}
+
+/** An active or offered tie-up (CM/anime/press). Boosts one segment, but locks
+ *  the band's image for a few months (the opposite segment is penalised). */
+export interface TieUp {
+  name: string;
+  seg: Segment;
+  monthsLeft: number; // duration remaining (offer uses this as the full term)
+  fee: number; // upfront money paid to the band on acceptance
+}
+
 /** Turn action categories (the choice-card hand). See docs/phase1-cards.md. */
 export type ActionKind = "rest" | "music" | "promo" | "network" | "money";
 
@@ -126,6 +142,10 @@ export interface GameState {
   recent: Record<string, number>; // pattern key -> last-used index (no back-to-back repeats)
   evolution: string; // current appearance evolution (a Segment key, or "" = base)
   evoUnlocked: Record<string, boolean>; // segment -> whether an S-rated live unlocked its look
+  trend: Record<Segment, number>; // per-segment popularity heat (~0.7–1.4, 1 = neutral)
+  rivals: Rival[]; // one rival band per segment (market competition)
+  tieup: TieUp | null; // active tie-up (image lock + segment boost)
+  tieupOffer: TieUp | null; // a pending tie-up offer to accept/decline at month start
   funds: number;
   totalFans: number;
   segFans: Record<Segment, number>;

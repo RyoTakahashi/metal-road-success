@@ -12,6 +12,7 @@ import type {
   StaffRole,
 } from "./types";
 import { PARAMS, SEGMENTS } from "./types";
+import { marketFanMult, marketStreamMult } from "./market";
 
 /** Tunable constants — see core-loop.md §9 (the 【K_*】 markers). */
 export const K = {
@@ -138,13 +139,19 @@ export function resolveLive(
     0.55 * aAdj + 0.3 * match * 100 + 0.15 * atmosphere + paBonus - (trouble ? 18 : 0) + state.buffs.liveSat + loveBonus,
   );
 
-  // Step 5: new fans (KPI ②) — capacity × 出来栄え + ファン層.
+  // Market: trend heat, rival pressure and any tie-up bend how many fans the
+  // targeted segment yields (streams follow trend + tie-up).
+  const fanMkt = marketFanMult(state, target);
+  const streamMkt = marketStreamMult(state, target);
+
+  // Step 5: new fans (KPI ②) — capacity × 出来栄え + ファン層, scaled by the market.
   const quality = satisfaction / 100;
   const newFans = Math.round(
     (cap * K.fanCapCoef * Math.pow(quality, K.fanQualExp) +
       state.segFans[target] * K.fanSegCoef * quality) *
       (1 + state.support.sn) *
-      songFreshMult,
+      songFreshMult *
+      fanMkt,
   );
 
   // Step 6: streams (KPI ③).
@@ -154,7 +161,8 @@ export function resolveLive(
       (song.Q / K.streamQPivot) *
       (1 + state.support.sn) *
       (satisfaction / K.streamSatPivot) *
-      songFreshMult,
+      songFreshMult *
+      streamMkt,
   );
 
   // Step 7: economics — staff take a cut of revenue as 人件費 (利益分散).

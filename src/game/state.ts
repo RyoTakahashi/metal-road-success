@@ -4,6 +4,7 @@
 
 import { bandParam, SEG_WEIGHTS } from "./coreLoop";
 import { EVO_LOOK, evolutionInfix } from "./evolution";
+import { acceptTieup, initMarket, leanToward, tickMarket } from "./market";
 import {
   composeScenes,
   contactScenes,
@@ -25,11 +26,11 @@ import type {
   Member,
   Param,
   Scene,
+  SceneChoice,
   Segment,
-  Song,
   StaffRole,
 } from "./types";
-import { PARAM_LABEL, SEGMENT_LABEL, STAFF_LABEL } from "./types";
+import { PARAM_LABEL, SEGMENT_LABEL, SEGMENTS, STAFF_LABEL } from "./types";
 
 const TURNS_PER_MONTH = 4;
 const clampStat = (n: number) => Math.max(0, Math.min(99, n));
@@ -121,6 +122,7 @@ export function newGame(part = "Vo", leaderName = "", rng: () => number = Math.r
     recent: {},
     evolution: "",
     evoUnlocked: {},
+    ...initMarket(),
     funds: 300_000,
     totalFans: 1200,
     segFans: { core: 600, light: 300, visual: 150, expert: 150 },
@@ -271,17 +273,29 @@ function resolveMusic(
       Q = 95;
       state.buffs.composeQ95 = false;
     }
-    const n = state.songs.length + 1;
-    const song: Song = {
-      name: `New Track ${n}`,
-      lean: { core: 0.5, light: 0.2, visual: 0.1, expert: 0.2 },
-      Q,
-      age: 0,
-    };
-    state.songs.push(song);
     spend(state, 14);
-    pushLog(state, `作曲：新曲「${song.name}」が完成（Q${Q}）`);
-    return { scenes: composeScenes(song.name, Q, rng) };
+    const name = `New Track ${state.songs.length + 1}`;
+    const lead = state.members.find((m) => m.isLeader)?.artKey ?? "RYO";
+    // 楽曲属性: the player aims the new song at a segment (its lean), so setlists
+    // can be matched to the target audience / current trend later.
+    const choose = (seg: Segment): SceneChoice => ({
+      label: `${SEGMENT_LABEL[seg]}寄りに仕上げる`,
+      apply: (st) => {
+        st.songs.push({ name, lean: leanToward(seg), Q, age: 0 });
+        pushLog(st, `作曲：「${name}」完成（Q${Q}／${SEGMENT_LABEL[seg]}寄り）`);
+      },
+      next: composeScenes(name, Q, rng),
+    });
+    return {
+      scenes: [
+        {
+          bg: "studio",
+          chars: [{ member: lead, pos: "center", mood: "normal" }],
+          text: `新曲「${name}」が形になってきた（Q${Q}）。どの客層に刺す曲に仕上げる？`,
+          choices: SEGMENTS.map(choose),
+        },
+      ],
+    };
   }
   if (sub === "perform") {
     addParam(state, "P", 2);
@@ -1082,9 +1096,45 @@ export function startNewMonth(state: GameState, rng: () => number = Math.random)
     state.staff = state.staff.filter((st) => st.intimacy > 0);
     for (const st of leaving) pushLog(state, `${STAFF_LABEL[st.role]}が離脱した…（親密度が尽きた）`);
   }
+  // Market meta: trends drift, rivals grind, tie-ups age, a new offer may appear.
+  for (const line of tickMarket(state, rng)) pushLog(state, line);
   tickTurnBuffs(state);
   dealHand(state, rng);
   pushLog(state, `--- ${state.month}ヶ月目 スタート ---`);
+}
+
+/** Accept the pending tie-up offer (called from the offer event). */
+export function resolveTieupAccept(state: GameState): void {
+  const t = state.tieupOffer;
+  acceptTieup(state);
+  if (t) pushLog(state, `🤝 タイアップ「${t.name}」を受諾！ ${SEGMENT_LABEL[t.seg]}層が沸き立つ（+¥${t.fee.toLocaleString()}）。`);
+}
+
+/** Decline the pending tie-up offer. */
+export function resolveTieupDecline(state: GameState): void {
+  const t = state.tieupOffer;
+  state.tieupOffer = null;
+  if (t) pushLog(state, `タイアップ「${t.name}」を見送った。`);
+}
+
+/** Month-start tie-up offer as a choice event (accept surges a segment but locks
+ *  the band's image; declining keeps you free). Empty when no offer is pending. */
+export function buildTieupOfferScenes(state: GameState): Scene[] {
+  const t = state.tieupOffer;
+  if (!t) return [];
+  const oppLabel = SEGMENT_LABEL[({ visual: "core", core: "visual", light: "expert", expert: "light" } as Record<Segment, Segment>)[t.seg]];
+  return [
+    {
+      bg: "backstage",
+      chars: [{ member: "RYO", pos: "center", mood: "normal" }],
+      speaker: "マネージャー",
+      text: `タイアップの話が来てる。「${t.name}」——${SEGMENT_LABEL[t.seg]}層に一気に刺さる。契約金¥${t.fee.toLocaleString()}。\nただし数ヶ月はバンドのイメージが縛られる（${oppLabel}層ウケは落ちる）。受ける？`,
+      choices: [
+        { label: `受ける（${SEGMENT_LABEL[t.seg]}層に賭ける）`, apply: (s) => resolveTieupAccept(s) },
+        { label: "見送る（自由でいる）", apply: (s) => resolveTieupDecline(s) },
+      ],
+    },
+  ];
 }
 
 // --- Milestone ladder & game over (checkpoints) -----------------------------

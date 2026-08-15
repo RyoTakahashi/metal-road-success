@@ -35,6 +35,7 @@ import type {
 import { ACTION_ICON, ACTION_LABEL, PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS, STAFF_LABEL } from "../game/types";
 import { bgSrc, charSrc, setEvolution } from "./assets";
 import { EVO_LOOK, evolutionInfix, SEG_INFIX } from "../game/evolution";
+import { hottestSegment, OPPOSED, rivalOf, songDir, trendIcon, trendMult } from "../game/market";
 
 export interface UiState {
   mode: "title" | "partSelect" | "board" | "cardSub" | "staffPick" | "practiceChoice" | "slides" | "live" | "result" | "gameover" | "clear";
@@ -188,6 +189,27 @@ function evolutionRow(state: GameState): string {
     <div class="evochips">${chips}</div>${now}`;
 }
 
+function marketRow(state: GameState): string {
+  const rows = SEGMENTS.map((s) => {
+    const r = rivalOf(state, s);
+    const t = Math.round(trendMult(state, s) * 100);
+    const mo = r ? Math.round(r.momentum) : 0;
+    const lead = !!r && r.momentum < 40;
+    return `<div class="mktrow">
+      <span class="mkseg">${SEGMENT_LABEL[s]} ${trendIcon(trendMult(state, s))}<b>${t}</b></span>
+      <span class="mkriv">${r ? esc(r.name) : ""}</span>
+      <span class="mkbar"><i style="width:${mo}%"></i></span>
+      <span class="mkmo ${lead ? "lead" : ""}">${lead ? "優勢" : `勢${mo}`}</span>
+    </div>`;
+  }).join("");
+  const tie = state.tieup
+    ? `<div class="hint">🤝 タイアップ中：<b>${SEGMENT_LABEL[state.tieup.seg]}</b>層（あと${state.tieup.monthsLeft}ヶ月・${SEGMENT_LABEL[OPPOSED[state.tieup.seg]]}層は不利）</div>`
+    : "";
+  return `<h2 class="sub">📈 市場（トレンド / ライバル）</h2>
+    <div class="hint">数値＝トレンド(100=標準)。バー＝ライバルの勢い（低いほどこちら優勢）。狙う客層でSを取ると相手を押し返す。</div>
+    <div class="mkt">${rows}</div>${tie}`;
+}
+
 function membersPanel(state: GameState): string {
   const staff = state.staff.length
     ? `<h2 class="sub">🎧 サポート陣</h2>${state.staff.map((s) => staffRow(s.role, s.intimacy, s.cut)).join("")}`
@@ -198,6 +220,7 @@ function membersPanel(state: GameState): string {
       ${state.members.map(memberCard).join("")}
       ${staff}
       ${evolutionRow(state)}
+      ${marketRow(state)}
       <div class="center"><button class="btn secondary" id="close-panel">閉じる</button></div>
     </div></div>`;
 }
@@ -468,24 +491,36 @@ function liveModal(state: GameState, ui: UiState): string {
         ${venueName(c)}<span class="capn">${c}人 / 会場費¥${cost.toLocaleString()}</span></button>`;
     })
     .join("");
-  const segOpts = SEGMENTS.map(
-    (s) => `<button class="opt ${d.target === s ? "sel" : ""}" data-target="${s}">${SEGMENT_LABEL[s]}</button>`,
-  ).join("");
+  const segOpts = SEGMENTS.map((s) => {
+    const r = rivalOf(state, s);
+    const rivalMark = r ? (r.momentum >= 60 ? "⚔️" : r.momentum < 40 ? "👑" : "") : "";
+    const tieMark = state.tieup?.seg === s ? "🤝" : "";
+    return `<button class="opt ${d.target === s ? "sel" : ""}" data-target="${s}">${SEGMENT_LABEL[s]} <span class="segmk">${trendIcon(trendMult(state, s))}${rivalMark}${tieMark}</span></button>`;
+  }).join("");
   const songOpts = state.songs
     .map(
       (sg, i) =>
-        `<button class="opt ${d.songIndex === i ? "sel" : ""}" data-song="${i}">${esc(sg.name)} (Q${sg.Q}${sg.age === 0 ? " NEW" : `/${sg.age}ヶ月`})</button>`,
+        `<button class="opt ${d.songIndex === i ? "sel" : ""}" data-song="${i}">${esc(sg.name)}<span class="capn">Q${sg.Q}・${SEGMENT_LABEL[songDir(sg.lean)]}寄り${sg.age === 0 ? "・NEW" : `・${sg.age}ヶ月`}</span></button>`,
     )
     .join("");
+  const hot = hottestSegment(state);
+  const tieLine = state.tieup
+    ? `　🤝 <b>${SEGMENT_LABEL[state.tieup.seg]}</b>層タイアップ中（あと${state.tieup.monthsLeft}ヶ月）`
+    : "";
+  const marketStrip = `<div class="hint marketstrip">📈 今月の注目客層：<b>${SEGMENT_LABEL[hot]}</b> ${trendIcon(trendMult(state, hot))}${tieLine}
+    <br><span class="legend">🔥高い／❄️低いトレンド ・ ⚔️ライバル強い ・ 👑こちらが優勢 ・ 🤝タイアップ層</span></div>`;
   const cost = d.cap * K.venueCostPerSeat;
   const canPay = state.funds >= cost;
   return `
     <div class="overlay"><div class="panel modal">
       <h2>🎤 月末ライブ — 意思決定</h2>
+      ${marketStrip}
       <div class="field"><label>会場キャパ（会場費を前払い）</label><div class="opts">${capOpts}</div>
         <div class="hint">資金が足りない規模は選べない。序盤はバイトで会場費を稼ごう。</div></div>
-      <div class="field"><label>ターゲットとするファン層</label><div class="opts">${segOpts}</div></div>
-      <div class="field"><label>セットリスト（楽曲）</label><div class="opts">${songOpts}</div></div>
+      <div class="field"><label>ターゲットとするファン層</label><div class="opts">${segOpts}</div>
+        <div class="hint">トレンド高・ライバル弱・タイアップ層を突くと新規ファンが伸びる。</div></div>
+      <div class="field"><label>セットリスト（楽曲）</label><div class="opts">${songOpts}</div>
+        <div class="hint">曲の「〜寄り」がターゲット層と噛み合うほどマッチ度UP。</div></div>
       ${state.buffs.liveSat !== 0 || state.buffs.liveSellout ? `<div class="hint buffnote">🎒 発動中：${state.buffs.liveSellout ? "動員満員 " : ""}${state.buffs.liveSat !== 0 ? `満足度${state.buffs.liveSat > 0 ? "+" : ""}${state.buffs.liveSat}` : ""}</div>` : ""}
       <div class="center">
         <button class="btn secondary" id="open-items">🎒 アイテム ${itemCount(state)}</button>
