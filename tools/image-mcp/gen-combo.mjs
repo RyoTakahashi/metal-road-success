@@ -36,6 +36,7 @@ const combos = process.argv.slice(3).length ? process.argv.slice(3) : [...PAIRS,
 
 const sprite =
   "FULL-BODY standing pose, head to toe, both feet fully visible at the very bottom edge, centered, not a bust crop. " +
+  "STRICTLY keep the SAME 2.5-head chibi proportions as the reference image: a very large head, a small stubby body and short legs (head ≈ 40% of total height) — do NOT make her taller, slimmer or more realistically proportioned. " +
   "Render the character ISOLATED on a plain flat neutral light-gray studio backdrop — no scenery, smoke, haze, glow, sparkles, petals, flames or particles. Clean empty backdrop only.";
 
 function refParts(paths) {
@@ -48,21 +49,28 @@ function promptFor(combo) {
   const identity = char.identity.join(", ");
   const base = `${style.style.join(", ")}, ${identity}`;
   const tail = `, ${(char.props || []).join(", ")}, ${char.part} of a metal band, ${char.personality_vibe}, calm confident expression, ${style.quality.join(", ")}`;
-  const neg = [...style.negatives_global, ...(char.negatives || []), "busy background, scenery, smoke, particles, cropped legs"].join(", ");
 
-  let keys;
-  if (combo === "ultimate") keys = ["goth", "hard", "kawaii", "death"];
-  else keys = combo.split("-");
-
+  const isUlt = combo === "ultimate";
+  const keys = isUlt ? ["goth", "hard", "kawaii", "death"] : combo.split("-");
   const looks = keys.map((k) => `[${EVOS[k].label_ja}: ${EVOS[k].look.join(", ")}]`);
-  const fusionText =
-    combo === "ultimate"
-      ? `wearing the ULTIMATE fusion that combines ALL of these metal looks into one elaborate legendary stage costume — take the most iconic element from each and blend them harmoniously: ${looks.join(" ")}. An over-the-top final-form metal queen; keep it a single coherent outfit, not a collage.`
-      : `wearing a FUSION that blends these two metal looks into ONE coherent outfit — mix their key garments and accessories together, not split down the middle: ${looks.join(" AND ")}.`;
 
+  const fusionText = isUlt
+    ? "wearing the ULTIMATE evolved stage costume — the most GORGEOUS, luxurious and regal metal-queen outfit: an elaborate ornate ballgown blending black gothic lace, deep-crimson velvet and shining gold, encrusted with glittering jewels and gemstones, a grand ornate jewelled crown, a flowing cape and intricate gold-and-silver filigree accents. Opulent, dazzling and beautiful. Keep a CLEAN beautiful face with elegant glamorous makeup — absolutely NO corpse paint, face paint, war paint or skull makeup. A legendary diva final form, one coherent luxurious outfit."
+    : `wearing a FUSION that blends these two metal looks into ONE coherent outfit — mix their key garments and accessories together, not split down the middle: ${looks.join(" AND ")}.`;
+
+  const neg = [
+    ...style.negatives_global,
+    ...(char.negatives || []),
+    "busy background, scenery, smoke, particles, cropped legs",
+    "tall slender body, realistic proportions, elongated legs, six-heads-tall, adult proportions",
+    ...(isUlt ? ["corpse paint, face paint, war paint, skull face makeup, painted face, black-and-white face"] : []),
+  ].join(", ");
+
+  // Gorgeous ultimate anchors on the elegant/frilly parents (not the corpse-paint death look).
+  const refKeys = isUlt ? ["goth", "kawaii"] : keys;
   const refs = [
     join(ROOT, `public/assets/chars/${ARTFILE}.v2.normal.png`),
-    ...keys.map((k) => join(ROOT, `public/assets/chars/${ARTFILE}.v2.${k}.normal.png`)),
+    ...refKeys.map((k) => join(ROOT, `public/assets/chars/${ARTFILE}.v2.${k}.normal.png`)),
   ];
   const positive = `${base}, ${fusionText}${tail}\n\n${sprite}\n\nKeep the SAME character identity (species ears/tail/hair and instrument) as the reference images.\n\nAspect ratio: 2:3 (vertical).\n\nAvoid: ${neg}.`;
   return { positive, refs };

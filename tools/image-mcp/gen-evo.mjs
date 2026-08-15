@@ -47,10 +47,11 @@ async function genOne(evo, mood, attempt = 1) {
   const fullPrompt =
     spec.positive +
     "\n\nFULL-BODY standing pose, head to toe, both feet fully visible at the very bottom edge, centered, not a bust or portrait crop." +
+    "\n\nSTRICTLY keep the SAME 2.5-head chibi proportions as the reference image: a very large head, a small stubby body and short legs (head ≈ 40% of total height) — do NOT make her taller, slimmer or more realistically proportioned." +
     "\n\nRender the character ISOLATED on a plain flat neutral light-gray studio backdrop. Absolutely NO scenery, stage, background smoke, haze, glow, sparkles, rose petals, flames, embers or floating particles behind the character — a clean empty backdrop only." +
     "\n\nKeep the SAME character identity (species ears/tail/hair and instrument) as the reference image, changing only outfit and expression." +
     "\n\nAspect ratio: 2:3 (vertical)." +
-    `\n\nAvoid: ${spec.negative}, cropped at the waist, cut-off legs, busy background, scenery, smoke, particles.`;
+    `\n\nAvoid: ${spec.negative}, cropped at the waist, cut-off legs, tall slender body, realistic proportions, elongated legs, six-heads-tall, adult proportions, busy background, scenery, smoke, particles.`;
   const parts = [{ text: fullPrompt }, ...refParts(refs)];
   const res = await ai.models.generateContent({
     model: MODEL, contents: [{ role: "user", parts }], config: { responseModalities: ["IMAGE", "TEXT"] },
