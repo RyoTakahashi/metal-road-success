@@ -213,29 +213,63 @@ const leaderArt = (s: GameState) => s.members.find((m) => m.isLeader)?.artKey ??
  * Resolve a played card. `param` is only used for music/practice.
  * Returns the VN scenes to show; state is mutated.
  */
-// --- 曲名プール（客層で傾向が変わる。使用済みタイトルは再登場しない）--------
-const SONG_NAMES_SHARED = [
-  "Eternal Flame", "Rising Storm", "Iron Will", "Breaking Dawn", "Endless Road",
-  "Burning Sky", "Last Stand Anthem", "Wild Heart", "Roaring Thunder",
-  "Never Surrender", "Crimson Horizon", "Molten Heart", "Voltage Overdrive", "Phoenix Cry",
-];
-const SONG_NAMES_SEG: Record<Segment, string[]> = {
-  core: ["Steel Command", "Hammer of Dawn", "Iron Legion", "Molten Core", "Anvil of War", "Riff Overlord", "Thunder Divide", "Fist of Steel", "Redline Overdrive", "Warhead Symphony", "Chrome Cathedral", "Bulldozer March"],
-  light: ["Candy Chainsaw", "Neon Heartbeat", "Sugar Rush Riot", "Kawaii Apocalypse", "Pop'n Scream", "Glitter Fangs", "Bubblegum Blast", "Rainbow Distortion", "Idol of Destruction", "Sparkle Panic", "Cherry Bomb Parade", "Magical Moshpit"],
-  visual: ["Velvet Requiem", "Crimson Lament", "Gothic Rose", "Tears of Obsidian", "Moonlit Sorrow", "Eternal Mourning", "Bleeding Elegance", "Silent Cathedral", "Nocturne in Black", "Porcelain Grief", "Withered Lullaby", "Rose of Perdition"],
-  expert: ["Fractal Abyss", "Polyrhythmic Doom", "Diminished Requiem", "Blast Beat Genesis", "Tritone Gospel", "Necrotic Fugue", "Odd Meter Oblivion", "Guttural Sermon", "Chromatic Carnage", "Leviathan Djent", "Spectral Dissonance", "Entropy Cascade"],
+// --- 曲名ストック（客層ごとに1000件を語彙バンクから生成。使用済みは再登場せず）
+// 各層の形容詞×名詞の組み合わせでジャンル準拠のタイトルを1000件ずつ用意する
+// （全ユニーク）。候補表示は songNameCandidates で毎回4件を無作為抽出。
+const SONG_BANK: Record<Segment, { adj: string[]; noun: string[] }> = {
+  core: {
+    adj: ["Iron", "Steel", "Molten", "Thunder", "Savage", "Brutal", "Raging", "Blazing", "Crushing", "Roaring", "Rusted", "Chrome", "Burning", "Relentless", "Merciless", "Titan", "Diesel", "Voltage", "Furious", "Rampant", "Scorched", "Hammered", "Overdriven", "Unbroken", "Feral", "Rabid", "Nuclear", "Wrecking", "Berserk", "Riotous", "Warbound", "Ironclad", "Turbocharged", "Piston", "Hellbent", "Molten-Hot", "Adrenaline", "Redlined", "Granite", "Rumbling"],
+    noun: ["Command", "Legion", "Anthem", "Overdrive", "Hammer", "Onslaught", "Rampage", "Machine", "Engine", "Fury", "Uprising", "Warhead", "Riff", "Havoc", "Stampede", "Colossus", "Juggernaut", "Detonation", "Bulldozer", "Redline", "Warpath", "Assault", "Thunderclap", "Ironworks", "Firestorm", "Sledge", "Warcry", "Overload"],
+  },
+  light: {
+    adj: ["Candy", "Neon", "Sugar", "Glitter", "Bubblegum", "Rainbow", "Sparkle", "Magical", "Cosmic", "Electric", "Sweet", "Cherry", "Starlight", "Pastel", "Hyper", "Kawaii", "Popstar", "Lollipop", "Cotton", "Prism", "Twinkle", "Dreamy", "Sunny", "Fizzy", "Bouncy", "Cheeky", "Peppy", "Dazzling", "Melty", "Poppin", "Fluffy", "Vivid", "Giga", "Turbo", "Ultra", "Mega", "Shiny", "Cutie", "Frosted", "Marshmallow"],
+    noun: ["Heartbeat", "Riot", "Apocalypse", "Scream", "Fangs", "Parade", "Distortion", "Panic", "Moshpit", "Explosion", "Chainsaw", "Blast", "Rush", "Fantasy", "Rebellion", "Overload", "Meltdown", "Carnival", "Frenzy", "Uprising", "Anthem", "Bomb", "Storm", "Party", "Revolution", "Circus", "Dynamite", "Fever"],
+  },
+  visual: {
+    adj: ["Velvet", "Crimson", "Gothic", "Obsidian", "Moonlit", "Eternal", "Bleeding", "Silent", "Nocturnal", "Porcelain", "Withered", "Fallen", "Sorrowful", "Pale", "Midnight", "Cursed", "Ivory", "Shrouded", "Mourning", "Lamenting", "Hollow", "Frozen", "Weeping", "Raven", "Dusk", "Vampiric", "Ashen", "Wilting", "Twilight", "Forsaken", "Ebon", "Somber", "Veiled", "Onyx", "Grieving", "Sanguine", "Lunar", "Funereal", "Elegant", "Shattered"],
+    noun: ["Requiem", "Lament", "Rose", "Cathedral", "Nocturne", "Elegy", "Sorrow", "Grief", "Lullaby", "Perdition", "Reverie", "Serenade", "Mourning", "Eclipse", "Threnody", "Chalice", "Communion", "Vigil", "Dirge", "Rosary", "Masquerade", "Sonata", "Confession", "Reliquary", "Garden", "Sanctuary", "Descent", "Elegance"],
+  },
+  expert: {
+    adj: ["Fractal", "Polyrhythmic", "Diminished", "Chromatic", "Necrotic", "Guttural", "Spectral", "Dissonant", "Atonal", "Visceral", "Abyssal", "Cryptic", "Fractured", "Warped", "Sundered", "Entropic", "Cadaverous", "Sepulchral", "Malignant", "Putrid", "Cerebral", "Recursive", "Asymmetric", "Convulsive", "Eviscerated", "Morbid", "Grotesque", "Blackened", "Chthonic", "Quantum", "Labyrinthine", "Aberrant", "Serrated", "Baroque", "Infernal", "Unhallowed", "Cavernous", "Perverse", "Obscure", "Vile"],
+    noun: ["Abyss", "Doom", "Requiem", "Genesis", "Gospel", "Fugue", "Oblivion", "Sermon", "Carnage", "Leviathan", "Dissonance", "Cascade", "Paradox", "Monolith", "Ossuary", "Cataclysm", "Threshold", "Apparatus", "Vortex", "Aeon", "Epitaph", "Maelstrom", "Charnel", "Effigy", "Continuum", "Meridian", "Sepulcher", "Void"],
+  },
 };
 
-/** Up to `n` unused, segment-flavored (＋shared) song titles, shuffled. Falls
- *  back to a generated title only if every pooled name is already taken. */
+/** Build a segment's stock of unique titles (adj × noun), capped at 1000. */
+function buildSongStock(seg: Segment): string[] {
+  const { adj, noun } = SONG_BANK[seg];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  // adj-major so the 1000-cap still spans every noun.
+  for (const a of adj) {
+    for (const n of noun) {
+      const t = `${a} ${n}`;
+      if (!seen.has(t)) { seen.add(t); out.push(t); }
+      if (out.length >= 1000) return out;
+    }
+  }
+  return out;
+}
+
+const SONG_STOCK: Record<Segment, string[]> = {
+  core: buildSongStock("core"),
+  light: buildSongStock("light"),
+  visual: buildSongStock("visual"),
+  expert: buildSongStock("expert"),
+};
+
+/** `n` unused titles for a segment, drawn at random from its 1000-title stock.
+ *  Falls back to a generated title only if the whole stock is exhausted. */
 function songNameCandidates(state: GameState, seg: Segment, rng: () => number, n = 4): string[] {
   const used = new Set(state.usedSongNames);
-  const pool = [...SONG_NAMES_SEG[seg], ...SONG_NAMES_SHARED].filter((x) => !used.has(x));
-  for (let i = pool.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [pool[i], pool[j]] = [pool[j], pool[i]];
+  const avail = SONG_STOCK[seg].filter((x) => !used.has(x));
+  // partial Fisher–Yates: only the first n slots need to be randomized.
+  const k = Math.min(n, avail.length);
+  for (let i = 0; i < k; i++) {
+    const j = i + Math.floor(rng() * (avail.length - i));
+    [avail[i], avail[j]] = [avail[j], avail[i]];
   }
-  const out = pool.slice(0, n);
+  const out = avail.slice(0, k);
   if (out.length === 0) out.push(`Untitled ${state.songs.length + 1}`);
   return out;
 }
