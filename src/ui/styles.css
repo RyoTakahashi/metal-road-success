@@ -324,8 +324,19 @@ body {
 .log div { padding: 2px 0; border-bottom: 1px dashed #ffffff10; }
 
 /* ---- Modal ---- */
-.overlay { position: fixed; inset: 0; background: #000a; display: flex; align-items: center; justify-content: center; z-index: 10; }
-.modal { width: min(560px, 92vw); }
+/* Safe-centering: the overlay scrolls, and `margin:auto` centers the modal when
+ * it fits but keeps its TOP reachable when it's taller than the screen — so the
+ * close / confirm button at the bottom is always scrollable into view (mobile). */
+.overlay {
+  position: fixed; inset: 0; background: #000a;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  z-index: 10; overflow-y: auto; overflow-x: hidden;
+  padding: 20px 16px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+}
+/* Top-aligned in a column flex so a tall modal's full height counts toward the
+ * overlay's scroll range — the close/confirm button is always scrollable into
+ * view (auto/centered margins break this by not extending the scroll area). */
+.modal { width: min(560px, 92vw); flex: 0 0 auto; }
 .field { margin: 12px 0; }
 .field > label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
 .opts { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -355,7 +366,8 @@ body {
 .train .tdesc { font-size: 11px; color: var(--muted); }
 
 /* ---- VN scene (パワプロ風イベント画面) ---- */
-.scene-overlay { padding: 0; }
+/* The VN scene fills the viewport itself, so it centers and never scrolls. */
+.scene-overlay { padding: 0; flex-direction: row; align-items: center; justify-content: center; overflow: hidden; }
 .scene {
   position: relative; width: min(960px, 100vw); aspect-ratio: 16 / 9; max-height: 100vh;
   background-size: cover; background-position: center; overflow: hidden;
@@ -502,8 +514,12 @@ body {
 
 /* ---- Narrow screens ---- */
 @media (max-width: 640px) {
+  /* Tighter overlay padding so tall modals (live / members / items) use the
+   * full width and scroll cleanly to their close/confirm buttons. */
+  .overlay { padding: 10px; }
+  .modal { width: min(560px, 94vw); }
   /* VN scene: art on top / textbox below, and every member fits the width. */
-  .scene-overlay { align-items: stretch; }
+  .scene-overlay { align-items: stretch; overflow: hidden; }
   .scene {
     width: 100vw; height: 100dvh; max-height: 100dvh; aspect-ratio: auto;
     display: flex; flex-direction: column; border: 0;

@@ -716,15 +716,15 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
         <div class="log">${state.log.map((l) => `<div>${esc(l)}</div>`).join("")}</div>
       </div>
     </div>
-    ${ui.panel === "members" ? membersPanel(state) : ""}
-    ${ui.panel === "appeal" ? appealPanel(state) : ""}
-    ${ui.panel === "items" ? itemsPanel(state) : ""}
     ${ui.mode === "cardSub" ? cardSubModal(state, ui) : ""}
     ${ui.mode === "staffPick" ? staffPickModal(state) : ""}
     ${ui.mode === "practiceChoice" ? practiceChoiceModal() : ""}
     ${ui.mode === "slides" ? sceneModal(state, ui) : ""}
     ${ui.mode === "live" ? liveModal(state, ui) : ""}
     ${ui.mode === "result" ? resultModal(state, ui) : ""}
+    ${ui.panel === "members" ? membersPanel(state) : ""}
+    ${ui.panel === "appeal" ? appealPanel(state) : ""}
+    ${ui.panel === "items" ? itemsPanel(state) : ""}
   `;
 
   // Fix up the auto toggle button (kept simple to avoid template noise above).
