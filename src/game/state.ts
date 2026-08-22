@@ -116,6 +116,7 @@ export function newGame(part = "Vo", leaderName = "", rng: () => number = Math.r
     songs: [
       { name: "Iron Dawn", lean: { core: 0.55, light: 0.15, visual: 0.1, expert: 0.2 }, Q: 60, age: 1 },
     ],
+    usedSongNames: ["Iron Dawn"],
     practiceFreshness: 80,
     contacts: 0,
     bond: 30,
@@ -212,6 +213,33 @@ const leaderArt = (s: GameState) => s.members.find((m) => m.isLeader)?.artKey ??
  * Resolve a played card. `param` is only used for music/practice.
  * Returns the VN scenes to show; state is mutated.
  */
+// --- 曲名プール（客層で傾向が変わる。使用済みタイトルは再登場しない）--------
+const SONG_NAMES_SHARED = [
+  "Eternal Flame", "Rising Storm", "Iron Will", "Breaking Dawn", "Endless Road",
+  "Burning Sky", "Last Stand Anthem", "Wild Heart", "Roaring Thunder",
+  "Never Surrender", "Crimson Horizon", "Molten Heart", "Voltage Overdrive", "Phoenix Cry",
+];
+const SONG_NAMES_SEG: Record<Segment, string[]> = {
+  core: ["Steel Command", "Hammer of Dawn", "Iron Legion", "Molten Core", "Anvil of War", "Riff Overlord", "Thunder Divide", "Fist of Steel", "Redline Overdrive", "Warhead Symphony", "Chrome Cathedral", "Bulldozer March"],
+  light: ["Candy Chainsaw", "Neon Heartbeat", "Sugar Rush Riot", "Kawaii Apocalypse", "Pop'n Scream", "Glitter Fangs", "Bubblegum Blast", "Rainbow Distortion", "Idol of Destruction", "Sparkle Panic", "Cherry Bomb Parade", "Magical Moshpit"],
+  visual: ["Velvet Requiem", "Crimson Lament", "Gothic Rose", "Tears of Obsidian", "Moonlit Sorrow", "Eternal Mourning", "Bleeding Elegance", "Silent Cathedral", "Nocturne in Black", "Porcelain Grief", "Withered Lullaby", "Rose of Perdition"],
+  expert: ["Fractal Abyss", "Polyrhythmic Doom", "Diminished Requiem", "Blast Beat Genesis", "Tritone Gospel", "Necrotic Fugue", "Odd Meter Oblivion", "Guttural Sermon", "Chromatic Carnage", "Leviathan Djent", "Spectral Dissonance", "Entropy Cascade"],
+};
+
+/** Up to `n` unused, segment-flavored (＋shared) song titles, shuffled. Falls
+ *  back to a generated title only if every pooled name is already taken. */
+function songNameCandidates(state: GameState, seg: Segment, rng: () => number, n = 4): string[] {
+  const used = new Set(state.usedSongNames);
+  const pool = [...SONG_NAMES_SEG[seg], ...SONG_NAMES_SHARED].filter((x) => !used.has(x));
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const out = pool.slice(0, n);
+  if (out.length === 0) out.push(`Untitled ${state.songs.length + 1}`);
+  return out;
+}
+
 export function resolveAction(
   state: GameState,
   kind: ActionKind,
@@ -275,25 +303,38 @@ function resolveMusic(
       state.buffs.composeQ95 = false;
     }
     spend(state, 14);
-    const name = `New Track ${state.songs.length + 1}`;
     const lead = state.members.find((m) => m.isLeader)?.artKey ?? "RYO";
-    // 楽曲属性: the player aims the new song at a segment (its lean), so setlists
-    // can be matched to the target audience / current trend later.
-    const choose = (seg: Segment): SceneChoice => ({
-      label: `${SEGMENT_LABEL[seg]}寄りに仕上げる`,
-      apply: (st) => {
-        st.songs.push({ name, lean: leanToward(seg), Q, age: 0 });
-        pushLog(st, `作曲：「${name}」完成（Q${Q}／${SEGMENT_LABEL[seg]}寄り）`);
-      },
-      next: composeScenes(name, Q, rng),
-    });
+    // 楽曲属性: Step 1 — aim the song at a segment (its lean); Step 2 — pick a
+    // title from segment-flavored candidates (used titles are never re-offered).
+    const dirChoice = (seg: Segment): SceneChoice => {
+      const nameChoices: SceneChoice[] = songNameCandidates(state, seg, rng).map((nm) => ({
+        label: `「${nm}」`,
+        apply: (st) => {
+          st.usedSongNames.push(nm);
+          st.songs.push({ name: nm, lean: leanToward(seg), Q, age: 0 });
+          pushLog(st, `作曲：「${nm}」完成（Q${Q}／${SEGMENT_LABEL[seg]}寄り）`);
+        },
+        next: composeScenes(nm, Q, rng),
+      }));
+      return {
+        label: `${SEGMENT_LABEL[seg]}寄り`,
+        next: [
+          {
+            bg: "studio",
+            chars: [{ member: lead, pos: "center", mood: "normal" }],
+            text: `${SEGMENT_LABEL[seg]}層に刺す一曲（Q${Q}）。タイトルはどれにする？`,
+            choices: nameChoices,
+          },
+        ],
+      };
+    };
     return {
       scenes: [
         {
           bg: "studio",
           chars: [{ member: lead, pos: "center", mood: "normal" }],
-          text: `新曲「${name}」が形になってきた（Q${Q}）。どの客層に刺す曲に仕上げる？`,
-          choices: SEGMENTS.map(choose),
+          text: `新曲が形になってきた（Q${Q}）。どの客層に刺す曲に仕上げる？`,
+          choices: SEGMENTS.map(dirChoice),
         },
       ],
     };

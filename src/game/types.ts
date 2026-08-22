@@ -135,6 +135,7 @@ export interface GameState {
   leaderPart: string; // the player's chosen part
   support: Support;
   songs: Song[];
+  usedSongNames: string[]; // titles already taken this playthrough (never re-offered)
   practiceFreshness: number; // 0–100, decays monthly; low = worse live
   contacts: number; // 人脈ポイント: gates support staff / better deals (P2)
   bond: number; // 0–100 バンドの結束: boosts recovery, eases friction (P2)
