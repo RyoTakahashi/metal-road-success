@@ -333,10 +333,11 @@ body {
   z-index: 10; overflow-y: auto; overflow-x: hidden;
   padding: 20px 16px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
 }
-/* Top-aligned in a column flex so a tall modal's full height counts toward the
- * overlay's scroll range — the close/confirm button is always scrollable into
- * view (auto/centered margins break this by not extending the scroll area). */
-.modal { width: min(560px, 92vw); flex: 0 0 auto; }
+/* `margin:auto` in a column flex centers the modal when it fits, and collapses
+ * to 0 when it's taller than the overlay — so a tall modal top-aligns and the
+ * overlay scrolls all the way to its close/confirm button. flex:0 0 auto keeps
+ * the modal at its natural height (no stretch/shrink). */
+.modal { width: min(560px, 92vw); flex: 0 0 auto; margin: auto; }
 .field { margin: 12px 0; }
 .field > label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
 .opts { display: flex; gap: 8px; flex-wrap: wrap; }
