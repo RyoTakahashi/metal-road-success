@@ -350,6 +350,37 @@ function endScreen(state: GameState, kind: "gameover" | "clear"): string {
     </div>`;
 }
 
+type MuseMood = "normal" | "happy" | "sad" | "fired";
+const MUSE_GENERAL: { art: string; mood: MuseMood; line: string }[] = [
+  { art: "RYO", mood: "normal", line: "「さーて、今日はどう暴れよっか？」" },
+  { art: "KEN", mood: "normal", line: "「詰められるとこは、まだいくらでもある」" },
+  { art: "MIO", mood: "normal", line: "「……何から、手をつける？」" },
+  { art: "GO", mood: "happy", line: "「今日もいっぱい動くぞー！何する何するっ？」" },
+  { art: "RYO", mood: "happy", line: "「悩むのも楽しいけど、そろそろ決めよ？」" },
+  { art: "MIO", mood: "normal", line: "「焦らず、いこ」" },
+];
+
+/** A bandmate musing over what to do this turn (playful board flavor). Stable
+ *  per turn (keyed by month/turn), context-aware for fatigue / stale songs / cash. */
+function boardMuse(state: GameState): string {
+  let art: string, mood: MuseMood, line: string;
+  const newest = state.songs.reduce((a, s) => Math.min(a, s.age), 99);
+  if (bandStamina(state) < FATIGUE_FLOOR) {
+    art = "GO"; mood = "sad"; line = "「もう体力げんかい…今日は休も？ ね？」";
+  } else if (newest >= 4) {
+    art = "KEN"; mood = "normal"; line = "「そろそろ新曲、書かないか。ネタは腐るぞ」";
+  } else if (state.funds < 150 * K.venueCostPerSeat) {
+    art = "MIO"; mood = "normal"; line = "「……お金、心もとない。バイトも要るかも」";
+  } else {
+    const m = MUSE_GENERAL[(state.month * 3 + state.turn) % MUSE_GENERAL.length];
+    art = m.art; mood = m.mood; line = m.line;
+  }
+  return `<div class="boardmuse">
+    <img class="muse-char" src="${charSrc(art, mood)}" alt="${esc(nameOf(state, art))}"/>
+    <div class="muse-bubble"><span class="muse-name">${esc(nameOf(state, art))}</span>${esc(line)}</div>
+  </div>`;
+}
+
 function handView(state: GameState): string {
   const cards = state.hand
     .map((c) => {
@@ -377,6 +408,7 @@ function handView(state: GameState): string {
         ${state.staff.length ? `<span class="meter">🎧 サポート ${state.staff.length}/${STAFF_CAP}</span>` : ""}
       </div>
       ${fatigued ? '<div class="fatigue-note">メンバーは疲労困憊…「休息」でしか動けない。しっかり休もう。</div>' : ""}
+      ${boardMuse(state)}
       <div class="hand">${cards}</div>
       <div class="dicebar">
         <div class="navbtns">

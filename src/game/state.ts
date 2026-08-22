@@ -9,6 +9,7 @@ import {
   composeScenes,
   contactScenes,
   itemFindScenes,
+  itemUseScenes,
   moneyScenes,
   performScenes,
   pick,
@@ -1044,15 +1045,19 @@ export function tickTurnBuffs(state: GameState): void {
   }
 }
 
-/** Use an owned item (mutates). Returns the item name, or null if none. */
-export function useItem(state: GameState, id: string): string | null {
+/** Use an owned item (mutates). Returns its name + a short use-scene, or null. */
+export function useItem(
+  state: GameState,
+  id: string,
+  rng: () => number = Math.random,
+): { name: string; scenes: Scene[] } | null {
   if ((state.items[id] ?? 0) <= 0) return null;
   const def = ITEM_BY_ID[id];
   if (!def) return null;
   state.items[id] -= 1;
   def.apply(state);
   pushLog(state, `アイテム使用：${def.name}`);
-  return def.name;
+  return { name: def.name, scenes: itemUseScenes(id, def.name, def.effect, rng) };
 }
 
 /** 30% after an action: roll a tier (S2/A18/B80), then a random eligible item. */
@@ -1395,9 +1400,86 @@ export function buildMilestoneIntro(state: GameState, m: Milestone): Scene[] {
 }
 
 /** Full intro sequence after part select: monologue + tutorial + first goal. */
+/** Band-formation highlight (played right after the leader's backstory). */
+export function buildFormationScenes(state: GameState): Scene[] {
+  const L = leaderArt(state);
+  return [
+    scene("street", ["RYO", "KEN", "MIO", "GO"], "——それぞれが、燻っていた。学校で、バイト先で、路上で。行き場のない衝動を抱えて。", { fx: "flash" }),
+    scene("studio", ["RYO", "KEN", "MIO", "GO"], "バラバラだった４人が、一本の轟音で繋がった日。誰かが鳴らしたリフに、残りの全員が音を重ねた。", { fx: "shake" }),
+    scene("studio", ["RYO", "KEN", "MIO", "GO"], "「このメンツで、てっぺん獲るぞ」——社会人メタルバンド「Metal Road」、ここに結成！", { speaker: nameOf(state, L), fx: "flash" }),
+  ];
+}
+
+/** Per-member intro: part, personality, signature stats. Leader is tagged. */
+const MEMBER_BLURB: Record<string, { tag: string; mood: Mood; stat: string; line: string }> = {
+  RYO: { tag: "Vo / ボーカル", mood: "fired", stat: "パフォーマンス・ビジュ力", line: "喉ひとつで会場を掌握するカリスマ・フロントウーマン。目立ちたがりで、いつも本気の一歩手前……らしい。" },
+  KEN: { tag: "Gt / ギター", mood: "normal", stat: "演奏基礎・音楽センス", line: "理想の音を追い求めるクールな職人肌。速弾きとリフ作りにかけては一切妥協しない。" },
+  MIO: { tag: "Ba / ベース", mood: "normal", stat: "演奏基礎・音楽センス", line: "無口だが芯は誰より熱い。地を這う低音で、バンドの土台を静かに支える。" },
+  GO: { tag: "Dr / ドラム", mood: "happy", stat: "演奏基礎・体力", line: "元・陸上部のパワフルドラマー。とにかく元気で、手数の暴力でバンドを前へ引っぱる。" },
+};
+
+/** Introduce all four members (Vo→Gt→Ba→Dr), tagging the player's own. */
+export function buildMemberIntros(state: GameState): Scene[] {
+  return ["RYO", "KEN", "MIO", "GO"].map((art) => {
+    const m = state.members.find((x) => x.artKey === art)!;
+    const b = MEMBER_BLURB[art];
+    const you = m.isLeader ? "（＝あなた）" : "";
+    return solo(state, "studio", art, b.mood, `【${b.tag}】${nameOf(state, art)}${you}\n\n${b.line}\n\n★得意ステータス：${b.stat}`, "flash");
+  });
+}
+
+/** Stat primer: explain the four params, which audience they serve, and stamina. */
+export function buildStatPrimer(state: GameState): Scene[] {
+  const L = leaderArt(state);
+  return [
+    scene("studio", [L], "【能力の見かた】メンバーは４つの能力を持つ。\n\n🥁 演奏基礎(T)…土台の演奏力／🎤 パフォーマンス(P)…ステージでの魅せ／🎼 音楽センス(S)…曲・アレンジの質／🖤 ビジュ力(V)…見た目の華。", { fx: "flash" }),
+    scene("studio", [L], "客層によって刺さる能力は違う。\n\nコア＝演奏基礎＆センス／玄人＝演奏基礎＆センス／ビジュ＝ビジュ力＆パフォ／ライト＝パフォ＆ビジュ。狙う客層に合わせて能力を伸ばすのがコツだ。"),
+    scene("studio", [L], "そして ⚡体力。行動するほど消耗し、尽きると「休息」しか選べなくなる。無理は禁物——休むのも立派な戦略だ。", { fx: "flash" }),
+  ];
+}
+
+/** Rating-specific reaction right after a live result (before the after-party).
+ *  S: an industry person visits / A: SNS blows up / B: light banter / C-: gloom. */
+export function buildLiveReactionScenes(state: GameState, r: LiveResult, rng: () => number = Math.random): Scene[] {
+  const crew = ["RYO", "KEN", "MIO", "GO"];
+  const lineup = (mood: Mood): Scene["chars"] =>
+    crew.map((a, i) => ({ member: a, pos: (["left", "center", "right", "left"] as const)[i], mood }));
+  const sat = r.satisfaction;
+  if (sat >= 80) {
+    const sp = pick(rng, ["RYO", "GO"]);
+    return [
+      { bg: "backstage", chars: lineup("normal"), text: "楽屋の扉がノックされる。入ってきたのは——名の知れた音楽関係者だ。", fx: "flash" },
+      { bg: "backstage", chars: [{ member: sp, pos: "center", mood: "fired" }], speaker: nameOf(state, sp), text: "「今のステージ、しびれたよ。……近いうち、いい話を持ってくる」\n\n名刺を置いて去っていった。今日の熱が、次の扉をこじ開けた。", fx: "flash" },
+    ];
+  }
+  if (sat >= 70) {
+    return [
+      { bg: "backstage", chars: lineup("normal"), text: "スマホを覗き込んだ全員が、思わず声を上げる。……SNSが、とんでもないことになっている。", fx: "flash" },
+      { bg: "backstage", chars: lineup("happy"), text: "「バズってる！」「この切り抜き、伸びすぎでしょ！？」——今夜のライブが、確かに広がっていく。", fx: "flash" },
+    ];
+  }
+  if (sat >= 55) {
+    return [
+      { bg: "backstage", chars: lineup("normal"), text: "「ま、悪くないライブだったんじゃない？」いつもの調子で、軽口を叩き合う。手応えは、ぼちぼち。" },
+    ];
+  }
+  const sp = pick(rng, ["KEN", "MIO"]);
+  return [
+    { bg: "backstage", chars: lineup("sad"), text: "楽屋に、重い沈黙が流れる。誰も、なかなか口を開けない。" },
+    { bg: "backstage", chars: [{ member: sp, pos: "center", mood: "sad" }], speaker: nameOf(state, sp), text: "「……次だ。次で、絶対に取り返す」\n\n悔しさを噛み殺して、静かに拳を握った。" },
+  ];
+}
+
 export function buildIntroSequence(state: GameState): Scene[] {
   const first = MILESTONES[state.stage];
-  return [...buildOpeningScenes(state), ...buildTutorialScenes(), ...(first ? buildMilestoneIntro(state, first) : [])];
+  return [
+    ...buildOpeningScenes(state),
+    ...buildFormationScenes(state),
+    ...buildMemberIntros(state),
+    ...buildStatPrimer(state),
+    ...buildTutorialScenes(),
+    ...(first ? buildMilestoneIntro(state, first) : []),
+  ];
 }
 
 /** Current value of a requirement key (for the checklist). */

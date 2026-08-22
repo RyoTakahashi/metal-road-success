@@ -142,6 +142,18 @@ body {
 .evochip { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #ffffff12; color: var(--muted); border: 1px solid #ffffff1f; }
 .evochip.on { color: var(--ink); background: #ffffff1f; }
 .evochip.cur { color: #fff; background: var(--accent); border-color: var(--accent); }
+/* Board: a bandmate musing over the next move (playful flavor). */
+.boardmuse { display: flex; align-items: center; gap: 10px; margin: 4px 0 10px; }
+.boardmuse .muse-char { height: 96px; width: auto; flex: 0 0 auto; filter: drop-shadow(0 3px 6px #0006); animation: muse-bob 2.4s ease-in-out infinite; }
+@keyframes muse-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.muse-bubble { position: relative; background: #fff; color: #1a1320; border-radius: 12px; padding: 9px 13px; font-size: 13px; font-weight: 600; line-height: 1.4; box-shadow: 0 3px 10px #0004; max-width: 460px; }
+.muse-bubble::before { content: ""; position: absolute; left: -9px; top: 50%; transform: translateY(-50%); border: 7px solid transparent; border-right-color: #fff; }
+.muse-bubble .muse-name { display: block; font-size: 10px; font-weight: 800; color: var(--accent-2, #c9187a); letter-spacing: 1px; margin-bottom: 1px; }
+@media (max-width: 860px) { .boardmuse .muse-char { height: 72px; } .muse-bubble { font-size: 12px; } }
+/* Playful feedback when picking an action card. */
+.actcard { transition: transform 0.12s ease, box-shadow 0.12s ease; }
+.actcard:not(.locked):hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 8px 20px #0005; }
+.actcard:not(.locked):active { transform: translateY(-1px) scale(0.99); }
 .evonow { margin-top: 8px; font-size: 13px; color: var(--muted); }
 .evonow b { color: var(--accent); font-size: 15px; }
 .segmk { font-size: 11px; opacity: 0.95; letter-spacing: 1px; }

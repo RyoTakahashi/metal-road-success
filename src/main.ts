@@ -10,6 +10,7 @@ import {
   buildAfterPartyScenes,
   buildIntroSequence,
   buildLivePreScenes,
+  buildLiveReactionScenes,
   buildTieupOfferScenes,
   checkProgress,
   isCardLocked,
@@ -51,7 +52,9 @@ const ui: UiState = {
 };
 
 // What to do once the current slideshow finishes.
-let afterSlides: "turn" | "result" | "board" | "clear" | "liveResolve" | "month" = "turn";
+let afterSlides: "turn" | "result" | "board" | "clear" | "liveResolve" | "month" | "itemBack" = "turn";
+// Where to return after an item-use scene (items can be used on the board or the live screen).
+let itemReturn: "board" | "live" = "board";
 
 function redraw(): void {
   render(root, state, ui, handlers);
@@ -71,6 +74,13 @@ function playAction(kind: ActionKind, subId: string | undefined, param: Param | 
 }
 
 function finishSlides(): void {
+  if (afterSlides === "itemBack") {
+    // Return to wherever the item was used; reopen the bag for repeated use.
+    ui.mode = itemReturn;
+    ui.panel = "items";
+    redraw();
+    return;
+  }
   if (afterSlides === "liveResolve") {
     // Pre-show MC/performance choices are locked in; now resolve the live.
     const result = resolveLive(state, ui.liveDecision);
@@ -276,10 +286,14 @@ const handlers: Handlers = {
     redraw();
   },
   onNextMonth() {
-    // Leaving the result screen: an after-party (choice event), then the month.
+    // Leaving the result screen: a rating-specific reaction, then the after-party
+    // (choice event), then the month rolls over.
     if (ui.liveResult) {
       afterSlides = "month";
-      ui.sceneSeq = buildAfterPartyScenes(state, ui.liveResult);
+      ui.sceneSeq = [
+        ...buildLiveReactionScenes(state, ui.liveResult),
+        ...buildAfterPartyScenes(state, ui.liveResult),
+      ];
       ui.sceneIndex = 0;
       ui.mode = "slides";
       redraw();
@@ -303,8 +317,17 @@ const handlers: Handlers = {
     if (ui.auto) void autoLoop();
   },
   onUseItem(id: string) {
-    useItem(state, id);
-    redraw(); // keep the panel open with updated counts / buffs
+    const used = useItem(state, id);
+    if (used && used.scenes.length) {
+      // Play a short use-scene, then return to the board/live and reopen the bag.
+      itemReturn = ui.mode === "live" ? "live" : "board";
+      ui.panel = "none";
+      afterSlides = "itemBack";
+      ui.sceneSeq = used.scenes;
+      ui.sceneIndex = 0;
+      ui.mode = "slides";
+    }
+    redraw();
   },
 };
 

@@ -204,41 +204,87 @@ export function practiceScenes(param: Param, gain: number, rng: Rng): Scene[] {
   ];
 }
 
-// --- アイテム発見（レア度で演出を変える）------------------------------------
+// --- アイテム入手（差し入れ・贈り物としてもらう演出）------------------------
+// 「落ちてるものを拾う」のではなく、先輩バンド・音楽関係者・ファンからの
+// 差し入れ／贈り物として受け取る。レア度で贈り主の格と盛り上がりが変わる。
 
-/** Item-find production scaled to rarity (B: casual, A: rare, S: fanfare). */
+const GIFT_B = [
+  "対バンの先輩が「差し入れ、余ったからさ」と気さくに手渡してくれた。",
+  "ライブ後、ファンの子がはにかみながらプレゼントを差し出してくれた。",
+  "馴染みのハコの店長が「持ってきな」と、そっと何かをくれた。",
+] as const;
+const GIFT_A = [
+  "対バンの大先輩がニヤリと笑って「これ、お前らに貸してやるよ」と差し出した。",
+  "打ち上げで意気投合した音楽関係者が「見込みがあるね」と手土産をくれた。",
+  "常連のファンが「どうしても渡したくて」と、特別な一品を持ってきてくれた。",
+] as const;
+
+/** Item gift production scaled to rarity (B: casual, A: notable, S: fanfare). */
 export function itemFindScenes(tier: "S" | "A" | "B", name: string, effect: string, rng: Rng): Scene[] {
   if (tier === "S") {
-    const finder = pick(rng, ALL);
+    const receiver = pick(rng, ALL);
     return [
-      mk("backstage", lineup([...ALL], "fired"), pick(rng, [
-        "空気が変わった。何か、とんでもないモノの気配……！",
-        "スタジオの照明がチカッと明滅する。これは……ただ事じゃない。",
+      mk("backstage", lineup([...ALL], "normal"), pick(rng, [
+        "楽屋の扉がゆっくり開く。現れたのは——伝説と噂される、あのバンドマン。",
+        "熱狂的なファンから“とんでもない贈り物”が届いたと、楽屋がざわつく。",
       ]), { fx: "shake" }),
-      mk("backstage", [c(finder, "center", "fired")], `✨✨ 伝説級のアイテム発見！ ✨✨\n\n「${name}」——！！`, {
-        speaker: finder,
+      mk("backstage", [c(receiver, "center", "fired")], `✨✨ 特別な贈り物！ ✨✨\n\n無言で差し出されたのは「${name}」——！！`, {
+        speaker: receiver,
         fx: "flash",
       }),
-      mk("backstage", lineup([...ALL], "happy"), `${effect}\n\nバンド全員、雄叫びを上げた！`, { fx: "flash" }),
+      mk("backstage", lineup([...ALL], "happy"), `${effect}\n\nバンド全員、思わず雄叫びを上げた！`, { fx: "flash" }),
     ];
   }
   if (tier === "A") {
-    const [finder, mate] = sample(rng, ALL, 2);
+    const [receiver, mate] = sample(rng, ALL, 2);
     return [
-      mk("street", [c(finder, "center", "happy"), c(mate, "left", "normal")], pick(rng, [
-        "「ちょっと待って、これ……レアなやつじゃない！？」",
-        "「うわ、当たりだ。こんなの滅多に出ないぞ」",
-      ]), { speaker: finder, fx: "shake" }),
-      mk("street", [c(finder, "center", "fired")], `★ レアアイテム発見！\n\n「${name}」を手に入れた。\n${effect}`, { fx: "flash" }),
+      mk("street", [c(receiver, "center", "happy"), c(mate, "left", "normal")], pick(rng, GIFT_A), { fx: "shake" }),
+      mk("street", [c(receiver, "center", "fired")], `★ レアな贈り物！\n\n「${name}」を受け取った。\n${effect}`, { fx: "flash" }),
     ];
   }
-  // B — casual find
-  const finder = pick(rng, ALL);
+  // B — casual gift
+  const receiver = pick(rng, ALL);
   return [
-    mk("street", [c(finder, "center", "normal")], `${pick(rng, [
-      "🎁 お、なんか落ちてる。",
-      "🎁 帰り道、思わぬ拾いものだ。",
-      "🎁 差し入れ？ とにかくアイテムを見つけた。",
-    ])}\n\n「${name}」を手に入れた。\n${effect}`, { fx: "flash" }),
+    mk("street", [c(receiver, "center", "happy")], `🎁 ${pick(rng, GIFT_B)}\n\n「${name}」をもらった。\n${effect}`, { fx: "flash" }),
   ];
+}
+
+// --- アイテム使用（使ったときのちょっとした演出）----------------------------
+
+/** Per-item use production. Falls back to a generic "used it" beat. */
+export function itemUseScenes(id: string, name: string, effect: string, rng: Rng): Scene[] {
+  const who = pick(rng, ALL);
+  const one = (bg: BgKey, m: string, mood: Mood, text: string, fx: Scene["fx"], speaker?: string): Scene[] => [
+    mk(bg, [c(m, "center", mood)], `${text}\n\n${effect}`, { fx, ...(speaker ? { speaker } : {}) }),
+  ];
+  switch (id) {
+    case "metalianD":
+      return one("backstage", who, "fired", "「ぷはーっ……！」メタリアンDを一気飲み。喉を焼く炭酸とともに、カッと目が冴えて力がみなぎる！", "flash", who);
+    case "hellTraining":
+      return one("studio", "KEN", "fired", "「地獄のメカニカルトレーニング」を開く。指がちぎれそうな反復フレーズ——極限の集中で特訓に没入する！", "shake", "KEN");
+    case "jackDaniels":
+      return one("backstage", who, "fired", "「飲まなきゃやってらんねぇ」——琥珀色を喉に流し込む。理性のリミッターが外れ、練習の鬼と化す。", "shake", who);
+    case "studJacket":
+      return one("street", who, "happy", "スタッズの付いた革ジャンに袖を通す。鏡の前で決めポーズ——うん、キマってる。", "flash", who);
+    case "baaaan":
+      return one("studio", who, "normal", "メタラーの愛読書「BAAAAN!!」をめくる。名リフの解説に、感性が刺激される。", "flash", who);
+    case "silentGuitar":
+    case "hyperMetronome":
+      return one("studio", "KEN", "fired", `「${name}」を手に、時間の許す限り弾き込む。刻むほどに指が冴えていく。`, "shake", "KEN");
+    case "boinKiller":
+      return one("backstage", who, "happy", `「${name}」で英気を養う（？）。ともあれ、今夜はぐっすり眠れそうだ。`, "flash", who);
+    case "batThing":
+      return one("venueSmall", "RYO", "fired", "「例のコウモリ」を掲げる——本番、これで会場を狂乱の坩堝に叩き込む！", "shake", "RYO");
+    case "starStrings":
+      return one("studio", who, "fired", "「星の弦」に張り替える。弾いた瞬間、これは“満員”を呼ぶ音だと確信した。", "flash", who);
+    case "whitePowder":
+      return one("studio", who, "sad", "「白い粉」に手を伸ばす——すべてを差し出す覚悟で。降ってくる旋律と引き換えに、心身は削れていく。", "shake", who);
+    case "metalGodProof":
+      return [
+        mk("venueBig", lineup([...ALL], "fired"), "「メタルゴッドの証」が輝きを放つ——空が裂け、天啓のごとき轟音がバンドを包む！", { fx: "shake" }),
+        mk("venueBig", lineup([...ALL], "happy"), `全能力が覚醒し、ファンが爆発的に増えた！\n\n${effect}`, { fx: "flash" }),
+      ];
+    default:
+      return one("studio", who, "happy", `「${name}」を使った。`, "flash");
+  }
 }
