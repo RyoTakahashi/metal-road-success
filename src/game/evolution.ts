@@ -7,7 +7,7 @@
 //   2 unlocked -> that pair's fusion    (infixes joined by "-" in segment order)
 //   3+ unlocked -> the "ultimate" look  (triples and the full four collapse here)
 //
-// The returned string is the sprite-filename infix: {id}.v2.{infix}.{mood}.png
+// The returned string is the sprite-filename infix: {id}.v2.{infix}.{mood}.webp
 // (empty string = base art, no infix).
 
 import type { Segment } from "./types";
