@@ -175,11 +175,29 @@ const COACH: Record<Param, { who: string; quote: string }[]> = {
   ],
 };
 
-const PRACTICE_INTRO = [
-  "スタジオに全員集合。今日はみっちり詰める日だ。",
-  "機材をセットして、いざ特訓。時間の許す限り。",
-  "「よし、やるか」——誰からともなく音を鳴らし始める。",
-] as const;
+// Intro varies by what's being trained (音を鳴らす導入は演奏系だけ；ビジュ/センスは別).
+const PRACTICE_INTRO: Record<Param, readonly string[]> = {
+  T: [
+    "スタジオに全員集合。メトロノームに合わせ、ひたすら反復で土台を固める。",
+    "機材をセットして基礎練。走らず遅れず、リズムを体に叩き込む。",
+    "「よし、やるか」——誰からともなく音を鳴らし始める。",
+  ],
+  P: [
+    "鏡張りのスタジオでステージングの特訓。動き・煽り・魅せ方を反復する。",
+    "本番さながらに立ち回りをシミュレート。客の巻き込み方を体に覚えさせる。",
+    "声出しとアクション。ステージ度胸を鍛える一日だ。",
+  ],
+  S: [
+    "曲作りとアレンジの研究。名盤を聴き込み、フレーズの引き出しを増やす。",
+    "コード進行と理論をひたすら分解・再構築。感性を研ぎ澄ます。",
+    "スタジオの隅で作曲ノートと睨めっこ。センスは地道に磨くものだ。",
+  ],
+  V: [
+    "衣装合わせとメイク研究。鏡の前でステージ映えを徹底的に詰める。",
+    "ヘアメイクとポージングをチェック。“魅せる自分”を作り込む。",
+    "小物やアクセを取っ替え引っ替え。ビジュアルの完成度を上げていく。",
+  ],
+};
 
 const PRACTICE_RESULT = [
   "手応えあり。体に染み込んだ感覚がある。",
@@ -193,7 +211,7 @@ export function practiceScenes(param: Param, gain: number, rng: Rng): Scene[] {
   const cheer = ALL.filter((m) => m !== coach.who);
   const reactor = pick(rng, cheer);
   return [
-    mk("studio", lineup([...ALL]), pick(rng, PRACTICE_INTRO)),
+    mk("studio", lineup([...ALL]), pick(rng, PRACTICE_INTRO[param])),
     mk("studio", [c(coach.who, "center", "fired")], `${coach.quote}\n\nうぉぉぉぉぉおおおお！！`, {
       speaker: coach.who,
       fx: "shake",
@@ -219,8 +237,17 @@ const GIFT_A = [
   "常連のファンが「どうしても渡したくて」と、特別な一品を持ってきてくれた。",
 ] as const;
 
-/** Item gift production scaled to rarity (B: casual, A: notable, S: fanfare). */
-export function itemFindScenes(tier: "S" | "A" | "B", name: string, effect: string, rng: Rng): Scene[] {
+// Drinks are handed over as an explicit 差し入れ (not "found").
+const DRINK_IDS = new Set(["metalianD", "jackDaniels"]);
+const GIFT_DRINK = [
+  "対バンの先輩が「これ飲んで気合い入れてけ」と差し入れてくれた。",
+  "ライブ後、常連のファンが「よかったら」とそっと差し入れてくれた。",
+  "ハコの店長が「サービスだよ」と一本まわしてくれた。",
+] as const;
+
+/** Item gift production scaled to rarity (B: casual, A: notable, S: fanfare).
+ *  `id` lets a few items (drinks) use bespoke 差し入れ flavor. */
+export function itemFindScenes(tier: "S" | "A" | "B", name: string, effect: string, rng: Rng, id = ""): Scene[] {
   if (tier === "S") {
     const receiver = pick(rng, ALL);
     return [
@@ -242,10 +269,11 @@ export function itemFindScenes(tier: "S" | "A" | "B", name: string, effect: stri
       mk("street", [c(receiver, "center", "fired")], `★ レアな贈り物！\n\n「${name}」を受け取った。\n${effect}`, { fx: "flash" }),
     ];
   }
-  // B — casual gift
+  // B — casual gift (drinks get a 差し入れ-specific line)
   const receiver = pick(rng, ALL);
+  const line = DRINK_IDS.has(id) ? pick(rng, GIFT_DRINK) : pick(rng, GIFT_B);
   return [
-    mk("street", [c(receiver, "center", "happy")], `🎁 ${pick(rng, GIFT_B)}\n\n「${name}」をもらった。\n${effect}`, { fx: "flash" }),
+    mk("street", [c(receiver, "center", "happy")], `🎁 ${line}\n\n「${name}」をもらった。\n${effect}`, { fx: "flash" }),
   ];
 }
 

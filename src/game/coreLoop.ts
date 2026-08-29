@@ -30,9 +30,9 @@ export const K = {
   streamPerFan: 3, // base streams contributed per fan
   streamQPivot: 50, // song quality that maps to ×1.0
   streamSatPivot: 60, // satisfaction that maps to ×1.0
-  ticketPrice: 4000, // yen per attendee
+  ticketPrice: 3200, // yen per attendee (before the satisfaction factor)
   streamRate: 0.5, // yen per stream
-  venueCostPerSeat: 1200, // venue cost scales with capacity (背伸びの痛み)
+  venueCostPerSeat: 1300, // venue cost scales with capacity (背伸びの痛み)
   loveSatCoef: 8, // full band 愛情度 adds this many satisfaction points (絆の後押し)
   freshnessFloor: 0.7, // live output at 0 practice freshness
   freshnessRange: 0.3, // added at full freshness (D3: practice decay)
@@ -166,7 +166,10 @@ export function resolveLive(
   );
 
   // Step 7: economics — staff take a cut of revenue as 人件費 (利益分散).
-  const revenue = draw * K.ticketPrice + streams * K.streamRate;
+  // A poor show means empty merch tables / refunds / walk-outs, so ticket income
+  // scales with satisfaction — a low-rated live runs at a loss (赤字).
+  const satFactor = clamp(0.1 + (satisfaction - 45) * 0.02, 0.08, 1.1); // break-even ≈ C+ (sat 60)
+  const revenue = Math.round(draw * K.ticketPrice * satFactor + streams * K.streamRate);
   const staffCost = Math.round(revenue * state.staff.reduce((a, s) => a + s.cut, 0));
   const cost = cap * K.venueCostPerSeat + staffCost;
   const profit = revenue - cost;

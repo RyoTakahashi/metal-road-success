@@ -203,6 +203,18 @@ const roadieRelief = (s: GameState): number => {
 /** Spend stamina for an action (>=2), reduced by any roadie. */
 const spend = (s: GameState, base: number) => addStamina(s, -Math.max(2, base - roadieRelief(s)));
 
+/** Spend money (studio fees, materials…), clamped at 0. Returns amount paid. */
+const pay = (s: GameState, yen: number): number => {
+  const p = Math.min(s.funds, Math.max(0, yen));
+  s.funds -= p;
+  return p;
+};
+
+// Money costs of activities (お金を回す：練習=スタジオ代 / 作曲=録音 / 広報=宣伝費).
+const FEE_PRACTICE = 8_000;
+const FEE_COMPOSE = 30_000;
+const FEE_PROMO = 5_000;
+
 function scene(bg: Scene["bg"], artKeys: string[], text: string, extra: Partial<Scene> = {}): Scene {
   return { bg, chars: artKeys.map((a, i) => ({ member: a, pos: i === 0 ? "center" : i === 1 ? "left" : "right" })), text, ...extra };
 }
@@ -337,6 +349,8 @@ function resolveMusic(
       state.buffs.composeQ95 = false;
     }
     spend(state, 14);
+    pay(state, FEE_COMPOSE); // 録音・スタジオ代でお金がガクッと減る
+    pushLog(state, `作曲：スタジオを押さえた（録音費 ${yen(FEE_COMPOSE)}）`);
     const lead = state.members.find((m) => m.isLeader)?.artKey ?? "RYO";
     // 楽曲属性: Step 1 — aim the song at a segment (its lean); Step 2 — pick a
     // title from segment-flavored candidates (used titles are never re-offered).
@@ -367,7 +381,7 @@ function resolveMusic(
         {
           bg: "studio",
           chars: [{ member: lead, pos: "center", mood: "normal" }],
-          text: `新曲が形になってきた（Q${Q}）。どの客層に刺す曲に仕上げる？`,
+          text: `スタジオで新曲を録る（録音費 ${yen(FEE_COMPOSE)}）。曲は形になってきた（Q${Q}）——どの客層に刺す一曲に仕上げる？`,
           choices: SEGMENTS.map(dirChoice),
         },
       ],
@@ -390,8 +404,9 @@ function resolveMusic(
   const gain = Math.round(6 * state.buffs.practiceMult);
   addParam(state, p, gain);
   spend(state, 16);
+  pay(state, FEE_PRACTICE); // スタジオ代
   state.practiceFreshness = 100;
-  pushLog(state, `練習：${PARAM_LABEL[p]}を強化（+${gain} / 全員）・練習の鮮度MAX`);
+  pushLog(state, `練習：${PARAM_LABEL[p]}を強化（+${gain} / 全員）・スタジオ代 ${yen(FEE_PRACTICE)}・鮮度MAX`);
   const scenes = practiceScenes(p, gain, rng);
   // Sometimes a bandmate turns to the leader mid-session for a word (choice event).
   if (rng() < 0.5) scenes.splice(2, 0, ...practiceTalk(state, rng));
@@ -407,8 +422,9 @@ function resolvePromo(state: GameState, rng: () => number): { scenes: Scene[] } 
   state.segFans.core += c;
   state.totalFans += f + c;
   spend(state, 10);
-  pushLog(state, `広報活動：SNS・宣伝を強化（知名度+3 / ファン+${f + c}）`);
-  return { scenes: promoScenes(`知名度 +3・SNS効果UP・ファン +${f + c}`, rng) };
+  pay(state, FEE_PROMO); // フライヤー・広告費
+  pushLog(state, `広報活動：SNS・宣伝を強化（知名度+3 / ファン+${f + c} / 宣伝費 ${yen(FEE_PROMO)}）`);
+  return { scenes: promoScenes(`知名度 +3・SNS効果UP・ファン +${f + c}（宣伝費 ${yen(FEE_PROMO)}）`, rng) };
 }
 
 function resolveNetwork(state: GameState, sub: string, rng: () => number): { scenes: Scene[] } {
@@ -1061,11 +1077,11 @@ export function resolveRecruit(state: GameState, role: StaffRole): { scenes: Sce
 }
 
 function resolveMoney(state: GameState, rng: () => number): { scenes: Scene[] } {
-  const amt = 60_000 + Math.floor(rng() * 40_000);
+  const amt = 40_000 + Math.floor(rng() * 30_000); // 40k–70k（活動費で足りなくなりがち）
   state.funds += amt;
   spend(state, 12);
   pushLog(state, `アルバイト：${yen(amt)}稼いだ`);
-  return { scenes: moneyScenes(`${yen(amt)}を稼いだ。ライブの会場費はここで貯める。`, rng) };
+  return { scenes: moneyScenes(`${yen(amt)}を稼いだ。スタジオ代やライブの会場費はここで貯める。`, rng) };
 }
 
 // --- Items ------------------------------------------------------------------
@@ -1144,8 +1160,8 @@ export function maybeFindItem(state: GameState, rng: () => number = Math.random)
   if (pool.length === 0) return null;
   const item = pool[Math.floor(rng() * pool.length)];
   state.items[item.id] = (state.items[item.id] ?? 0) + 1;
-  pushLog(state, `🎁 アイテム発見：${item.name}（${item.tier}）`);
-  return itemFindScenes(item.tier, item.name, item.effect, rng);
+  pushLog(state, `🎁 差し入れをもらった：${item.name}（${item.tier}）`);
+  return itemFindScenes(item.tier, item.name, item.effect, rng, item.id);
 }
 
 /**
