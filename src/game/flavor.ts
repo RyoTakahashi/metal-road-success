@@ -4,7 +4,7 @@
 // pools so a repeated action never looks identical. No numbers are changed here.
 
 import type { BgKey, Param, Scene, SceneChar } from "./types";
-import { PARAM_LABEL } from "./types";
+import { paramLabel } from "./types";
 
 type Mood = NonNullable<SceneChar["mood"]>;
 type Rng = () => number;
@@ -216,7 +216,7 @@ export function practiceScenes(param: Param, gain: number, rng: Rng): Scene[] {
       speaker: coach.who,
       fx: "shake",
     }),
-    mk("studio", [c(reactor, "center", "happy")], `${pick(rng, PRACTICE_RESULT)} ${quip(rng, reactor)}\n\n${PARAM_LABEL[param]} +${gain}！（全員）`, {
+    mk("studio", [c(reactor, "center", "happy")], `${pick(rng, PRACTICE_RESULT)} ${quip(rng, reactor)}\n\n${paramLabel(param)} +${gain}！（全員）`, {
       fx: "flash",
     }),
   ];

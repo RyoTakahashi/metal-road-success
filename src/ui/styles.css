@@ -76,6 +76,15 @@ body {
   font-size: 20px; line-height: 1; box-shadow: var(--shadow);
 }
 .bgm-btn:hover { border-color: var(--accent); }
+.lang-btn {
+  position: fixed; right: 12px; bottom: 64px; z-index: 60;
+  min-width: 44px; height: 44px; padding: 0 10px; border-radius: 22px; cursor: pointer;
+  border: 2px solid var(--accent); background: rgba(20,12,24,0.85); color: var(--accent);
+  font-size: 14px; font-weight: 900; letter-spacing: 1px; line-height: 1; box-shadow: var(--shadow);
+}
+.lang-btn:hover { color: #fff; border-color: #fff; }
+.langpick { display: flex; gap: 12px; justify-content: center; margin-top: 8px; flex-wrap: wrap; }
+.langpick .btn { min-width: 140px; font-size: 16px; }
 
 /* ---- Turn indicator / hand of action cards ---- */
 .stat .v .turn { font-size: 12px; color: var(--muted); font-weight: 700; margin-left: 2px; }

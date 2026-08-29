@@ -32,13 +32,14 @@ import type {
   Scene,
   StaffRole,
 } from "../game/types";
-import { ACTION_ICON, ACTION_LABEL, PARAM_LABEL, PARAMS, SEGMENT_LABEL, SEGMENTS, STAFF_LABEL } from "../game/types";
+import { ACTION_ICON, actionLabel, paramLabel, PARAMS, segLabel, SEGMENTS, staffLabel } from "../game/types";
+import { L, type Lang } from "../game/i18n";
 import { bgSrc, charSrc, setEvolution } from "./assets";
 import { EVO_LOOK, evolutionInfix, SEG_INFIX } from "../game/evolution";
 import { hottestSegment, OPPOSED, rivalOf, songDir, trendIcon, trendMult } from "../game/market";
 
 export interface UiState {
-  mode: "title" | "partSelect" | "board" | "cardSub" | "staffPick" | "practiceChoice" | "slides" | "live" | "result" | "gameover" | "clear";
+  mode: "language" | "title" | "partSelect" | "board" | "cardSub" | "staffPick" | "practiceChoice" | "slides" | "live" | "result" | "gameover" | "clear";
   panel: "none" | "members" | "appeal" | "items";
   pendingCard?: ActionKind; // card whose sub-option is being chosen
   sceneSeq: Scene[];
@@ -49,6 +50,8 @@ export interface UiState {
 }
 
 export interface Handlers {
+  onChooseLang: (lang: Lang) => void;
+  onToggleLang: () => void;
   onStart: () => void;
   onChoosePart: (part: string, name: string) => void;
   onPlayCard: (kind: ActionKind) => void;
@@ -155,7 +158,7 @@ function memberCard(m: Member): string {
       <div class="minfo">
         <div class="mname">${esc(m.name)}${m.isLeader ? ' <span class="leadtag">YOU</span>' : `<span class="love">${loveHearts(m.love)}</span>`}</div>
         <div class="gauges">
-          ${PARAMS.map((p) => gaugeRow(PARAM_LABEL[p], m[p])).join("")}
+          ${PARAMS.map((p) => gaugeRow(paramLabel(p), m[p])).join("")}
           ${gaugeRow("体力", m.stamina, "stamina")}
         </div>
       </div>
@@ -167,7 +170,7 @@ function staffRow(role: StaffRole, intimacy: number, cut: number): string {
     <div class="member staffrow">
       <div class="avatar"><div class="head"></div><div class="body" style="background:#5b6b86"></div><div class="part">🎧</div></div>
       <div class="minfo">
-        <div class="mname">${STAFF_LABEL[role]} <span class="leadtag cut">人件費${Math.round(cut * 100)}%</span></div>
+        <div class="mname">${staffLabel(role)} <span class="leadtag cut">人件費${Math.round(cut * 100)}%</span></div>
         <div class="gauges">${gaugeRow("親密度", intimacy)}</div>
       </div>
     </div>`;
@@ -179,7 +182,7 @@ function evolutionRow(state: GameState): string {
   const chips = SEGMENTS.filter((s) => s in SEG_INFIX)
     .map((s) => {
       const on = !!state.evoUnlocked[s];
-      return `<span class="evochip ${on ? "on" : ""}">${SEGMENT_LABEL[s]}：${EVO_NAME[s]}${on ? " ✓" : ""}</span>`;
+      return `<span class="evochip ${on ? "on" : ""}">${segLabel(s)}：${EVO_NAME[s]}${on ? " ✓" : ""}</span>`;
     })
     .join("");
   const cur = EVO_LOOK[evolutionInfix(state.evoUnlocked)]?.name;
@@ -196,14 +199,14 @@ function marketRow(state: GameState): string {
     const mo = r ? Math.round(r.momentum) : 0;
     const lead = !!r && r.momentum < 40;
     return `<div class="mktrow">
-      <span class="mkseg">${SEGMENT_LABEL[s]} ${trendIcon(trendMult(state, s))}<b>${t}</b></span>
+      <span class="mkseg">${segLabel(s)} ${trendIcon(trendMult(state, s))}<b>${t}</b></span>
       <span class="mkriv">${r ? esc(r.name) : ""}</span>
       <span class="mkbar"><i style="width:${mo}%"></i></span>
       <span class="mkmo ${lead ? "lead" : ""}">${lead ? "優勢" : `勢${mo}`}</span>
     </div>`;
   }).join("");
   const tie = state.tieup
-    ? `<div class="hint">🤝 タイアップ中：<b>${SEGMENT_LABEL[state.tieup.seg]}</b>層（あと${state.tieup.monthsLeft}ヶ月・${SEGMENT_LABEL[OPPOSED[state.tieup.seg]]}層は不利）</div>`
+    ? `<div class="hint">🤝 タイアップ中：<b>${segLabel(state.tieup.seg)}</b>層（あと${state.tieup.monthsLeft}ヶ月・${segLabel(OPPOSED[state.tieup.seg])}層は不利）</div>`
     : "";
   return `<h2 class="sub">📈 市場（トレンド / ライバル）</h2>
     <div class="hint">数値＝トレンド(100=標準)。バー＝ライバルの勢い（低いほどこちら優勢）。狙う客層でSを取ると相手を押し返す。</div>
@@ -230,7 +233,7 @@ function staffPickModal(state: GameState): string {
     .map((r) => {
       const d = STAFF_DEFS[r];
       return `<button class="train" data-recruit="${r}">
-        <span class="tname">${STAFF_LABEL[r]} <small>(人脈-${d.contactCost})</small></span>
+        <span class="tname">${staffLabel(r)} <small>(人脈-${d.contactCost})</small></span>
         <span class="tdesc">${esc(d.desc)}／人件費${Math.round(d.cut * 100)}%</span>
       </button>`;
     })
@@ -248,7 +251,7 @@ function appealPanel(state: GameState): string {
   const prof = appealProfile(state);
   const rows = SEGMENTS.map(
     (s) =>
-      `<div class="gauge"><span class="lbl">${SEGMENT_LABEL[s]}</span>
+      `<div class="gauge"><span class="lbl">${segLabel(s)}</span>
         <span class="grade">${grade(prof[s])}</span>
         <span class="bar"><span style="width:${prof[s]}%"></span></span></div>`,
   ).join("");
@@ -388,7 +391,7 @@ function handView(state: GameState): string {
       return `
       <button class="actcard ${c.kind} ${locked ? "locked" : ""}" data-card="${c.kind}" ${locked ? "disabled" : ""}>
         <span class="ac-ico">${ACTION_ICON[c.kind]}</span>
-        <span class="ac-name">${ACTION_LABEL[c.kind]}</span>
+        <span class="ac-name">${actionLabel(c.kind)}</span>
         <span class="ac-hint">${locked ? "疲労で行動不可" : CARD_HINT[c.kind]}</span>
         <span class="ac-sta">${staminaTag(c.kind)}</span>
       </button>`;
@@ -442,7 +445,7 @@ function cardSubModal(state: GameState, ui: UiState): string {
       : "";
   return `
     <div class="overlay"><div class="panel modal">
-      <h2>${ACTION_ICON[kind]} ${ACTION_LABEL[kind]} — 内容を選択</h2>
+      <h2>${ACTION_ICON[kind]} ${actionLabel(kind)} — 内容を選択</h2>
       <div class="traingrid">${opts}${recruit}</div>
       <div class="center"><button class="btn secondary" id="close-panel">やめる</button></div>
     </div></div>`;
@@ -455,7 +458,7 @@ function practiceChoiceModal(): string {
     const t = TRAININGS[p];
     return `<button class="train" data-train="${p}">
         <span class="tart">${TRAIN_ICON[p]}</span>
-        <span class="tname">${PARAM_LABEL[p]}</span>
+        <span class="tname">${paramLabel(p)}</span>
         <span class="tdesc">${esc(t.name)} ／ +6</span>
       </button>`;
   }).join("");
@@ -527,19 +530,19 @@ function liveModal(state: GameState, ui: UiState): string {
     const r = rivalOf(state, s);
     const rivalMark = r ? (r.momentum >= 60 ? "⚔️" : r.momentum < 40 ? "👑" : "") : "";
     const tieMark = state.tieup?.seg === s ? "🤝" : "";
-    return `<button class="opt ${d.target === s ? "sel" : ""}" data-target="${s}">${SEGMENT_LABEL[s]} <span class="segmk">${trendIcon(trendMult(state, s))}${rivalMark}${tieMark}</span></button>`;
+    return `<button class="opt ${d.target === s ? "sel" : ""}" data-target="${s}">${segLabel(s)} <span class="segmk">${trendIcon(trendMult(state, s))}${rivalMark}${tieMark}</span></button>`;
   }).join("");
   const songOpts = state.songs
     .map(
       (sg, i) =>
-        `<button class="opt ${d.songIndex === i ? "sel" : ""}" data-song="${i}">${esc(sg.name)}<span class="capn">Q${sg.Q}・${SEGMENT_LABEL[songDir(sg.lean)]}寄り${sg.age === 0 ? "・NEW" : `・${sg.age}ヶ月`}</span></button>`,
+        `<button class="opt ${d.songIndex === i ? "sel" : ""}" data-song="${i}">${esc(sg.name)}<span class="capn">Q${sg.Q}・${segLabel(songDir(sg.lean))}寄り${sg.age === 0 ? "・NEW" : `・${sg.age}ヶ月`}</span></button>`,
     )
     .join("");
   const hot = hottestSegment(state);
   const tieLine = state.tieup
-    ? `　🤝 <b>${SEGMENT_LABEL[state.tieup.seg]}</b>層タイアップ中（あと${state.tieup.monthsLeft}ヶ月）`
+    ? `　🤝 <b>${segLabel(state.tieup.seg)}</b>層タイアップ中（あと${state.tieup.monthsLeft}ヶ月）`
     : "";
-  const marketStrip = `<div class="hint marketstrip">📈 今月の注目客層：<b>${SEGMENT_LABEL[hot]}</b> ${trendIcon(trendMult(state, hot))}${tieLine}
+  const marketStrip = `<div class="hint marketstrip">📈 今月の注目客層：<b>${segLabel(hot)}</b> ${trendIcon(trendMult(state, hot))}${tieLine}
     <br><span class="legend">🔥高い／❄️低いトレンド ・ ⚔️ライバル強い ・ 👑こちらが優勢 ・ 🤝タイアップ層</span></div>`;
   const cost = d.cap * K.venueCostPerSeat;
   const canPay = state.funds >= cost;
@@ -636,6 +639,21 @@ function homeHero(state: GameState): string {
     </div>`;
 }
 
+function languageScreen(): string {
+  return `
+    <div class="title-screen" style="background-image:url('${bgSrc("venueBig")}')">
+      <div class="title-scrim"></div>
+      <div class="title-copy">
+        <div class="title-logo">Metal Road<span>~ SUCCESS! ~</span></div>
+        <div class="title-tag">言語を選択 ／ Select Language</div>
+        <div class="langpick">
+          <button class="btn" data-lang="ja">日本語</button>
+          <button class="btn" data-lang="en">English</button>
+        </div>
+      </div>
+    </div>`;
+}
+
 function titleScreen(): string {
   const chars = ROSTER.map((m, i) => `<img class="title-char" style="--i:${i}" src="${charSrc(m, "normal")}" alt="${esc(m)}" />`).join("");
   return `
@@ -644,8 +662,8 @@ function titleScreen(): string {
       <div class="title-band">${chars}</div>
       <div class="title-copy">
         <div class="title-logo">Metal Road<span>~ SUCCESS! ~</span></div>
-        <div class="title-tag">社会人メタルバンド育成シミュレーション</div>
-        <button class="btn title-start" id="start">▶ はじめる</button>
+        <div class="title-tag">${L("社会人メタルバンド育成シミュレーション", "A working-adult metal band management sim")}</div>
+        <button class="btn title-start" id="start">${L("▶ はじめる", "▶ Start")}</button>
       </div>
     </div>`;
 }
@@ -659,20 +677,26 @@ function partSelectScreen(): string {
     <div class="title-screen" style="background-image:url('${bgSrc("backstage")}')">
       <div class="title-scrim"></div>
       <div class="partselect">
-        <h2>あなたのパートは？</h2>
-        <div class="hint">あなたはこのバンドのリーダー。担当パートを選び、名前を決めよう。</div>
+        <h2>${L("あなたのパートは？", "What's your part?")}</h2>
+        <div class="hint">${L("あなたはこのバンドのリーダー。担当パートを選び、名前を決めよう。", "You're the band's leader. Pick your instrument and set a name.")}</div>
         <div class="partgrid">${opts}</div>
         <div class="namefield">
-          <label>リーダー名（任意）</label>
-          <input id="leader-name" type="text" maxlength="12" placeholder="パートを選ぶと初期名が入ります" />
+          <label>${L("リーダー名（任意）", "Leader name (optional)")}</label>
+          <input id="leader-name" type="text" maxlength="12" placeholder="${L("パートを選ぶと初期名が入ります", "Pick a part for a default name")}" />
         </div>
-        <button class="btn partstart" id="confirm-part" disabled>この設定で結成！</button>
+        <button class="btn partstart" id="confirm-part" disabled>${L("この設定で結成！", "Form the band!")}</button>
       </div>
     </div>`;
 }
 
 export function render(root: HTMLElement, state: GameState, ui: UiState, h: Handlers): void {
   setEvolution(evolutionInfix(state.evoUnlocked)); // pick the sprite variant for this frame
+  if (ui.mode === "language") {
+    root.innerHTML = languageScreen();
+    root.querySelectorAll<HTMLButtonElement>("[data-lang]").forEach((el) =>
+      el.addEventListener("click", () => h.onChooseLang(el.dataset.lang as Lang)));
+    return;
+  }
   if (ui.mode === "title") {
     root.innerHTML = titleScreen();
     root.querySelector("#start")?.addEventListener("click", () => h.onStart());

@@ -25,6 +25,7 @@ import {
   useItem,
 } from "./game/state";
 import type { ActionKind, GameState, Param, StaffRole } from "./game/types";
+import { getLang, langChosen, setLang } from "./game/i18n";
 import * as bgm from "./ui/audio";
 import { render, type Handlers, type UiState } from "./ui/render";
 
@@ -43,7 +44,7 @@ function applyBgm(): void {
 
 let state: GameState = newGame();
 const ui: UiState = {
-  mode: "title",
+  mode: langChosen() ? "title" : "language", // pick a language on the very first run
   panel: "none",
   sceneSeq: [],
   sceneIndex: 0,
@@ -189,7 +190,27 @@ async function autoLoop(): Promise<void> {
   }
 }
 
+// Language toggle (fixed, like the BGM button). Text shows the language to
+// switch TO, so "EN" flips to English and "JA" back to Japanese.
+const langBtn = document.createElement("button");
+langBtn.className = "lang-btn";
+langBtn.setAttribute("aria-label", "Language / 言語");
+langBtn.textContent = getLang() === "en" ? "JA" : "EN";
+langBtn.addEventListener("click", () => handlers.onToggleLang());
+document.body.appendChild(langBtn);
+
 const handlers: Handlers = {
+  onChooseLang(lang) {
+    setLang(lang);
+    ui.mode = "title";
+    langBtn.textContent = getLang() === "en" ? "JA" : "EN";
+    redraw();
+  },
+  onToggleLang() {
+    setLang(getLang() === "en" ? "ja" : "en");
+    langBtn.textContent = getLang() === "en" ? "JA" : "EN";
+    redraw();
+  },
   onStart() {
     ui.mode = "partSelect";
     redraw();

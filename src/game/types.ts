@@ -1,6 +1,8 @@
 // Core data model for Metal Road ~Success!~ (vertical-slice prototype).
 // Mirrors docs/design.md and docs/core-loop.md.
 
+import { getLang, type Lang } from "./i18n";
+
 /** Main-member skill parameters (体力 is tracked separately as a resource). */
 export type Param = "T" | "P" | "S" | "V";
 
@@ -10,20 +12,19 @@ export type Segment = "core" | "light" | "visual" | "expert";
 export const PARAMS: Param[] = ["T", "P", "S", "V"];
 export const SEGMENTS: Segment[] = ["core", "light", "visual", "expert"];
 
-/** Human-readable labels (Japanese, Powerpro-style). */
-export const PARAM_LABEL: Record<Param, string> = {
-  T: "演奏基礎",
-  P: "パフォーマンス",
-  S: "音楽センス",
-  V: "ビジュ力",
+/** Human-readable labels (lang-aware; resolved at call time so a language
+ *  switch takes effect immediately). */
+const PARAM_LABEL_L: Record<Lang, Record<Param, string>> = {
+  ja: { T: "演奏基礎", P: "パフォーマンス", S: "音楽センス", V: "ビジュ力" },
+  en: { T: "Musicianship", P: "Performance", S: "Songcraft", V: "Looks" },
 };
+export const paramLabel = (p: Param): string => PARAM_LABEL_L[getLang()][p];
 
-export const SEGMENT_LABEL: Record<Segment, string> = {
-  core: "コア",
-  light: "ライト",
-  visual: "ビジュ",
-  expert: "玄人",
+const SEGMENT_LABEL_L: Record<Lang, Record<Segment, string>> = {
+  ja: { core: "コア", light: "ライト", visual: "ビジュ", expert: "玄人" },
+  en: { core: "Core", light: "Casual", visual: "Visual", expert: "Connoisseur" },
 };
+export const segLabel = (s: Segment): string => SEGMENT_LABEL_L[getLang()][s];
 
 /** A playing band member. */
 export interface Member {
@@ -72,13 +73,11 @@ export interface TieUp {
 /** Turn action categories (the choice-card hand). See docs/phase1-cards.md. */
 export type ActionKind = "rest" | "music" | "promo" | "network" | "money";
 
-export const ACTION_LABEL: Record<ActionKind, string> = {
-  rest: "休息",
-  music: "音楽活動",
-  promo: "広報活動",
-  network: "関係性構築",
-  money: "アルバイト",
+const ACTION_LABEL_L: Record<Lang, Record<ActionKind, string>> = {
+  ja: { rest: "休息", music: "音楽活動", promo: "広報活動", network: "関係性構築", money: "アルバイト" },
+  en: { rest: "Rest", music: "Music", promo: "Promotion", network: "Networking", money: "Part-time Job" },
 };
+export const actionLabel = (k: ActionKind): string => ACTION_LABEL_L[getLang()][k];
 export const ACTION_ICON: Record<ActionKind, string> = {
   rest: "💤",
   music: "🎸",
@@ -97,12 +96,11 @@ export interface ActionCard {
 /** Support staff roles (P2-2/3/4). */
 export type StaffRole = "producer" | "pa" | "roadie" | "manager";
 
-export const STAFF_LABEL: Record<StaffRole, string> = {
-  producer: "プロデューサー",
-  pa: "PA",
-  roadie: "ローディー",
-  manager: "マネージャー",
+const STAFF_LABEL_L: Record<Lang, Record<StaffRole, string>> = {
+  ja: { producer: "プロデューサー", pa: "PA", roadie: "ローディー", manager: "マネージャー" },
+  en: { producer: "Producer", pa: "PA", roadie: "Roadie", manager: "Manager" },
 };
+export const staffLabel = (r: StaffRole): string => STAFF_LABEL_L[getLang()][r];
 
 /** A hired support member. Boosts activity but takes a cut and needs 親密度. */
 export interface Staff {

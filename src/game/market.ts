@@ -7,7 +7,7 @@
 // live read of the market instead of a fixed optimum.
 
 import type { GameState, Rival, Segment } from "./types";
-import { SEGMENTS, SEGMENT_LABEL } from "./types";
+import { SEGMENTS, segLabel } from "./types";
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
@@ -119,7 +119,7 @@ export function tickMarket(state: GameState, rng: () => number): string[] {
     state.trend[s] = clamp(cur + step, MK.trendMin, MK.trendMax);
   }
   const hot = hottestSegment(state);
-  logs.push(`📈 今月の注目客層：${SEGMENT_LABEL[hot]}（トレンド上昇中）`);
+  logs.push(`📈 今月の注目客層：${segLabel(hot)}（トレンド上昇中）`);
 
   // rivals grind upward (you push them back by playing to their segment — live feedback).
   for (const r of state.rivals) r.momentum = clamp(r.momentum + MK.rivalGrowth, 0, MK.rivalMax);

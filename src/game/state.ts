@@ -31,7 +31,7 @@ import type {
   Segment,
   StaffRole,
 } from "./types";
-import { PARAM_LABEL, SEGMENT_LABEL, SEGMENTS, STAFF_LABEL } from "./types";
+import { paramLabel, segLabel, SEGMENTS, staffLabel } from "./types";
 
 const TURNS_PER_MONTH = 4;
 const clampStat = (n: number) => Math.max(0, Math.min(99, n));
@@ -360,17 +360,17 @@ function resolveMusic(
         apply: (st) => {
           st.usedSongNames.push(nm);
           st.songs.push({ name: nm, lean: leanToward(seg), Q, age: 0 });
-          pushLog(st, `作曲：「${nm}」完成（Q${Q}／${SEGMENT_LABEL[seg]}寄り）`);
+          pushLog(st, `作曲：「${nm}」完成（Q${Q}／${segLabel(seg)}寄り）`);
         },
         next: composeScenes(nm, Q, rng),
       }));
       return {
-        label: `${SEGMENT_LABEL[seg]}寄り`,
+        label: `${segLabel(seg)}寄り`,
         next: [
           {
             bg: "studio",
             chars: [{ member: lead, pos: "center", mood: "normal" }],
-            text: `${SEGMENT_LABEL[seg]}層に刺す一曲（Q${Q}）。タイトルはどれにする？`,
+            text: `${segLabel(seg)}層に刺す一曲（Q${Q}）。タイトルはどれにする？`,
             choices: nameChoices,
           },
         ],
@@ -406,7 +406,7 @@ function resolveMusic(
   spend(state, 16);
   pay(state, FEE_PRACTICE); // スタジオ代
   state.practiceFreshness = 100;
-  pushLog(state, `練習：${PARAM_LABEL[p]}を強化（+${gain} / 全員）・スタジオ代 ${yen(FEE_PRACTICE)}・鮮度MAX`);
+  pushLog(state, `練習：${paramLabel(p)}を強化（+${gain} / 全員）・スタジオ代 ${yen(FEE_PRACTICE)}・鮮度MAX`);
   const scenes = practiceScenes(p, gain, rng);
   // Sometimes a bandmate turns to the leader mid-session for a word (choice event).
   if (rng() < 0.5) scenes.splice(2, 0, ...practiceTalk(state, rng));
@@ -472,7 +472,7 @@ function buildTalk(m: Member, topic: Topic, bg: BgKey): Scene[] {
     if (r.bond) bits.push(`結束${sign(r.bond)}`);
     if (r.stam) bits.push(`体力${sign(r.stam)}`);
     if (r.funds) bits.push(`資金${sign(r.funds)}`);
-    if (r.stat) bits.push(`${PARAM_LABEL[r.stat.p]}${sign(r.stat.d)}`);
+    if (r.stat) bits.push(`${paramLabel(r.stat.p)}${sign(r.stat.d)}`);
     const summary = bits.join("・");
     return {
       label: r.label,
@@ -850,7 +850,7 @@ export function buildLivePreScenes(state: GameState, decision: LiveDecision, rng
   const L = leaderArt(state);
   const lname = nameOf(state, L);
   const target = decision.target;
-  const seg = SEGMENT_LABEL[target];
+  const seg = segLabel(target);
   const others = nonLeaders(state).map((m) => m.artKey);
   const bud = pick(rng, others);
   const ideal = bestSoloistKey(state, target); // the member who best fits the target layer
@@ -1042,7 +1042,7 @@ function buildEvolutionScenes(infix: string, seg: Segment): Scene[] {
   const lineup = (mood: Mood): Scene["chars"] =>
     (["RYO", "KEN", "MIO", "GO"] as const).map((a, i) => ({ member: a, pos: (["left", "center", "right", "left"] as const)[i], mood }));
   return [
-    { bg: "venueBig", chars: lineup("fired"), text: `✨✨ 進化 ✨✨\n\n${SEGMENT_LABEL[seg]}層をS評価で熱狂させた衝撃が、バンドの姿を作り変えていく——！`, fx: "flash" },
+    { bg: "venueBig", chars: lineup("fired"), text: `✨✨ 進化 ✨✨\n\n${segLabel(seg)}層をS評価で熱狂させた衝撃が、バンドの姿を作り変えていく——！`, fx: "flash" },
     { bg: "backstage", chars: lineup("happy"), text: `【${t.name}】\n\n${t.desc}\n\nメンバー全員の見た目が進化した！（客層でSを取るたびに、その要素が加わって姿が融合していく）`, fx: "flash" },
   ];
 }
@@ -1058,7 +1058,7 @@ export function registerLiveEvolution(state: GameState, target: Segment, satisfa
   state.evolution = target; // last-earned layer (scene focus / legacy field)
   if (!firstTime) return [];
   const infix = evolutionInfix(state.evoUnlocked);
-  pushLog(state, `✨ ${SEGMENT_LABEL[target]}層でS評価！ 見た目が「${EVO_LOOK[infix].name}」へ進化！`);
+  pushLog(state, `✨ ${segLabel(target)}層でS評価！ 見た目が「${EVO_LOOK[infix].name}」へ進化！`);
   return buildEvolutionScenes(infix, target);
 }
 
@@ -1068,10 +1068,10 @@ export function resolveRecruit(state: GameState, role: StaffRole): { scenes: Sce
   state.contacts = Math.max(0, state.contacts - def.contactCost);
   state.staff.push({ role, intimacy: 30, cut: def.cut });
   const pct = Math.round(def.cut * 100);
-  pushLog(state, `${STAFF_LABEL[role]}が加入！（人脈-${def.contactCost} / 人件費${pct}%）`);
+  pushLog(state, `${staffLabel(role)}が加入！（人脈-${def.contactCost} / 人件費${pct}%）`);
   return {
     scenes: [
-      scene("backstage", [leaderArt(state)], `${STAFF_LABEL[role]}がチームに加わった。\n\n${def.desc}\nただしライブ収益の${pct}%が人件費に。親密度が下がると離脱・トラブルの恐れ（「バンド関係者との交流」で親密度UP）。`, { fx: "flash" }),
+      scene("backstage", [leaderArt(state)], `${staffLabel(role)}がチームに加わった。\n\n${def.desc}\nただしライブ収益の${pct}%が人件費に。親密度が下がると離脱・トラブルの恐れ（「バンド関係者との交流」で親密度UP）。`, { fx: "flash" }),
     ],
   };
 }
@@ -1190,7 +1190,7 @@ export function startNewMonth(state: GameState, rng: () => number = Math.random)
   const leaving = state.staff.filter((st) => st.intimacy <= 0);
   if (leaving.length) {
     state.staff = state.staff.filter((st) => st.intimacy > 0);
-    for (const st of leaving) pushLog(state, `${STAFF_LABEL[st.role]}が離脱した…（親密度が尽きた）`);
+    for (const st of leaving) pushLog(state, `${staffLabel(st.role)}が離脱した…（親密度が尽きた）`);
   }
   // Market meta: trends drift, rivals grind, tie-ups age, a new offer may appear.
   for (const line of tickMarket(state, rng)) pushLog(state, line);
@@ -1203,7 +1203,7 @@ export function startNewMonth(state: GameState, rng: () => number = Math.random)
 export function resolveTieupAccept(state: GameState): void {
   const t = state.tieupOffer;
   acceptTieup(state);
-  if (t) pushLog(state, `🤝 タイアップ「${t.name}」を受諾！ ${SEGMENT_LABEL[t.seg]}層が沸き立つ（+¥${t.fee.toLocaleString()}）。`);
+  if (t) pushLog(state, `🤝 タイアップ「${t.name}」を受諾！ ${segLabel(t.seg)}層が沸き立つ（+¥${t.fee.toLocaleString()}）。`);
 }
 
 /** Decline the pending tie-up offer. */
@@ -1218,15 +1218,15 @@ export function resolveTieupDecline(state: GameState): void {
 export function buildTieupOfferScenes(state: GameState): Scene[] {
   const t = state.tieupOffer;
   if (!t) return [];
-  const oppLabel = SEGMENT_LABEL[({ visual: "core", core: "visual", light: "expert", expert: "light" } as Record<Segment, Segment>)[t.seg]];
+  const oppLabel = segLabel(({ visual: "core", core: "visual", light: "expert", expert: "light" } as Record<Segment, Segment>)[t.seg]);
   return [
     {
       bg: "backstage",
       chars: [{ member: "RYO", pos: "center", mood: "normal" }],
       speaker: "マネージャー",
-      text: `タイアップの話が来てる。「${t.name}」——${SEGMENT_LABEL[t.seg]}層に一気に刺さる。契約金¥${t.fee.toLocaleString()}。\nただし数ヶ月はバンドのイメージが縛られる（${oppLabel}層ウケは落ちる）。受ける？`,
+      text: `タイアップの話が来てる。「${t.name}」——${segLabel(t.seg)}層に一気に刺さる。契約金¥${t.fee.toLocaleString()}。\nただし数ヶ月はバンドのイメージが縛られる（${oppLabel}層ウケは落ちる）。受ける？`,
       choices: [
-        { label: `受ける（${SEGMENT_LABEL[t.seg]}層に賭ける）`, apply: (s) => resolveTieupAccept(s) },
+        { label: `受ける（${segLabel(t.seg)}層に賭ける）`, apply: (s) => resolveTieupAccept(s) },
         { label: "見送る（自由でいる）", apply: (s) => resolveTieupDecline(s) },
       ],
     },
