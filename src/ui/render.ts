@@ -109,10 +109,10 @@ function topbar(state: GameState): string {
       <div class="logo">Metal Road<small>~ SUCCESS! ~</small></div>
       <span class="rankchip rank-${state.rank}">${state.rank === "major" ? "MAJOR" : "INDIE"}</span>
       <div class="stats">
-        <div class="stat"><div class="v">${state.month}<span class="turn">·${state.turn}/${state.turnsPerMonth}</span></div><div class="k">月・ターン</div></div>
-        <div class="stat"><div class="v">${state.totalFans.toLocaleString()}</div><div class="k">ファン</div></div>
-        <div class="stat"><div class="v">${state.fame}</div><div class="k">知名度</div></div>
-        <div class="stat"><div class="v">¥${state.funds.toLocaleString()}</div><div class="k">資金</div></div>
+        <div class="stat"><div class="v">${state.month}<span class="turn">·${state.turn}/${state.turnsPerMonth}</span></div><div class="k">${L("月・ターン", "Mo/Turn")}</div></div>
+        <div class="stat"><div class="v">${state.totalFans.toLocaleString()}</div><div class="k">${L("ファン", "Fans")}</div></div>
+        <div class="stat"><div class="v">${state.fame}</div><div class="k">${L("知名度", "Fame")}</div></div>
+        <div class="stat"><div class="v">¥${state.funds.toLocaleString()}</div><div class="k">${L("資金", "Funds")}</div></div>
       </div>
     </div>`;
 }
@@ -121,11 +121,11 @@ function topbar(state: GameState): string {
 function statBar(state: GameState): string {
   const avg = (p: Param): number => Math.round(state.members.reduce((a, m) => a + m[p], 0) / (state.members.length || 1));
   const cells: [string, number][] = [
-    ["演奏力", bandPower(state)],
-    ["演奏基礎", avg("T")],
-    ["パフォ", avg("P")],
-    ["センス", avg("S")],
-    ["ビジュ", avg("V")],
+    [L("演奏力", "Power"), bandPower(state)],
+    [L("演奏基礎", "Music."), avg("T")],
+    [L("パフォ", "Perf."), avg("P")],
+    [L("センス", "Song."), avg("S")],
+    [L("ビジュ", "Looks"), avg("V")],
   ];
   const cellHtml = cells
     .map(([l, v]) => `<div class="sb-cell"><span class="sb-l">${l}</span><span class="sb-rank g-${grade(v)}">${grade(v)}</span><span class="sb-v">${v}</span></div>`)
@@ -135,8 +135,8 @@ function statBar(state: GameState): string {
   return `
     <div class="statbar">
       ${cellHtml}
-      ${gauge("体力", Math.round(bandStamina(state)), "st")}
-      ${gauge("鮮度", Math.round(state.practiceFreshness), "fr")}
+      ${gauge(L("体力", "Stamina"), Math.round(bandStamina(state)), "st")}
+      ${gauge(L("鮮度", "Freshness"), Math.round(state.practiceFreshness), "fr")}
     </div>`;
 }
 
@@ -159,7 +159,7 @@ function memberCard(m: Member): string {
         <div class="mname">${esc(m.name)}${m.isLeader ? ' <span class="leadtag">YOU</span>' : `<span class="love">${loveHearts(m.love)}</span>`}</div>
         <div class="gauges">
           ${PARAMS.map((p) => gaugeRow(paramLabel(p), m[p])).join("")}
-          ${gaugeRow("体力", m.stamina, "stamina")}
+          ${gaugeRow(L("体力", "Stamina"), m.stamina, "stamina")}
         </div>
       </div>
     </div>`;
@@ -170,25 +170,30 @@ function staffRow(role: StaffRole, intimacy: number, cut: number): string {
     <div class="member staffrow">
       <div class="avatar"><div class="head"></div><div class="body" style="background:#5b6b86"></div><div class="part">🎧</div></div>
       <div class="minfo">
-        <div class="mname">${staffLabel(role)} <span class="leadtag cut">人件費${Math.round(cut * 100)}%</span></div>
-        <div class="gauges">${gaugeRow("親密度", intimacy)}</div>
+        <div class="mname">${staffLabel(role)} <span class="leadtag cut">${L("人件費", "Cut")}${Math.round(cut * 100)}%</span></div>
+        <div class="gauges">${gaugeRow(L("親密度", "Rapport"), intimacy)}</div>
       </div>
     </div>`;
 }
 
-const EVO_NAME: Record<string, string> = { visual: "幽艶ゴシック", core: "鋼鉄ハードロック", light: "紅黒カワメタ", expert: "戦鬼デスメタル" };
+const evoChipName = (s: string): string => (({
+  visual: L("幽艶ゴシック", "Ethereal Goth"),
+  core: L("鋼鉄ハードロック", "Steel Hard Rock"),
+  light: L("紅黒カワメタ", "Kawaii Metal"),
+  expert: L("戦鬼デスメタル", "War Death Metal"),
+}) as Record<string, string>)[s];
 
 function evolutionRow(state: GameState): string {
   const chips = SEGMENTS.filter((s) => s in SEG_INFIX)
     .map((s) => {
       const on = !!state.evoUnlocked[s];
-      return `<span class="evochip ${on ? "on" : ""}">${segLabel(s)}：${EVO_NAME[s]}${on ? " ✓" : ""}</span>`;
+      return `<span class="evochip ${on ? "on" : ""}">${segLabel(s)}：${evoChipName(s)}${on ? " ✓" : ""}</span>`;
     })
     .join("");
   const cur = EVO_LOOK[evolutionInfix(state.evoUnlocked)]?.name;
-  const now = cur ? `<div class="evonow">現在の姿：<b>${cur}</b></div>` : "";
-  return `<h2 class="sub">✨ 見た目の進化</h2>
-    <div class="hint">客層ターゲットでS評価（満足度80+）を取ると解禁。複数解禁で姿が<b>融合</b>、3層以上で<b>究極形態</b>へ。</div>
+  const now = cur ? `<div class="evonow">${L("現在の姿", "Current look")}：<b>${cur}</b></div>` : "";
+  return `<h2 class="sub">${L("✨ 見た目の進化", "✨ Appearance Evolution")}</h2>
+    <div class="hint">${L("客層ターゲットでS評価（満足度80+）を取ると解禁。複数解禁で姿が<b>融合</b>、3層以上で<b>究極形態</b>へ。", "S-rank a targeted audience (satisfaction 80+) to unlock its look. Unlock several and they <b>fuse</b>; 3+ becomes the <b>ultimate form</b>.")}</div>
     <div class="evochips">${chips}</div>${now}`;
 }
 
@@ -202,29 +207,29 @@ function marketRow(state: GameState): string {
       <span class="mkseg">${segLabel(s)} ${trendIcon(trendMult(state, s))}<b>${t}</b></span>
       <span class="mkriv">${r ? esc(r.name) : ""}</span>
       <span class="mkbar"><i style="width:${mo}%"></i></span>
-      <span class="mkmo ${lead ? "lead" : ""}">${lead ? "優勢" : `勢${mo}`}</span>
+      <span class="mkmo ${lead ? "lead" : ""}">${lead ? L("優勢", "Lead") : `${L("勢", "M")}${mo}`}</span>
     </div>`;
   }).join("");
   const tie = state.tieup
-    ? `<div class="hint">🤝 タイアップ中：<b>${segLabel(state.tieup.seg)}</b>層（あと${state.tieup.monthsLeft}ヶ月・${segLabel(OPPOSED[state.tieup.seg])}層は不利）</div>`
+    ? `<div class="hint">${L("🤝 タイアップ中", "🤝 Tie-up active")}：<b>${segLabel(state.tieup.seg)}</b>${L("層（あと", " (")}${state.tieup.monthsLeft}${L("ヶ月・", " mo left; ")}${segLabel(OPPOSED[state.tieup.seg])}${L("層は不利）", " suffers)")}</div>`
     : "";
-  return `<h2 class="sub">📈 市場（トレンド / ライバル）</h2>
-    <div class="hint">数値＝トレンド(100=標準)。バー＝ライバルの勢い（低いほどこちら優勢）。狙う客層でSを取ると相手を押し返す。</div>
+  return `<h2 class="sub">${L("📈 市場（トレンド / ライバル）", "📈 Market (Trends / Rivals)")}</h2>
+    <div class="hint">${L("数値＝トレンド(100=標準)。バー＝ライバルの勢い（低いほどこちら優勢）。狙う客層でSを取ると相手を押し返す。", "Number = trend (100 = neutral). Bar = rival momentum (lower = you lead). S-rank a segment to push its rival back.")}</div>
     <div class="mkt">${rows}</div>${tie}`;
 }
 
 function membersPanel(state: GameState): string {
   const staff = state.staff.length
-    ? `<h2 class="sub">🎧 サポート陣</h2>${state.staff.map((s) => staffRow(s.role, s.intimacy, s.cut)).join("")}`
+    ? `<h2 class="sub">${L("🎧 サポート陣", "🎧 Support Crew")}</h2>${state.staff.map((s) => staffRow(s.role, s.intimacy, s.cut)).join("")}`
     : "";
   return `
     <div class="overlay"><div class="panel modal">
-      <h2>🎸 メンバー</h2>
+      <h2>${L("🎸 メンバー", "🎸 Members")}</h2>
       ${state.members.map(memberCard).join("")}
       ${staff}
       ${evolutionRow(state)}
       ${marketRow(state)}
-      <div class="center"><button class="btn secondary" id="close-panel">閉じる</button></div>
+      <div class="center"><button class="btn secondary" id="close-panel">${L("閉じる", "Close")}</button></div>
     </div></div>`;
 }
 
@@ -233,17 +238,17 @@ function staffPickModal(state: GameState): string {
     .map((r) => {
       const d = STAFF_DEFS[r];
       return `<button class="train" data-recruit="${r}">
-        <span class="tname">${staffLabel(r)} <small>(人脈-${d.contactCost})</small></span>
-        <span class="tdesc">${esc(d.desc)}／人件費${Math.round(d.cut * 100)}%</span>
+        <span class="tname">${staffLabel(r)} <small>(${L("人脈", "Contacts")}-${d.contactCost})</small></span>
+        <span class="tdesc">${esc(d.desc)}／${L("人件費", "cut")}${Math.round(d.cut * 100)}%</span>
       </button>`;
     })
     .join("");
   return `
     <div class="overlay"><div class="panel modal">
-      <h2>🤝 サポート勧誘（人脈 ${state.contacts} / 枠 ${state.staff.length}/${STAFF_CAP}）</h2>
-      <div class="hint">加入で活動が拡大。ただしライブ収益から人件費、親密度の管理も必要。</div>
+      <h2>${L("🤝 サポート勧誘", "🤝 Recruit Support")}（${L("人脈", "Contacts")} ${state.contacts} / ${L("枠", "slots")} ${state.staff.length}/${STAFF_CAP}）</h2>
+      <div class="hint">${L("加入で活動が拡大。ただしライブ収益から人件費、親密度の管理も必要。", "Support widens what you can do — but they take a cut of live revenue and their rapport must be managed.")}</div>
       <div class="traingrid">${opts}</div>
-      <div class="center"><button class="btn secondary" id="close-panel">やめる</button></div>
+      <div class="center"><button class="btn secondary" id="close-panel">${L("やめる", "Cancel")}</button></div>
     </div></div>`;
 }
 
@@ -257,10 +262,10 @@ function appealPanel(state: GameState): string {
   ).join("");
   return `
     <div class="overlay"><div class="panel modal">
-      <h2>📊 セグメント別アピール</h2>
-      <div class="hint">バンドの強みがどのファン層に刺さるか（ライブのターゲット選びの参考に）</div>
+      <h2>${L("📊 セグメント別アピール", "📊 Appeal by Segment")}</h2>
+      <div class="hint">${L("バンドの強みがどのファン層に刺さるか（ライブのターゲット選びの参考に）", "Which audience your strengths hit hardest (helps you pick a live target).")}</div>
       ${rows}
-      <div class="center"><button class="btn secondary" id="close-panel">閉じる</button></div>
+      <div class="center"><button class="btn secondary" id="close-panel">${L("閉じる", "Close")}</button></div>
     </div></div>`;
 }
 
@@ -280,28 +285,28 @@ function itemsPanel(state: GameState): string {
         <div class="it-head"><span class="it-tier t-${d.tier}">${d.tier}</span><span class="it-name">${esc(d.name)}</span><span class="it-count">×${n}</span></div>
         <div class="it-eff">${esc(d.effect)}</div>
         <div class="it-desc">${esc(d.desc)}</div>
-        <div class="it-foot"><button class="btn small" data-use="${id}">使う</button></div>
+        <div class="it-foot"><button class="btn small" data-use="${id}">${L("使う", "Use")}</button></div>
       </div>`;
         })
         .join("")
-    : `<div class="hint">アイテムを持っていない。行動後に見つかることがある。</div>`;
+    : `<div class="hint">${L("アイテムを持っていない。行動後に見つかることがある。", "No items yet. You may receive some after actions.")}</div>`;
   return `
     <div class="overlay"><div class="panel modal">
-      <h2>🎒 アイテム</h2>
-      <div class="hint">description と effect を確認して使用（使用はターンを消費しません）。</div>
+      <h2>${L("🎒 アイテム", "🎒 Items")}</h2>
+      <div class="hint">${L("説明と効果を確認して使用（使用はターンを消費しません）。", "Check the description and effect, then use it (using an item costs no turn).")}</div>
       <div class="itemlist">${rows}</div>
-      <div class="center"><button class="btn secondary" id="close-panel">閉じる</button></div>
+      <div class="center"><button class="btn secondary" id="close-panel">${L("閉じる", "Close")}</button></div>
     </div></div>`;
 }
 
 // --- Hand of action cards (the main board) ---------------------------------
 
 const CARD_HINT: Record<ActionKind, string> = {
-  rest: "完全休養／社会勉強／趣味",
-  music: "作曲／練習／パフォーマンス",
-  promo: "宣伝で知名度・ファン↑",
-  network: "バンド／新たな人脈",
-  money: "バイトで資金を稼ぐ",
+  rest: L("完全休養／社会勉強／趣味", "Full rest / study / hobby"),
+  music: L("作曲／練習／パフォーマンス", "Compose / practice / perform"),
+  promo: L("宣伝で知名度・ファン↑", "Promote: fame & fans up"),
+  network: L("バンド／新たな人脈", "Bandmates / new contacts"),
+  money: L("バイトで資金を稼ぐ", "Work a part-time job for cash"),
 };
 
 function milestoneBanner(state: GameState): string {
@@ -320,7 +325,7 @@ function milestoneBanner(state: GameState): string {
   const leftN = Math.max(0, left);
   return `
     <div class="milestone ${tone}">
-      <div class="ms-head">🎯 次の関門：<b>${esc(m.label)}</b> ／ 期限 ${m.deadline}ヶ月目（あと${leftN}ヶ月・${leftN * state.turnsPerMonth}行動）</div>
+      <div class="ms-head">${L("🎯 次の関門", "🎯 Next milestone")}：<b>${esc(m.label)}</b> ／ ${L("期限", "by")} ${L(`${m.deadline}ヶ月目`, `month ${m.deadline}`)}${L("（あと", " (")}${leftN}${L("ヶ月・", "mo · ")}${leftN * state.turnsPerMonth}${L("行動）", " actions)")}</div>
       <div class="ms-reqs">${rows}</div>
     </div>`;
 }
@@ -334,9 +339,9 @@ function endScreen(state: GameState, kind: "gameover" | "clear"): string {
         <div class="title-band">${band}</div>
         <div class="end-copy">
           <div class="end-logo win">CONGRATULATIONS!</div>
-          <div class="end-sub">海外進出を成し遂げ、Metal Road は世界へ羽ばたいた！</div>
-          <div class="end-stat">${state.month}ヶ月でクリア ／ ファン ${state.totalFans.toLocaleString()}</div>
-          <button class="btn title-start" id="restart">▶ もう一度はじめる</button>
+          <div class="end-sub">${L("海外進出を成し遂げ、Metal Road は世界へ羽ばたいた！", "Metal Road broke overseas and took flight across the world!")}</div>
+          <div class="end-stat">${L("クリア：", "Cleared in ")}${L(`${state.month}ヶ月`, `${state.month} mo`)}${L(" ／ ファン ", " / Fans ")}${state.totalFans.toLocaleString()}</div>
+          <button class="btn title-start" id="restart">${L("▶ もう一度はじめる", "▶ Play again")}</button>
         </div>
       </div>`;
   }
@@ -346,21 +351,21 @@ function endScreen(state: GameState, kind: "gameover" | "clear"): string {
       <div class="title-scrim"></div>
       <div class="end-copy">
         <div class="end-logo lose">GAME OVER</div>
-        <div class="end-sub">${m ? esc(m.label) + "の期限に間に合わず、バンドは解散した…" : "バンドは解散した…"}</div>
-        <div class="end-stat">${state.month}ヶ月の活動 ／ ファン ${state.totalFans.toLocaleString()} ／ 到達 ${state.stage}関門</div>
-        <button class="btn title-start" id="restart">▶ もう一度はじめる</button>
+        <div class="end-sub">${m ? esc(m.label) + L("の期限に間に合わず、バンドは解散した…", " wasn't reached in time — the band broke up…") : L("バンドは解散した…", "The band broke up…")}</div>
+        <div class="end-stat">${L(`${state.month}ヶ月の活動`, `${state.month} months active`)}${L(" ／ ファン ", " / Fans ")}${state.totalFans.toLocaleString()}${L(" ／ 到達 ", " / Reached ")}${state.stage}${L("関門", " milestones")}</div>
+        <button class="btn title-start" id="restart">${L("▶ もう一度はじめる", "▶ Play again")}</button>
       </div>
     </div>`;
 }
 
 type MuseMood = "normal" | "happy" | "sad" | "fired";
 const MUSE_GENERAL: { art: string; mood: MuseMood; line: string }[] = [
-  { art: "RYO", mood: "normal", line: "「さーて、今日はどう暴れよっか？」" },
-  { art: "KEN", mood: "normal", line: "「詰められるとこは、まだいくらでもある」" },
-  { art: "MIO", mood: "normal", line: "「……何から、手をつける？」" },
-  { art: "GO", mood: "happy", line: "「今日もいっぱい動くぞー！何する何するっ？」" },
-  { art: "RYO", mood: "happy", line: "「悩むのも楽しいけど、そろそろ決めよ？」" },
-  { art: "MIO", mood: "normal", line: "「焦らず、いこ」" },
+  { art: "RYO", mood: "normal", line: L("「さーて、今日はどう暴れよっか？」", "\"So, how do we tear it up today?\"") },
+  { art: "KEN", mood: "normal", line: L("「詰められるとこは、まだいくらでもある」", "\"There's still plenty left to sharpen.\"") },
+  { art: "MIO", mood: "normal", line: L("「……何から、手をつける？」", "\"...Where do we start?\"") },
+  { art: "GO", mood: "happy", line: L("「今日もいっぱい動くぞー！何する何するっ？」", "\"Let's do tons today! What's next, what's next?\"") },
+  { art: "RYO", mood: "happy", line: L("「悩むのも楽しいけど、そろそろ決めよ？」", "\"Fun to mull it over, but let's decide, yeah?\"") },
+  { art: "MIO", mood: "normal", line: L("「焦らず、いこ」", "\"No rush. Let's go.\"") },
 ];
 
 /** A bandmate musing over what to do this turn (playful board flavor). Stable
@@ -369,11 +374,11 @@ function boardMuse(state: GameState): string {
   let art: string, mood: MuseMood, line: string;
   const newest = state.songs.reduce((a, s) => Math.min(a, s.age), 99);
   if (bandStamina(state) < FATIGUE_FLOOR) {
-    art = "GO"; mood = "sad"; line = "「もう体力げんかい…今日は休も？ ね？」";
+    art = "GO"; mood = "sad"; line = L("「もう体力げんかい…今日は休も？ ね？」", "\"I'm running on empty... let's rest today? Please?\"");
   } else if (newest >= 4) {
-    art = "KEN"; mood = "normal"; line = "「そろそろ新曲、書かないか。ネタは腐るぞ」";
+    art = "KEN"; mood = "normal"; line = L("「そろそろ新曲、書かないか。ネタは腐るぞ」", "\"Time to write a new song. Ideas go stale.\"");
   } else if (state.funds < 150 * K.venueCostPerSeat) {
-    art = "MIO"; mood = "normal"; line = "「……お金、心もとない。バイトも要るかも」";
+    art = "MIO"; mood = "normal"; line = L("「……お金、心もとない。バイトも要るかも」", "\"...Cash is thin. We may need a shift.\"");
   } else {
     const m = MUSE_GENERAL[(state.month * 3 + state.turn) % MUSE_GENERAL.length];
     art = m.art; mood = m.mood; line = m.line;
@@ -392,7 +397,7 @@ function handView(state: GameState): string {
       <button class="actcard ${c.kind} ${locked ? "locked" : ""}" data-card="${c.kind}" ${locked ? "disabled" : ""}>
         <span class="ac-ico">${ACTION_ICON[c.kind]}</span>
         <span class="ac-name">${actionLabel(c.kind)}</span>
-        <span class="ac-hint">${locked ? "疲労で行動不可" : CARD_HINT[c.kind]}</span>
+        <span class="ac-hint">${locked ? L("疲労で行動不可", "Too tired to act") : CARD_HINT[c.kind]}</span>
         <span class="ac-sta">${staminaTag(c.kind)}</span>
       </button>`;
     })
@@ -402,23 +407,23 @@ function handView(state: GameState): string {
   const fatigued = bandStamina(state) < FATIGUE_FLOOR;
   return `
     <div class="panel boardpanel">
-      <h2>${state.month}ヶ月目 ・ ターン ${state.turn}/${state.turnsPerMonth} — 行動を選択</h2>
+      <h2>${L("${state.month}ヶ月目 ・ ターン ${state.turn}/${state.turnsPerMonth} — 行動を選択", `Month ${state.month} · Turn ${state.turn}/${state.turnsPerMonth} — Choose an action`)}</h2>
       ${milestoneBanner(state)}
       <div class="handbar">
-        <span class="meter ${songTone}">最新曲 ${newest === 0 ? "NEW" : `${newest}ヶ月前`}</span>
-        <span class="meter">🤝 人脈 ${state.contacts}</span>
-        <span class="meter">🔥 結束 ${Math.round(state.bond)}</span>
-        ${state.staff.length ? `<span class="meter">🎧 サポート ${state.staff.length}/${STAFF_CAP}</span>` : ""}
+        <span class="meter ${songTone}">${L("最新曲", "Newest")} ${newest === 0 ? "NEW" : `${newest}${L("ヶ月前", "mo ago")}`}</span>
+        <span class="meter">🤝 ${L("人脈", "Contacts")} ${state.contacts}</span>
+        <span class="meter">🔥 ${L("結束", "Bond")} ${Math.round(state.bond)}</span>
+        ${state.staff.length ? `<span class="meter">🎧 ${L("サポート", "Support")} ${state.staff.length}/${STAFF_CAP}</span>` : ""}
       </div>
-      ${fatigued ? '<div class="fatigue-note">メンバーは疲労困憊…「休息」でしか動けない。しっかり休もう。</div>' : ""}
+      ${fatigued ? '<div class="fatigue-note">${L("メンバーは疲労困憊…「休息」でしか動けない。しっかり休もう。", "The band is exhausted — only Rest is available. Get some rest.")}</div>' : ""}
       ${boardMuse(state)}
       <div class="hand">${cards}</div>
       <div class="dicebar">
         <div class="navbtns">
-          <button class="iconbtn auto" id="toggle-auto">▶ オート</button>
-          <button class="iconbtn" id="open-items">🎒 アイテム ${itemCount(state)}</button>
-          <button class="iconbtn" id="open-members">🎸 メンバー</button>
-          <button class="iconbtn" id="open-appeal">📊 アピール</button>
+          <button class="iconbtn auto" id="toggle-auto">${L("▶ オート", "▶ Auto")}</button>
+          <button class="iconbtn" id="open-items">🎒 ${L("アイテム", "Items")} ${itemCount(state)}</button>
+          <button class="iconbtn" id="open-members">🎸 ${L("メンバー", "Members")}</button>
+          <button class="iconbtn" id="open-appeal">📊 ${L("アピール", "Appeal")}</button>
         </div>
       </div>
     </div>`;
@@ -439,15 +444,15 @@ function cardSubModal(state: GameState, ui: UiState): string {
   const recruit =
     kind === "network" && canRecruit(state)
       ? `<button class="train recruit" data-sub="recruit">
-        <span class="tname">🤝 サポート勧誘</span>
-        <span class="tdesc">人脈を使ってサポート陣を招く（人脈 ${state.contacts}）</span>
+        <span class="tname">🤝 ${L("サポート勧誘", "Recruit Support")}</span>
+        <span class="tdesc">${L("人脈を使ってサポート陣を招く（人脈 ", "Spend contacts to recruit support (Contacts ")}${state.contacts}${L("）", ")")}</span>
       </button>`
       : "";
   return `
     <div class="overlay"><div class="panel modal">
-      <h2>${ACTION_ICON[kind]} ${actionLabel(kind)} — 内容を選択</h2>
+      <h2>${ACTION_ICON[kind]} ${actionLabel(kind)} — ${L("内容を選択", "Choose")}</h2>
       <div class="traingrid">${opts}${recruit}</div>
-      <div class="center"><button class="btn secondary" id="close-panel">やめる</button></div>
+      <div class="center"><button class="btn secondary" id="close-panel">${L("やめる", "Cancel")}</button></div>
     </div></div>`;
 }
 
@@ -464,10 +469,10 @@ function practiceChoiceModal(): string {
   }).join("");
   return `
     <div class="overlay"><div class="panel modal">
-      <h2>🎸 練習メニューを選択</h2>
-      <div class="hint">どの能力を伸ばす？ 全員に効果。</div>
+      <h2>${L("🎸 練習メニューを選択", "🎸 Choose a Practice")}</h2>
+      <div class="hint">${L("どの能力を伸ばす？ 全員に効果。", "Which ability to raise? Affects all members.")}</div>
       <div class="traingrid">${opts}</div>
-      <div class="center"><button class="btn secondary" id="close-panel">やめる</button></div>
+      <div class="center"><button class="btn secondary" id="close-panel">${L("やめる", "Cancel")}</button></div>
     </div></div>`;
 }
 
@@ -497,7 +502,7 @@ function sceneModal(state: GameState, ui: UiState): string {
         .join("")}</div>`
     : `<div class="sc-foot">
             <div class="dots">${dots}</div>
-            <button class="btn" id="scene-next">${last ? "完了" : "次へ ▶"}</button>
+            <button class="btn" id="scene-next">${last ? L("完了", "Done") : L("次へ ▶", "Next ▶")}</button>
           </div>`;
   return `
     <div class="overlay scene-overlay">
@@ -513,7 +518,8 @@ function sceneModal(state: GameState, ui: UiState): string {
     </div>`;
 }
 
-const venueName = (cap: number): string => (cap <= 200 ? "小箱ライブハウス" : cap <= 600 ? "ライブホール" : "大ホール");
+const venueName = (cap: number): string =>
+  cap <= 200 ? L("小箱ライブハウス", "Small Club") : cap <= 600 ? L("ライブホール", "Live Hall") : L("大ホール", "Grand Hall");
 
 function liveModal(state: GameState, ui: UiState): string {
   const d = ui.liveDecision;
@@ -523,7 +529,7 @@ function liveModal(state: GameState, ui: UiState): string {
       const cost = c * K.venueCostPerSeat;
       const locked = state.funds < cost;
       return `<button class="opt ${d.cap === c ? "sel" : ""} ${locked ? "locked" : ""}" data-cap="${c}" ${locked ? "disabled" : ""}>
-        ${venueName(c)}<span class="capn">${c}人 / 会場費¥${cost.toLocaleString()}</span></button>`;
+        ${venueName(c)}<span class="capn">${c}${L("人 / 会場費¥", " seats / venue ¥")}${cost.toLocaleString()}</span></button>`;
     })
     .join("");
   const segOpts = SEGMENTS.map((s) => {
@@ -535,42 +541,42 @@ function liveModal(state: GameState, ui: UiState): string {
   const songOpts = state.songs
     .map(
       (sg, i) =>
-        `<button class="opt ${d.songIndex === i ? "sel" : ""}" data-song="${i}">${esc(sg.name)}<span class="capn">Q${sg.Q}・${segLabel(songDir(sg.lean))}寄り${sg.age === 0 ? "・NEW" : `・${sg.age}ヶ月`}</span></button>`,
+        `<button class="opt ${d.songIndex === i ? "sel" : ""}" data-song="${i}">${esc(sg.name)}<span class="capn">Q${sg.Q}・${segLabel(songDir(sg.lean))}${L("寄り", " lean")}${sg.age === 0 ? "・NEW" : `・${sg.age}${L("ヶ月", "mo")}`}</span></button>`,
     )
     .join("");
   const hot = hottestSegment(state);
   const tieLine = state.tieup
-    ? `　🤝 <b>${segLabel(state.tieup.seg)}</b>層タイアップ中（あと${state.tieup.monthsLeft}ヶ月）`
+    ? `　🤝 <b>${segLabel(state.tieup.seg)}</b>${L("層タイアップ中（あと", " tie-up active (")}${state.tieup.monthsLeft}${L("ヶ月）", "mo)")}`
     : "";
-  const marketStrip = `<div class="hint marketstrip">📈 今月の注目客層：<b>${segLabel(hot)}</b> ${trendIcon(trendMult(state, hot))}${tieLine}
-    <br><span class="legend">🔥高い／❄️低いトレンド ・ ⚔️ライバル強い ・ 👑こちらが優勢 ・ 🤝タイアップ層</span></div>`;
+  const marketStrip = `<div class="hint marketstrip">${L("📈 今月の注目客層", "📈 Hot audience")}：<b>${segLabel(hot)}</b> ${trendIcon(trendMult(state, hot))}${tieLine}
+    <br><span class="legend">${L("🔥高い／❄️低いトレンド ・ ⚔️ライバル強い ・ 👑こちらが優勢 ・ 🤝タイアップ層", "🔥high/❄️low trend · ⚔️strong rival · 👑you lead · 🤝tie-up segment")}</span></div>`;
   const cost = d.cap * K.venueCostPerSeat;
   const canPay = state.funds >= cost;
   return `
     <div class="overlay"><div class="panel modal">
-      <h2>🎤 月末ライブ — 意思決定</h2>
+      <h2>${L("🎤 月末ライブ — 意思決定", "🎤 Month-end Live — Decisions")}</h2>
       ${marketStrip}
-      <div class="field"><label>会場キャパ（会場費を前払い）</label><div class="opts">${capOpts}</div>
-        <div class="hint">資金が足りない規模は選べない。序盤はバイトで会場費を稼ごう。</div></div>
-      <div class="field"><label>ターゲットとするファン層</label><div class="opts">${segOpts}</div>
-        <div class="hint">トレンド高・ライバル弱・タイアップ層を突くと新規ファンが伸びる。</div></div>
-      <div class="field"><label>セットリスト（楽曲）</label><div class="opts">${songOpts}</div>
-        <div class="hint">曲の「〜寄り」がターゲット層と噛み合うほどマッチ度UP。</div></div>
-      ${state.buffs.liveSat !== 0 || state.buffs.liveSellout ? `<div class="hint buffnote">🎒 発動中：${state.buffs.liveSellout ? "動員満員 " : ""}${state.buffs.liveSat !== 0 ? `満足度${state.buffs.liveSat > 0 ? "+" : ""}${state.buffs.liveSat}` : ""}</div>` : ""}
+      <div class="field"><label>${L("会場キャパ（会場費を前払い）", "Venue capacity (pay the fee up front)")}</label><div class="opts">${capOpts}</div>
+        <div class="hint">${L("資金が足りない規模は選べない。序盤はバイトで会場費を稼ごう。", "You can't book a venue you can't afford — work part-time to save up early on.")}</div></div>
+      <div class="field"><label>${L("ターゲットとするファン層", "Target audience segment")}</label><div class="opts">${segOpts}</div>
+        <div class="hint">${L("トレンド高・ライバル弱・タイアップ層を突くと新規ファンが伸びる。", "Hitting a hot trend / weak rival / tie-up segment pulls more new fans.")}</div></div>
+      <div class="field"><label>${L("セットリスト（楽曲）", "Setlist (song)")}</label><div class="opts">${songOpts}</div>
+        <div class="hint">${L("曲の「〜寄り」がターゲット層と噛み合うほどマッチ度UP。", "The better a song's lean matches your target segment, the higher the match.")}</div></div>
+      ${state.buffs.liveSat !== 0 || state.buffs.liveSellout ? `<div class="hint buffnote">${L("🎒 発動中", "🎒 Active")}：${state.buffs.liveSellout ? L("動員満員 ", "sellout ") : ""}${state.buffs.liveSat !== 0 ? `${L("満足度", "satisfaction")}${state.buffs.liveSat > 0 ? "+" : ""}${state.buffs.liveSat}` : ""}</div>` : ""}
       <div class="center">
-        <button class="btn secondary" id="open-items">🎒 アイテム ${itemCount(state)}</button>
-        <button class="btn" id="confirm-live" ${canPay ? "" : "disabled"}>${canPay ? "この方針でライブ実施！" : "資金不足（会場費が払えない）"}</button>
+        <button class="btn secondary" id="open-items">🎒 ${L("アイテム", "Items")} ${itemCount(state)}</button>
+        <button class="btn" id="confirm-live" ${canPay ? "" : "disabled"}>${canPay ? L("この方針でライブ実施！", "Play the live!") : L("資金不足（会場費が払えない）", "Not enough for the venue fee")}</button>
       </div>
     </div></div>`;
 }
 
 function liveVerdict(sat: number): { rank: string; tone: string; line: string } {
-  if (sat >= 80) return { rank: "S", tone: "great", line: "伝説のライブ！会場が一つになった！" };
-  if (sat >= 70) return { rank: "A", tone: "great", line: "最高のステージ！確かな手応え！" };
-  if (sat >= 60) return { rank: "B", tone: "good", line: "良いライブだった。爪痕を残した。" };
-  if (sat >= 50) return { rank: "C", tone: "good", line: "悪くない。次につながる出来。" };
-  if (sat >= 40) return { rank: "D", tone: "poor", line: "盛り上がりは今ひとつ…。" };
-  return { rank: "E", tone: "poor", line: "課題の残るライブになった…。" };
+  if (sat >= 80) return { rank: "S", tone: "great", line: L("伝説のライブ！会場が一つになった！", "A legendary show — the whole room became one!") };
+  if (sat >= 70) return { rank: "A", tone: "great", line: L("最高のステージ！確かな手応え！", "A killer set — real momentum!") };
+  if (sat >= 60) return { rank: "B", tone: "good", line: L("良いライブだった。爪痕を残した。", "A good show. You left a mark.") };
+  if (sat >= 50) return { rank: "C", tone: "good", line: L("悪くない。次につながる出来。", "Not bad — something to build on.") };
+  if (sat >= 40) return { rank: "D", tone: "poor", line: L("盛り上がりは今ひとつ…。", "The energy never quite caught…") };
+  return { rank: "E", tone: "poor", line: L("課題の残るライブになった…。", "A show with a lot left to fix…") };
 }
 
 function countUp(root: HTMLElement): void {
@@ -602,20 +608,20 @@ function resultModal(state: GameState, ui: UiState): string {
       <div class="panel modal resultcard tone-${v.tone}">
         <div class="result-head">
           <div class="rank rank-${v.tone}">${v.rank}</div>
-          <div class="result-title"><h2>ライブ結果 — ${state.month}ヶ月目</h2><div class="verdict">${v.line}</div>${r.trouble ? '<div class="trouble">⚠ 当日トラブル発生（PA親密度不足）</div>' : ""}</div>
+          <div class="result-title"><h2>${L("ライブ結果 — ", "Live Result — ")}${L(`${state.month}ヶ月目`, `Month ${state.month}`)}</h2><div class="verdict">${v.line}</div>${r.trouble ? `<div class="trouble">${L("⚠ 当日トラブル発生（PA親密度不足）", "⚠ Trouble on the day (low PA rapport)")}</div>` : ""}</div>
           ${r.soldOut ? '<div class="soldout">SOLD<br>OUT</div>' : ""}
         </div>
         <div class="kpis">
-          <div class="kpi"><div class="v" data-count="${r.draw}">0</div><div class="sub">/${r.capacity.toLocaleString()}</div><div class="k">動員数 ${r.soldOut ? "🎉" : `${Math.round(r.occupancy * 100)}%`}</div></div>
-          <div class="kpi"><div class="v" data-count="${r.satisfaction}">0</div><div class="k">観客満足度</div></div>
-          <div class="kpi"><div class="v pos" data-count="${r.newFans}" data-prefix="+">0</div><div class="k">新規ファン</div></div>
-          <div class="kpi"><div class="v" data-count="${r.streams}">0</div><div class="k">ストリーミング再生</div></div>
+          <div class="kpi"><div class="v" data-count="${r.draw}">0</div><div class="sub">/${r.capacity.toLocaleString()}</div><div class="k">${L("動員数", "Attendance")} ${r.soldOut ? "🎉" : `${Math.round(r.occupancy * 100)}%`}</div></div>
+          <div class="kpi"><div class="v" data-count="${r.satisfaction}">0</div><div class="k">${L("観客満足度", "Satisfaction")}</div></div>
+          <div class="kpi"><div class="v pos" data-count="${r.newFans}" data-prefix="+">0</div><div class="k">${L("新規ファン", "New Fans")}</div></div>
+          <div class="kpi"><div class="v" data-count="${r.streams}">0</div><div class="k">${L("ストリーミング再生", "Streams")}</div></div>
         </div>
         <div class="kpi money-row">
           <div class="v money ${money}">${sign}¥${Math.abs(Math.round(r.profit)).toLocaleString()}</div>
-          <div class="k">収支（売上¥${Math.round(r.revenue).toLocaleString()} − 経費¥${Math.round(r.cost).toLocaleString()}${r.staffCost > 0 ? `／うち人件費¥${r.staffCost.toLocaleString()}` : ""}）</div>
+          <div class="k">${L("収支（売上¥", "Net (revenue ¥")}${Math.round(r.revenue).toLocaleString()}${L(" − 経費¥", " − costs ¥")}${Math.round(r.cost).toLocaleString()}${r.staffCost > 0 ? `${L("／うち人件費¥", " / incl. staff ¥")}${r.staffCost.toLocaleString()}` : ""}${L("）", ")")}</div>
         </div>
-        <div class="center"><button class="btn" id="next-month">次の月へ →</button></div>
+        <div class="center"><button class="btn" id="next-month">${L("次の月へ →", "Next month →")}</button></div>
       </div>
     </div>`;
 }
@@ -630,7 +636,7 @@ function homeHero(state: GameState): string {
       return `<img class="hero-char ${tired ? "tired" : ""}" style="--i:${i}" src="${charSrc(a, tired ? "sad" : "normal")}" alt="${esc(m.name)}" />`;
     })
     .join("");
-  const caption = avg <= 40 ? "🎸 練習スタジオ — 少しお疲れ気味…" : "🎸 練習スタジオ — バンドの日常";
+  const caption = avg <= 40 ? L("🎸 練習スタジオ — 少しお疲れ気味…", "🎸 Rehearsal Studio — a bit worn out…") : L("🎸 練習スタジオ — バンドの日常", "🎸 Rehearsal Studio — band life");
   return `
     <div class="home-hero" style="background-image:url('${bgSrc("studio")}')">
       <div class="hero-scrim"></div>
@@ -736,7 +742,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
     <div class="stage">
       ${handView(state)}
       <div class="panel logpanel">
-        <h2>ログ</h2>
+        <h2>${L("ログ", "Log")}</h2>
         <div class="log">${state.log.map((l) => `<div>${esc(l)}</div>`).join("")}</div>
       </div>
     </div>
@@ -755,7 +761,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   const autoBtn = root.querySelector<HTMLButtonElement>("#toggle-auto");
   if (autoBtn) {
     autoBtn.className = `iconbtn auto ${ui.auto ? "on" : ""}`;
-    autoBtn.textContent = ui.auto ? "⏸ オート中" : "▶ オート";
+    autoBtn.textContent = ui.auto ? L("⏸ オート中", "⏸ Auto on") : L("▶ オート", "▶ Auto");
   }
 
   root.querySelectorAll<HTMLButtonElement>("[data-card]").forEach((el) =>
