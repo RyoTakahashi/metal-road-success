@@ -5,6 +5,7 @@
 import { bandParam, SEG_WEIGHTS } from "./coreLoop";
 import { EVO_LOOK, evolutionInfix } from "./evolution";
 import { acceptTieup, initMarket, leanToward, tickMarket } from "./market";
+import { L } from "./i18n";
 import {
   composeScenes,
   contactScenes,
@@ -50,18 +51,18 @@ export const isCardLocked = (s: GameState, kind: ActionKind): boolean =>
 
 /** Short stamina hint shown on a card. */
 export function staminaTag(kind: ActionKind): string {
-  if (kind === "rest") return "体力 回復";
-  if (kind === "network") return "体力+ / 人脈・結束";
-  return "体力 消費";
+  if (kind === "rest") return L("体力 回復", "Stamina up");
+  if (kind === "network") return L("体力+ / 人脈・結束", "Stamina+ / contacts & bond");
+  return L("体力 消費", "Costs stamina");
 }
 
 // --- Support staff (P2-2/3/4) ----------------------------------------------
 
 export const STAFF_DEFS: Record<StaffRole, { cut: number; contactCost: number; desc: string }> = {
-  producer: { cut: 0.15, contactCost: 4, desc: "毎ターンの手札 +1・作曲Q↑。ただし大箱志向の外圧（小箱続きで親密度↓）" },
-  manager: { cut: 0.1, contactCost: 3, desc: "宣伝到達（マーケ力）が上がり動員が伸びる" },
-  pa: { cut: 0.08, contactCost: 3, desc: "ライブ満足度が上がる。親密度が低いと当日トラブル" },
-  roadie: { cut: 0.06, contactCost: 3, desc: "行動の体力消費を軽減・トラブルを抑える" },
+  producer: { cut: 0.15, contactCost: 4, desc: L("毎ターンの手札 +1・作曲Q↑。ただし大箱志向の外圧（小箱続きで親密度↓）", "+1 card each turn, higher song Q — but pushes for big venues (small ones cost rapport).") },
+  manager: { cut: 0.1, contactCost: 3, desc: L("宣伝到達（マーケ力）が上がり動員が伸びる", "Raises promo reach (marketing), boosting attendance.") },
+  pa: { cut: 0.08, contactCost: 3, desc: L("ライブ満足度が上がる。親密度が低いと当日トラブル", "Raises live satisfaction; low rapport risks trouble on the day.") },
+  roadie: { cut: 0.06, contactCost: 3, desc: L("行動の体力消費を軽減・トラブルを抑える", "Eases stamina costs and reduces trouble.") },
 };
 export const STAFF_CAP = 3;
 export const hasStaff = (s: GameState, role: StaffRole): boolean => s.staff.some((x) => x.role === role);
@@ -84,10 +85,10 @@ function initialMembers(): Member[] {
 /** Which existing member plays a given part. */
 const PART_TO_ART: Record<string, string> = { Vo: "RYO", Gt: "KEN", Ba: "MIO", Dr: "GO" };
 export const PARTS: { part: string; label: string; name: string }[] = [
-  { part: "Vo", label: "ボーカル", name: "RISA" },
-  { part: "Gt", label: "ギター", name: "NAO" },
-  { part: "Ba", label: "ベース", name: "MAKO" },
-  { part: "Dr", label: "ドラム", name: "TOMO" },
+  { part: "Vo", label: L("ボーカル", "Vocals"), name: "RISA" },
+  { part: "Gt", label: L("ギター", "Guitar"), name: "NAO" },
+  { part: "Ba", label: L("ベース", "Bass"), name: "MAKO" },
+  { part: "Dr", label: L("ドラム", "Drums"), name: "TOMO" },
 ];
 
 /** Start a fresh game as the leader of the chosen part (optionally renamed). */
@@ -129,7 +130,7 @@ export function newGame(part = "Vo", leaderName = "", rng: () => number = Math.r
     totalFans: 1200,
     segFans: { core: 600, light: 300, visual: 150, expert: 150 },
     fame: 18,
-    log: ["バンド「Metal Road」、活動開始！"],
+    log: [L("バンド「Metal Road」、活動開始！", "The band \"Metal Road\" begins!")],
   };
   dealHand(state, rng);
   return state;
@@ -141,25 +142,25 @@ const CARD: Record<ActionKind, ActionCard> = {
   rest: {
     kind: "rest",
     subs: [
-      { id: "full", label: "完全休養", desc: "体力を大きく回復" },
-      { id: "study", label: "社会勉強", desc: "体力＋少し ＆ 音楽センス↑" },
-      { id: "hobby", label: "趣味に没頭", desc: "体力＋ ＆ ビジュ力↑" },
+      { id: "full", label: L("完全休養", "Full Rest"), desc: L("体力を大きく回復", "Restore a lot of stamina") },
+      { id: "study", label: L("社会勉強", "Study"), desc: L("体力＋少し ＆ 音楽センス↑", "Stamina + a little & Songcraft up") },
+      { id: "hobby", label: L("趣味に没頭", "Hobby"), desc: L("体力＋ ＆ ビジュ力↑", "Stamina + & Looks up") },
     ],
   },
   music: {
     kind: "music",
     subs: [
-      { id: "compose", label: "作曲", desc: "新曲を書く（知名度維持に必須）" },
-      { id: "practice", label: "練習", desc: "能力UP ＆ 練習の鮮度回復" },
-      { id: "perform", label: "パフォーマンス", desc: "P↑ ＆ 小さくファン獲得" },
+      { id: "compose", label: L("作曲", "Compose"), desc: L("新曲を書く（知名度維持に必須）", "Write a new song (key to keeping fame up)") },
+      { id: "practice", label: L("練習", "Practice"), desc: L("能力UP ＆ 練習の鮮度回復", "Raise abilities & refresh practice freshness") },
+      { id: "perform", label: L("パフォーマンス", "Perform"), desc: L("P↑ ＆ 小さくファン獲得", "Performance up & a few new fans") },
     ],
   },
   promo: { kind: "promo" },
   network: {
     kind: "network",
     subs: [
-      { id: "band", label: "バンド関係者", desc: "結束を高め体力回復" },
-      { id: "contact", label: "新たな人脈", desc: "マーケ力・知名度↑" },
+      { id: "band", label: L("バンド関係者", "Bandmates"), desc: L("結束を高め体力回復", "Raise bond & recover stamina") },
+      { id: "contact", label: L("新たな人脈", "New Contacts"), desc: L("マーケ力・知名度↑", "Marketing reach & fame up") },
     ],
   },
   money: { kind: "money" },
@@ -308,29 +309,29 @@ export function resolveAction(
 }
 
 function resolveRest(state: GameState, sub: string, rng: () => number): { scenes: Scene[] } {
-  const L = leaderArt(state);
+  const lead = leaderArt(state);
   if (state.buffs.restFull) {
     // ボインキラー: resting this turn fully restores everyone
     state.members.forEach((m) => (m.stamina = 100));
     state.buffs.restFull = false;
-    pushLog(state, "休息（ボインキラー効果）：体力が全回復した！");
-    return { scenes: [scene("backstage", [L], "妙な高揚感とともに、みなぎる活力。体力が全回復した！\n\n体力 MAX（全員）", { fx: "flash" })] };
+    pushLog(state, L("休息（ボインキラー効果）：体力が全回復した！", "Rest (Boin-Killer): stamina fully restored!"));
+    return { scenes: [scene("backstage", [lead], L("妙な高揚感とともに、みなぎる活力。体力が全回復した！\n\n体力 MAX（全員）", "A strange rush of energy surges through you. Stamina fully restored!\n\nStamina MAX (all)"), { fx: "flash" })] };
   }
   if (sub === "study") {
     addStamina(state, 12);
     addParam(state, "S", 1);
-    pushLog(state, "社会勉強：見聞を広げた（体力+12 / センス+1）");
-    return { scenes: restScenes("study", "体力 +12・音楽センス +1（全員）", rng) };
+    pushLog(state, L("社会勉強：見聞を広げた（体力+12 / センス+1）", "Study: broadened your horizons (Stamina +12 / Songcraft +1)"));
+    return { scenes: restScenes("study", L("体力 +12・音楽センス +1（全員）", "Stamina +12 · Songcraft +1 (all)"), rng) };
   }
   if (sub === "hobby") {
     addStamina(state, 26);
     addParam(state, "V", 1);
-    pushLog(state, "趣味に没頭：リフレッシュ（体力+26 / ビジュ+1）");
-    return { scenes: restScenes("hobby", "体力 +26・ビジュ力 +1（全員）", rng) };
+    pushLog(state, L("趣味に没頭：リフレッシュ（体力+26 / ビジュ+1）", "Hobby time: refreshed (Stamina +26 / Looks +1)"));
+    return { scenes: restScenes("hobby", L("体力 +26・ビジュ力 +1（全員）", "Stamina +26 · Looks +1 (all)"), rng) };
   }
   addStamina(state, 40);
-  pushLog(state, "完全休養：しっかり休んだ（体力+40）");
-  return { scenes: restScenes("full", "体力 +40（全員）", rng) };
+  pushLog(state, L("完全休養：しっかり休んだ（体力+40）", "Full rest: a proper break (Stamina +40)"));
+  return { scenes: restScenes("full", L("体力 +40（全員）", "Stamina +40 (all)"), rng) };
 }
 
 function resolveMusic(

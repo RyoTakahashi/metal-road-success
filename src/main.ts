@@ -201,15 +201,14 @@ document.body.appendChild(langBtn);
 
 const handlers: Handlers = {
   onChooseLang(lang) {
+    // Reload so every module-load constant (items, milestones, scene pools…)
+    // is rebuilt in the chosen language, not just the call-time UI strings.
     setLang(lang);
-    ui.mode = "title";
-    langBtn.textContent = getLang() === "en" ? "JA" : "EN";
-    redraw();
+    location.reload();
   },
   onToggleLang() {
     setLang(getLang() === "en" ? "ja" : "en");
-    langBtn.textContent = getLang() === "en" ? "JA" : "EN";
-    redraw();
+    location.reload();
   },
   onStart() {
     ui.mode = "partSelect";

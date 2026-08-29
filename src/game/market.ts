@@ -8,6 +8,7 @@
 
 import type { GameState, Rival, Segment } from "./types";
 import { SEGMENTS, segLabel } from "./types";
+import { L } from "./i18n";
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
@@ -87,16 +88,16 @@ export const songDir = (lean: Record<Segment, number>): Segment =>
 
 // ---- setup + monthly tick --------------------------------------------------
 const RIVAL_NAMES: Record<Segment, string> = {
-  core: "鉄血コマンド",
-  light: "ポップ・ネメシス",
-  visual: "紅薔薇ノワール",
-  expert: "深淵ヴォイド",
+  core: L("鉄血コマンド", "Ironblood Command"),
+  light: L("ポップ・ネメシス", "Pop Nemesis"),
+  visual: L("紅薔薇ノワール", "Crimson Rose Noir"),
+  expert: L("深淵ヴォイド", "Abyssal Void"),
 };
 const TIEUP_NAMES: Record<Segment, string> = {
-  core: "硬派ロック番組のテーマ曲",
-  light: "人気アニメOPタイアップ",
-  visual: "ファッション誌のビジュアル特集",
-  expert: "音楽誌クロスレビュー巻頭特集",
+  core: L("硬派ロック番組のテーマ曲", "Hard-rock TV show theme"),
+  light: L("人気アニメOPタイアップ", "Hit anime OP tie-up"),
+  visual: L("ファッション誌のビジュアル特集", "Fashion-mag visual feature"),
+  expert: L("音楽誌クロスレビュー巻頭特集", "Music-mag cover cross-review"),
 };
 
 export function initMarket(): Pick<GameState, "trend" | "rivals" | "tieup" | "tieupOffer"> {
@@ -119,7 +120,7 @@ export function tickMarket(state: GameState, rng: () => number): string[] {
     state.trend[s] = clamp(cur + step, MK.trendMin, MK.trendMax);
   }
   const hot = hottestSegment(state);
-  logs.push(`📈 今月の注目客層：${segLabel(hot)}（トレンド上昇中）`);
+  logs.push(L(`📈 今月の注目客層：${segLabel(hot)}（トレンド上昇中）`, `📈 Hot audience this month: ${segLabel(hot)} (trending up)`));
 
   // rivals grind upward (you push them back by playing to their segment — live feedback).
   for (const r of state.rivals) r.momentum = clamp(r.momentum + MK.rivalGrowth, 0, MK.rivalMax);
@@ -128,7 +129,7 @@ export function tickMarket(state: GameState, rng: () => number): string[] {
   if (state.tieup) {
     state.tieup.monthsLeft -= 1;
     if (state.tieup.monthsLeft <= 0) {
-      logs.push(`🤝 タイアップ「${state.tieup.name}」の契約期間が終了した。`);
+      logs.push(L(`🤝 タイアップ「${state.tieup.name}」の契約期間が終了した。`, `🤝 The tie-up "${state.tieup.name}" has ended.`));
       state.tieup = null;
     }
   }

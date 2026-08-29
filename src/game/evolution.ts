@@ -11,6 +11,7 @@
 // (empty string = base art, no infix).
 
 import type { Segment } from "./types";
+import { L } from "./i18n";
 
 export const SEG_INFIX: Record<Segment, string> = {
   visual: "goth", // ビジュ: 幽艶ゴシック
@@ -33,19 +34,19 @@ export function evolutionInfix(unlocked: Record<string, boolean>): string {
 /** Display name + evolution-scene description for every look (single/pair/ult). */
 export const EVO_LOOK: Record<string, { name: string; desc: string }> = {
   // singles
-  goth: { name: "幽艶ゴシック", desc: "漆黒のレースと深紅を纏い、荘厳で物憂げなゴシック/シンフォニックの妖艶な姿へ。" },
-  hard: { name: "鋼鉄ハードロック", desc: "革とスタッズ、王道の轟音。正統派ハードロックの風格ある姿へ。" },
-  kawaii: { name: "紅黒カワメタ", desc: "黒と紅のフリルで可憐に暴れる、キュート×激烈のカワイイメタルの姿へ。" },
-  death: { name: "戦鬼デスメタル", desc: "コープスペイントと鋲、戦装束。ウォー/デスメタルの獰猛な姿へ。" },
+  goth: { name: L("幽艶ゴシック", "Ethereal Goth"), desc: L("漆黒のレースと深紅を纏い、荘厳で物憂げなゴシック/シンフォニックの妖艶な姿へ。", "Draped in black lace and deep crimson — a solemn, wistful gothic/symphonic beauty.") },
+  hard: { name: L("鋼鉄ハードロック", "Steel Hard Rock"), desc: L("革とスタッズ、王道の轟音。正統派ハードロックの風格ある姿へ。", "Leather and studs, the roar of the classics — a dignified hard-rock look.") },
+  kawaii: { name: L("紅黒カワメタ", "Kawaii Metal"), desc: L("黒と紅のフリルで可憐に暴れる、キュート×激烈のカワイイメタルの姿へ。", "Rampaging cute in black-and-red frills — a cute-yet-savage kawaii-metal look.") },
+  death: { name: L("戦鬼デスメタル", "War Death Metal"), desc: L("コープスペイントと鋲、戦装束。ウォー/デスメタルの獰猛な姿へ。", "Corpse paint, spikes and war garb — a ferocious war/death-metal look.") },
   // pairs
-  "goth-hard": { name: "耽美ヘヴィ", desc: "ゴシックの妖艶と鋼鉄の重厚が融合、王道ゴシックメタルの姿へ。" },
-  "goth-kawaii": { name: "幽艶ゴシックロリータ", desc: "闇の耽美と可憐が溶け合う、病みかわ耽美アイドルの姿へ。" },
-  "goth-death": { name: "暗黒シンフォニック", desc: "荘厳な美と獰猛が交わる、シンフォニック・ブラック/デスの姿へ。" },
-  "hard-kawaii": { name: "電撃アイドルメタル", desc: "轟音と可憐が弾ける、パワー系アイドルメタルの姿へ。" },
-  "hard-death": { name: "漆黒スラッシュ", desc: "鋼鉄の疾走と死の獰猛が結び、ブラッケンド・スラッシュの姿へ。" },
-  "kawaii-death": { name: "地獄カワメタ", desc: "可憐と残虐が同居する、デスコア・アイドルの姿へ。" },
+  "goth-hard": { name: L("耽美ヘヴィ", "Decadent Heavy"), desc: L("ゴシックの妖艶と鋼鉄の重厚が融合、王道ゴシックメタルの姿へ。", "Gothic allure fused with steel heft — a classic gothic-metal look.") },
+  "goth-kawaii": { name: L("幽艶ゴシックロリータ", "Gothic Lolita"), desc: L("闇の耽美と可憐が溶け合う、病みかわ耽美アイドルの姿へ。", "Dark decadence melts into cuteness — a morbid-cute idol look.") },
+  "goth-death": { name: L("暗黒シンフォニック", "Dark Symphonic"), desc: L("荘厳な美と獰猛が交わる、シンフォニック・ブラック/デスの姿へ。", "Solemn beauty meets ferocity — a symphonic black/death look.") },
+  "hard-kawaii": { name: L("電撃アイドルメタル", "Idol Power Metal"), desc: L("轟音と可憐が弾ける、パワー系アイドルメタルの姿へ。", "Roar and cuteness burst together — a power idol-metal look.") },
+  "hard-death": { name: L("漆黒スラッシュ", "Blackened Thrash"), desc: L("鋼鉄の疾走と死の獰猛が結び、ブラッケンド・スラッシュの姿へ。", "Steel speed bound to deathly ferocity — a blackened-thrash look.") },
+  "kawaii-death": { name: L("地獄カワメタ", "Hellish Kawaii"), desc: L("可憐と残虐が同居する、デスコア・アイドルの姿へ。", "Cuteness and brutality side by side — a deathcore idol look.") },
   // ultimate (3 or 4 unlocked)
-  ultimate: { name: "真・伝説", desc: "全ての客層を制した者だけが至る、究極の姿へ——！" },
+  ultimate: { name: L("真・伝説", "True Legend"), desc: L("全ての客層を制した者だけが至る、究極の姿へ——！", "The ultimate form, reached only by those who've conquered every audience!") },
 };
 
 /** Look name for the current unlocked set (for HUD / logs). "" if base. */
