@@ -25,7 +25,7 @@ import {
   useItem,
 } from "./game/state";
 import type { ActionKind, GameState, Param, StaffRole } from "./game/types";
-import { getLang, langChosen, setLang } from "./game/i18n";
+import { getLang, langChosen, setLang, L } from "./game/i18n";
 import * as bgm from "./ui/audio";
 import { render, type Handlers, type UiState } from "./ui/render";
 
@@ -87,7 +87,7 @@ function finishSlides(): void {
     const result = resolveLive(state, ui.liveDecision);
     applyLiveResult(state, ui.liveDecision, result);
     ui.liveResult = result;
-    pushLog(state, `ライブ実施：動員${result.draw} / 満足度${result.satisfaction} / 新規ファン+${result.newFans}`);
+    pushLog(state, L(`ライブ実施：動員${result.draw} / 満足度${result.satisfaction} / 新規ファン+${result.newFans}`, `Live show: draw ${result.draw} / satisfaction ${result.satisfaction} / new fans +${result.newFans}`));
     // An S rating (satisfaction ≥ 80) evolves the band's look to that layer's style.
     const evo = registerLiveEvolution(state, ui.liveDecision.target, result.satisfaction);
     // A strong targeted show pushes that segment's rival band back.
@@ -354,7 +354,7 @@ const handlers: Handlers = {
 // Persistent BGM mute toggle (lives outside #app so re-renders don't drop it).
 const bgmBtn = document.createElement("button");
 bgmBtn.className = "bgm-btn";
-bgmBtn.setAttribute("aria-label", "BGMのオン/オフ");
+bgmBtn.setAttribute("aria-label", L("BGMのオン/オフ", "Toggle BGM"));
 bgmBtn.textContent = bgm.isMuted() ? "🔇" : "🔊";
 bgmBtn.addEventListener("click", () => {
   bgmBtn.textContent = bgm.toggleMute() ? "🔇" : "🔊";

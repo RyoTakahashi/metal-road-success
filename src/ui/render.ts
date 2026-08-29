@@ -187,7 +187,7 @@ function evolutionRow(state: GameState): string {
   const chips = SEGMENTS.filter((s) => s in SEG_INFIX)
     .map((s) => {
       const on = !!state.evoUnlocked[s];
-      return `<span class="evochip ${on ? "on" : ""}">${segLabel(s)}：${evoChipName(s)}${on ? " ✓" : ""}</span>`;
+      return `<span class="evochip ${on ? "on" : ""}">${segLabel(s)}${L("：", ": ")}${evoChipName(s)}${on ? " ✓" : ""}</span>`;
     })
     .join("");
   const cur = EVO_LOOK[evolutionInfix(state.evoUnlocked)]?.name;
@@ -464,7 +464,7 @@ function practiceChoiceModal(): string {
     return `<button class="train" data-train="${p}">
         <span class="tart">${TRAIN_ICON[p]}</span>
         <span class="tname">${paramLabel(p)}</span>
-        <span class="tdesc">${esc(t.name)} ／ +6</span>
+        <span class="tdesc">${esc(t.name)}${L(" ／ ", " / ")}+6</span>
       </button>`;
   }).join("");
   return `
