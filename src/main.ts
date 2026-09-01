@@ -24,6 +24,7 @@ import {
   startNewMonth,
   useItem,
 } from "./game/state";
+import { tutorialStepFor } from "./game/tutorial";
 import type { ActionKind, GameState, Param, StaffRole } from "./game/types";
 import { getLang, langChosen, setLang, L } from "./game/i18n";
 import * as bgm from "./ui/audio";
@@ -225,6 +226,13 @@ const handlers: Handlers = {
   },
   onPlayCard(kind) {
     if (isCardLocked(state, kind)) return; // exhausted: only 休息 is allowed
+    // During the hands-on tutorial the scripted card auto-resolves to its
+    // scripted sub/param (the coach box already explained the choice).
+    const ts = tutorialStepFor(state);
+    if (ts && ts.card === kind) {
+      playAction(kind, ts.sub, ts.param);
+      return;
+    }
     const card = state.hand.find((c) => c.kind === kind);
     if (card?.subs && card.subs.length > 0) {
       ui.pendingCard = kind;

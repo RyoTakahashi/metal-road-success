@@ -5,6 +5,7 @@
 import { bandParam, SEG_WEIGHTS } from "./coreLoop";
 import { EVO_LOOK, evolutionInfix } from "./evolution";
 import { acceptTieup, initMarket, leanToward, tickMarket } from "./market";
+import { tutorialActive, tutorialStepFor } from "./tutorial";
 import { L } from "./i18n";
 import {
   composeScenes,
@@ -166,8 +167,14 @@ const CARD: Record<ActionKind, ActionCard> = {
   money: { kind: "money" },
 };
 
-/** Deal a new hand: rest is always offered + 2 random of the rest. */
+/** Deal a new hand: rest is always offered + 2 random of the rest. During the
+ *  hands-on tutorial the hand is forced to the single scripted card. */
 export function dealHand(state: GameState, rng: () => number = Math.random): void {
+  const ts = tutorialStepFor(state);
+  if (ts) {
+    state.hand = [CARD[ts.card]];
+    return;
+  }
   const pool: ActionKind[] = ["music", "promo", "network", "money"];
   // shuffle (Fisher–Yates) and take 2
   for (let i = pool.length - 1; i > 0; i--) {
@@ -748,6 +755,7 @@ export function pendingFriendshipScenes(state: GameState): Scene[] | null {
 
 /** The event to show at the start of a turn: friendship (priority) or a moment. */
 export function nextTurnEvent(state: GameState, rng: () => number = Math.random): Scene[] | null {
+  if (tutorialActive(state)) return null; // keep the scripted run-up clean
   return pendingFriendshipScenes(state) ?? maybeMemberEvent(state, rng);
 }
 
@@ -1154,6 +1162,7 @@ export function useItem(
 
 /** 30% after an action: roll a tier (S2/A18/B80), then a random eligible item. */
 export function maybeFindItem(state: GameState, rng: () => number = Math.random): Scene[] | null {
+  if (tutorialActive(state)) return null; // no surprise drops mid-tutorial
   if (rng() >= 0.25) return null; // ~1 drop per month (4 actions)
   const r = rng();
   const tier = r < 0.02 ? "S" : r < 0.2 ? "A" : "B";
@@ -1473,11 +1482,8 @@ export function buildOpeningScenes(state: GameState): Scene[] {
 /** Tutorial: the band explains which action raises which stat. */
 export function buildTutorialScenes(): Scene[] {
   return [
-    scene("studio", ["KEN"], L("【遊び方】まずは行動だ。毎ターン、手札から行動を選ぶ。\n\n『音楽活動＞練習』で演奏力（T/P/S/V）が上がる。『作曲』で曲数が増え、『パフォーマンス』でファンが増える。", "[How to play] First, act. Each turn, choose an action from your hand.\n\n'Music > Practice' raises your abilities (T/P/S/V). 'Compose' adds songs, and 'Perform' brings in fans."), { speaker: "KEN" }),
-    scene("studio", ["RYO"], L("『広報活動』はファンと知名度をじわじわ伸ばす。ライブの動員に効いてくるぜ。", "'Promotion' steadily grows fans and fame. It pays off in your live attendance."), { speaker: "RYO" }),
-    scene("studio", ["MIO"], L("『関係性構築』は人脈と結束を育てる。人脈が貯まればサポート陣を招け、結束は回復や親密度に効く。", "'Networking' builds contacts and unity. Enough contacts lets you recruit support staff; unity helps recovery and rapport."), { speaker: "MIO" }),
-    scene("studio", ["GO"], L("『アルバイト』で資金稼ぎ。ライブの会場費はこれで払う。そして『休息』で体力回復——体力が尽きると休息しか選べなくなるから注意な！", "'Part-time Job' earns funds. That's how you pay live venue fees. And 'Rest' recovers stamina——careful, if stamina runs out you can only pick Rest!"), { speaker: "GO" }),
-    scene("venueSmall", ["KEN", "RYO", "MIO", "GO"], L("そして『関門』。期限までに条件（演奏力・ファン・曲数・結束・知名度など）を満たせば次のステージへ。\n\n間に合わなければ……解散だ。画面上部のチェックリストを見て、足りない数値を伸ばしていけ！", "And then the 'Checkpoints'. Meet the conditions (musicianship, fans, songs, unity, fame, etc.) by the deadline to advance to the next stage.\n\nMiss it, and... the band breaks up. Watch the checklist at the top of the screen and build up whatever's falling short!"), { fx: "flash" }),
+    scene("studio", ["KEN"], L("【遊び方】毎ターン、手札から行動を1つ選ぶ。まずは最初のライブまで、俺たちが手順を案内する。画面の説明どおりに動かしてみてくれ。", "[How to play] Each turn, pick one action from your hand. Up to your first live, we'll walk you through it step by step — just follow the on-screen coaching."), { speaker: "KEN" }),
+    scene("venueSmall", ["KEN", "RYO", "MIO", "GO"], L("そして『関門』。期限までに条件（演奏力・ファン・曲数・結束・知名度など）を満たせば次のステージへ。間に合わなければ……解散だ。画面上部のチェックリストで、足りない数値を確認しよう。", "And then the 'Checkpoints'. Meet the conditions (musicianship, fans, songs, unity, fame, etc.) by the deadline to advance. Miss it, and... the band breaks up. Watch the checklist at the top for whatever's falling short."), { fx: "flash" }),
   ];
 }
 

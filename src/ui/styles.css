@@ -159,6 +159,19 @@ body {
 .muse-bubble::before { content: ""; position: absolute; left: -9px; top: 50%; transform: translateY(-50%); border: 7px solid transparent; border-right-color: #fff; }
 .muse-bubble .muse-name { display: block; font-size: 10px; font-weight: 800; color: var(--accent-2, #c9187a); letter-spacing: 1px; margin-bottom: 1px; }
 @media (max-width: 860px) { .boardmuse .muse-char { height: 72px; } .muse-bubble { font-size: 12px; } }
+/* Hands-on tutorial coach box (board + live screen). */
+.tutorial-coach { display: flex; align-items: center; gap: 12px; margin: 6px 0 12px; padding: 10px 12px; border-radius: 14px;
+  background: linear-gradient(135deg, #2a1830, #3a1f2e); border: 1px solid var(--accent-2, #c9187a); box-shadow: 0 4px 16px #0006; }
+.tutorial-coach .tc-char { height: 92px; width: auto; flex: 0 0 auto; filter: drop-shadow(0 3px 6px #0007); animation: muse-bob 2.4s ease-in-out infinite; }
+.tutorial-coach .tc-body { flex: 1 1 auto; min-width: 0; }
+.tutorial-coach .tc-tag { font-size: 11px; font-weight: 800; letter-spacing: 1px; color: var(--accent-2, #ff5fae); margin-bottom: 4px; }
+.tutorial-coach .tc-text { font-size: 13px; font-weight: 600; line-height: 1.5; color: #f4eef2; }
+.tutorial-coach .tc-text b { color: #ffd257; font-weight: 800; }
+.tutorial-coach .tc-cta { margin-top: 6px; font-size: 12px; font-weight: 800; color: #ffd257; animation: tc-pulse 1.3s ease-in-out infinite; }
+@keyframes tc-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.tutorial-coach.live { margin: 4px 0 12px; }
+.tutorial-coach.live .tc-char { height: 76px; }
+@media (max-width: 860px) { .tutorial-coach .tc-char { height: 68px; } .tutorial-coach .tc-text { font-size: 12px; } }
 /* Playful feedback when picking an action card. */
 .actcard { transition: transform 0.12s ease, box-shadow 0.12s ease; }
 .actcard:not(.locked):hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 8px 20px #0005; }

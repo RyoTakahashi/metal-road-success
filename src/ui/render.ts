@@ -37,6 +37,7 @@ import { L, type Lang } from "../game/i18n";
 import { bgSrc, charSrc, setEvolution } from "./assets";
 import { EVO_LOOK, evolutionInfix, SEG_INFIX } from "../game/evolution";
 import { hottestSegment, OPPOSED, rivalOf, songDir, trendIcon, trendMult } from "../game/market";
+import { firstLiveTutorial, tutorialStepFor } from "../game/tutorial";
 
 export interface UiState {
   mode: "language" | "title" | "partSelect" | "board" | "cardSub" | "staffPick" | "practiceChoice" | "slides" | "live" | "result" | "gameover" | "clear";
@@ -389,6 +390,21 @@ function boardMuse(state: GameState): string {
   </div>`;
 }
 
+/** Hands-on tutorial coach box on the board: which action to take this turn and
+ *  the effect it produces. Returns "" outside the scripted run-up. */
+function tutorialCoach(state: GameState): string {
+  const ts = tutorialStepFor(state);
+  if (!ts) return "";
+  return `<div class="tutorial-coach">
+    <img class="tc-char" src="${charSrc(ts.coach, "fired")}" alt="${esc(nameOf(state, ts.coach))}"/>
+    <div class="tc-body">
+      <div class="tc-tag">${L("📘 チュートリアル", "📘 Tutorial")} · ${esc(ts.step)}</div>
+      <div class="tc-text">${esc(ts.body)}</div>
+      <div class="tc-cta">${L("▼ 下のカードをタップ", "▼ Tap the card below")}</div>
+    </div>
+  </div>`;
+}
+
 function handView(state: GameState): string {
   const cards = state.hand
     .map((c) => {
@@ -407,7 +423,7 @@ function handView(state: GameState): string {
   const fatigued = bandStamina(state) < FATIGUE_FLOOR;
   return `
     <div class="panel boardpanel">
-      <h2>${L("${state.month}ヶ月目 ・ ターン ${state.turn}/${state.turnsPerMonth} — 行動を選択", `Month ${state.month} · Turn ${state.turn}/${state.turnsPerMonth} — Choose an action`)}</h2>
+      <h2>${L(`${state.month}ヶ月目 ・ ターン ${state.turn}/${state.turnsPerMonth} — 行動を選択`, `Month ${state.month} · Turn ${state.turn}/${state.turnsPerMonth} — Choose an action`)}</h2>
       ${milestoneBanner(state)}
       <div class="handbar">
         <span class="meter ${songTone}">${L("最新曲", "Newest")} ${newest === 0 ? "NEW" : `${newest}${L("ヶ月前", "mo ago")}`}</span>
@@ -415,8 +431,8 @@ function handView(state: GameState): string {
         <span class="meter">🔥 ${L("結束", "Bond")} ${Math.round(state.bond)}</span>
         ${state.staff.length ? `<span class="meter">🎧 ${L("サポート", "Support")} ${state.staff.length}/${STAFF_CAP}</span>` : ""}
       </div>
-      ${fatigued ? '<div class="fatigue-note">${L("メンバーは疲労困憊…「休息」でしか動けない。しっかり休もう。", "The band is exhausted — only Rest is available. Get some rest.")}</div>' : ""}
-      ${boardMuse(state)}
+      ${fatigued ? `<div class="fatigue-note">${L("メンバーは疲労困憊…「休息」でしか動けない。しっかり休もう。", "The band is exhausted — only Rest is available. Get some rest.")}</div>` : ""}
+      ${tutorialCoach(state) || boardMuse(state)}
       <div class="hand">${cards}</div>
       <div class="dicebar">
         <div class="navbtns">
@@ -555,6 +571,13 @@ function liveModal(state: GameState, ui: UiState): string {
   return `
     <div class="overlay"><div class="panel modal">
       <h2>${L("🎤 月末ライブ — 意思決定", "🎤 Month-end Live — Decisions")}</h2>
+      ${firstLiveTutorial(state) ? `<div class="tutorial-coach live">
+        <img class="tc-char" src="${charSrc("RYO", "fired")}" alt="${esc(nameOf(state, "RYO"))}"/>
+        <div class="tc-body">
+          <div class="tc-tag">${L("📘 チュートリアル · 初めてのライブ", "📘 Tutorial · Your First Live")}</div>
+          <div class="tc-text">${L("ライブは3つを決めるぞ。①<b>会場キャパ</b>＝動員の上限。会場費を前払いするので、埋められる規模を選ぶのがコツ（大きすぎると空席で満足度も収支も落ちる）。②<b>客層</b>＝どのファン層を狙うか。トレンド🔥・ライバル弱・タイアップ層が狙い目。③<b>セットリスト</b>＝曲。曲の「〜寄り」が客層と噛み合うほど盛り上がる。満足度が高いほど新規ファンと売上が伸びる！", "A live is three decisions. ① <b>Venue capacity</b> = your attendance cap. You pay the fee up front, so pick a size you can fill (too big = empty seats drag down satisfaction and profit). ② <b>Audience</b> = which fan segment to target — aim for a hot trend 🔥, weak rival, or tie-up segment. ③ <b>Setlist</b> = the song; the better its lean matches the audience, the bigger the response. Higher satisfaction means more new fans and revenue!")}</div>
+        </div>
+      </div>` : ""}
       ${marketStrip}
       <div class="field"><label>${L("会場キャパ（会場費を前払い）", "Venue capacity (pay the fee up front)")}</label><div class="opts">${capOpts}</div>
         <div class="hint">${L("資金が足りない規模は選べない。序盤はバイトで会場費を稼ごう。", "You can't book a venue you can't afford — work part-time to save up early on.")}</div></div>
