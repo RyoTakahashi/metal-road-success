@@ -32,12 +32,34 @@ export const K = {
   streamSatPivot: 60, // satisfaction that maps to ×1.0
   ticketPrice: 3200, // yen per attendee (before the satisfaction factor)
   streamRate: 0.5, // yen per stream
-  venueCostPerSeat: 1300, // venue cost scales with capacity (背伸びの痛み)
+  venueCostPerSeat: 1500, // venue cost scales with capacity (背伸びの痛み)
   loveSatCoef: 8, // full band 愛情度 adds this many satisfaction points (絆の後押し)
   freshnessFloor: 0.7, // live output at 0 practice freshness
   freshnessRange: 0.3, // added at full freshness (D3: practice decay)
   songStalePerMonth: 0.12, // per-month decay of a song's pull (D3: new songs)
   songFreshFloor: 0.4, // floor for a very old song
+  // --- Difficulty levers (tuned via scripts/sim.mjs; see docs) ---------------
+  // Satisfaction = satAppeal·appeal + satMatch·match·100 + satAtmos·atmosphere
+  //                + PA − trouble + items + love. Lower coefficients = harsher.
+  // Tuned (scripts/sim.mjs) so an intermediate player game-overs ~35% of runs:
+  // a default show now rates B, and an A takes real setup (appeal + song match
+  // + a filled venue), which in turn drives fans and keeps the show profitable.
+  satAppeal: 0.455,
+  satMatch: 0.25,
+  satAtmos: 0.125,
+  satTrouble: 18, // satisfaction lost on an equipment-trouble live
+  // Ticket revenue factor from satisfaction: base + (sat − mid)·slope.
+  satFactorBase: 0.1,
+  satFactorMid: 45, // break-even ≈ where base+(sat−mid)·slope crosses cost
+  satFactorSlope: 0.02,
+  // Activity economy (studio/recording/ad fees, part-time earnings). With
+  // 金欠＝行動不可, cash is a real constraint; venue fees scale with capacity.
+  practiceGain: 6, // stat points per practice (all members, one param)
+  feePractice: 12_000,
+  feeCompose: 30_000,
+  feePromo: 5_000,
+  baitMin: 35_000, // part-time job: min earnings
+  baitVar: 25_000, // part-time job: random extra (0..baitVar)
 } as const;
 
 /** Segment appeal weights over the 4 params (rows sum to 1.0). core-loop.md §3. */
@@ -136,7 +158,7 @@ export function resolveLive(
   const avgLove = state.members.reduce((a, m) => a + m.love, 0) / (state.members.length || 1);
   const loveBonus = K.loveSatCoef * (avgLove / 100);
   const satisfaction = clamp(
-    0.55 * aAdj + 0.3 * match * 100 + 0.15 * atmosphere + paBonus - (trouble ? 18 : 0) + state.buffs.liveSat + loveBonus,
+    K.satAppeal * aAdj + K.satMatch * match * 100 + K.satAtmos * atmosphere + paBonus - (trouble ? K.satTrouble : 0) + state.buffs.liveSat + loveBonus,
   );
 
   // Market: trend heat, rival pressure and any tie-up bend how many fans the
@@ -168,7 +190,7 @@ export function resolveLive(
   // Step 7: economics — staff take a cut of revenue as 人件費 (利益分散).
   // A poor show means empty merch tables / refunds / walk-outs, so ticket income
   // scales with satisfaction — a low-rated live runs at a loss (赤字).
-  const satFactor = clamp(0.1 + (satisfaction - 45) * 0.02, 0.08, 1.1); // break-even ≈ C+ (sat 60)
+  const satFactor = clamp(K.satFactorBase + (satisfaction - K.satFactorMid) * K.satFactorSlope, 0.08, 1.1); // break-even ≈ C+ (sat 60)
   const revenue = Math.round(draw * K.ticketPrice * satFactor + streams * K.streamRate);
   const staffCost = Math.round(revenue * state.staff.reduce((a, s) => a + s.cut, 0));
   const cost = cap * K.venueCostPerSeat + staffCost;

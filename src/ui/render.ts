@@ -12,7 +12,9 @@ import {
   STAFF_DEFS,
   bandPower,
   bandStamina,
+  canAfford,
   canRecruit,
+  cardUnaffordable,
   currentMilestone,
   isCardLocked,
   itemDef,
@@ -408,12 +410,19 @@ function tutorialCoach(state: GameState): string {
 function handView(state: GameState): string {
   const cards = state.hand
     .map((c) => {
-      const locked = isCardLocked(state, c.kind);
+      const tired = isCardLocked(state, c.kind);
+      const broke = !tired && cardUnaffordable(state, c);
+      const locked = tired || broke;
+      const hint = tired
+        ? L("疲労で行動不可", "Too tired to act")
+        : broke
+          ? L("資金不足で行動不可", "Too broke to act")
+          : CARD_HINT[c.kind];
       return `
       <button class="actcard ${c.kind} ${locked ? "locked" : ""}" data-card="${c.kind}" ${locked ? "disabled" : ""}>
         <span class="ac-ico">${ACTION_ICON[c.kind]}</span>
         <span class="ac-name">${actionLabel(c.kind)}</span>
-        <span class="ac-hint">${locked ? L("疲労で行動不可", "Too tired to act") : CARD_HINT[c.kind]}</span>
+        <span class="ac-hint">${hint}</span>
         <span class="ac-sta">${staminaTag(c.kind)}</span>
       </button>`;
     })
@@ -450,12 +459,14 @@ function cardSubModal(state: GameState, ui: UiState): string {
   const card = state.hand.find((c) => c.kind === kind);
   const subs = card?.subs ?? [];
   const opts = subs
-    .map(
-      (s) => `<button class="train" data-sub="${s.id}">
+    .map((s) => {
+      const broke = !canAfford(state, kind, s.id);
+      const fee = kind === "music" && s.id === "compose" ? K.feeCompose : kind === "music" && s.id === "practice" ? K.feePractice : 0;
+      return `<button class="train ${broke ? "locked" : ""}" data-sub="${s.id}" ${broke ? "disabled" : ""}>
         <span class="tname">${s.label}</span>
-        <span class="tdesc">${esc(s.desc)}</span>
-      </button>`,
-    )
+        <span class="tdesc">${broke ? L(`資金不足（¥${fee.toLocaleString()}必要）`, `Not enough (need ¥${fee.toLocaleString()})`) : esc(s.desc)}</span>
+      </button>`;
+    })
     .join("");
   const recruit =
     kind === "network" && canRecruit(state)

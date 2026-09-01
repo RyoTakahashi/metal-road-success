@@ -9,7 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "prompts": "node scripts/build-prompts.mjs",
-    "art:risa-evo": "node scripts/build-risa-evolution.mjs"
+    "art:risa-evo": "node scripts/build-risa-evolution.mjs",
+    "sim": "esbuild --bundle scripts/sim.ts --platform=node --format=esm --loader:.ts=ts --outfile=node_modules/.cache/sim.mjs && node node_modules/.cache/sim.mjs"
   },
   "devDependencies": {
     "typescript": "^5.5.4",

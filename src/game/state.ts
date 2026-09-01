@@ -2,7 +2,7 @@
 // Progression is a monthly loop: turnsPerMonth action cards, then a live.
 // See docs/phase1-cards.md.
 
-import { bandParam, SEG_WEIGHTS } from "./coreLoop";
+import { bandParam, K, SEG_WEIGHTS } from "./coreLoop";
 import { EVO_LOOK, evolutionInfix } from "./evolution";
 import { acceptTieup, initMarket, leanToward, tickMarket } from "./market";
 import { tutorialActive, tutorialStepFor } from "./tutorial";
@@ -218,10 +218,30 @@ const pay = (s: GameState, yen: number): number => {
   return p;
 };
 
-// Money costs of activities (お金を回す：練習=スタジオ代 / 作曲=録音 / 広報=宣伝費).
-const FEE_PRACTICE = 8_000;
-const FEE_COMPOSE = 30_000;
-const FEE_PROMO = 5_000;
+// Money costs of activities live in the tunable balance table (coreLoop K) so
+// difficulty sweeps hit one place: K.feePractice / K.feeCompose / K.feePromo.
+
+/** Money an action needs up front. 0 for free actions. Used to gate a paid
+ *  action when the band is broke (金欠＝行動不可). */
+export function actionCost(kind: ActionKind, subId?: string): number {
+  if (kind === "promo") return K.feePromo;
+  if (kind === "music") {
+    if (subId === "practice") return K.feePractice;
+    if (subId === "compose") return K.feeCompose;
+  }
+  return 0; // rest / perform / network / money and any free sub
+}
+
+/** Whether the band can currently pay for an action (paid actions only). */
+export const canAfford = (s: GameState, kind: ActionKind, subId?: string): boolean =>
+  s.funds >= actionCost(kind, subId);
+
+/** True when every option a card offers is unaffordable (used to lock the card).
+ *  Cards with any free option (music→perform, network, rest, money) never lock. */
+export function cardUnaffordable(s: GameState, card: ActionCard): boolean {
+  if (card.subs && card.subs.length) return card.subs.every((sub) => !canAfford(s, card.kind, sub.id));
+  return !canAfford(s, card.kind);
+}
 
 function scene(bg: Scene["bg"], artKeys: string[], text: string, extra: Partial<Scene> = {}): Scene {
   return { bg, chars: artKeys.map((a, i) => ({ member: a, pos: i === 0 ? "center" : i === 1 ? "left" : "right" })), text, ...extra };
@@ -341,6 +361,35 @@ function resolveRest(state: GameState, sub: string, rng: () => number): { scenes
   return { scenes: restScenes("full", L("体力 +40（全員）", "Stamina +40 (all)"), rng) };
 }
 
+/** Roll a new song's quality from Songcraft (+ producer, + Q95 buff consumed). */
+export function rollComposeQ(state: GameState, rng: () => number): number {
+  const s = bandParam(state.members, "S");
+  const producer = state.staff.find((x) => x.role === "producer");
+  const pQ = producer ? 10 * (producer.intimacy / 100) : 0;
+  if (state.buffs.composeQ95) {
+    state.buffs.composeQ95 = false;
+    return 95;
+  }
+  return Math.max(20, Math.min(95, Math.round(0.7 * s + rng() * 20 + pQ)));
+}
+
+/** Commit a finished song (used by the compose title-choice and by the sim). */
+export function finalizeSong(state: GameState, seg: Segment, name: string, Q: number): void {
+  state.usedSongNames.push(name);
+  state.songs.push({ name, lean: leanToward(seg), Q, age: 0 });
+  pushLog(state, L(`作曲：「${name}」完成（Q${Q}／${segLabel(seg)}寄り）`, `Wrote "${name}" (Q${Q} / ${segLabel(seg)}-leaning)`));
+}
+
+/** Headless compose: pay, roll Q, and finalize a song aimed at `seg`. For the
+ *  simulator / automated play (the UI uses the interactive resolveMusic flow). */
+export function composeSong(state: GameState, seg: Segment, rng: () => number = Math.random): void {
+  const Q = rollComposeQ(state, rng);
+  spend(state, 14);
+  pay(state, K.feeCompose);
+  const nm = songNameCandidates(state, seg, rng)[0] ?? `Track ${state.songs.length + 1}`;
+  finalizeSong(state, seg, nm, Q);
+}
+
 function resolveMusic(
   state: GameState,
   sub: string,
@@ -348,28 +397,17 @@ function resolveMusic(
   rng: () => number,
 ): { scenes: Scene[] } {
   if (sub === "compose") {
-    const s = bandParam(state.members, "S");
-    const producer = state.staff.find((x) => x.role === "producer");
-    const pQ = producer ? 10 * (producer.intimacy / 100) : 0; // producer lifts quality
-    let Q = Math.max(20, Math.min(95, Math.round(0.7 * s + rng() * 20 + pQ)));
-    if (state.buffs.composeQ95) {
-      Q = 95;
-      state.buffs.composeQ95 = false;
-    }
+    const Q = rollComposeQ(state, rng);
     spend(state, 14);
-    pay(state, FEE_COMPOSE); // 録音・スタジオ代でお金がガクッと減る
-    pushLog(state, L(`作曲：スタジオを押さえた（録音費 ${yen(FEE_COMPOSE)}）`, `Compose: booked the studio (recording fee ${yen(FEE_COMPOSE)})`));
+    pay(state, K.feeCompose); // 録音・スタジオ代でお金がガクッと減る
+    pushLog(state, L(`作曲：スタジオを押さえた（録音費 ${yen(K.feeCompose)}）`, `Compose: booked the studio (recording fee ${yen(K.feeCompose)})`));
     const lead = state.members.find((m) => m.isLeader)?.artKey ?? "RYO";
     // 楽曲属性: Step 1 — aim the song at a segment (its lean); Step 2 — pick a
     // title from segment-flavored candidates (used titles are never re-offered).
     const dirChoice = (seg: Segment): SceneChoice => {
       const nameChoices: SceneChoice[] = songNameCandidates(state, seg, rng).map((nm) => ({
         label: L(`「${nm}」`, `"${nm}"`),
-        apply: (st) => {
-          st.usedSongNames.push(nm);
-          st.songs.push({ name: nm, lean: leanToward(seg), Q, age: 0 });
-          pushLog(st, L(`作曲：「${nm}」完成（Q${Q}／${segLabel(seg)}寄り）`, `Wrote "${nm}" (Q${Q} / ${segLabel(seg)}-leaning)`));
-        },
+        apply: (st) => finalizeSong(st, seg, nm, Q),
         next: composeScenes(nm, Q, rng),
       }));
       return {
@@ -389,7 +427,7 @@ function resolveMusic(
         {
           bg: "studio",
           chars: [{ member: lead, pos: "center", mood: "normal" }],
-          text: L(`スタジオで新曲を録る（録音費 ${yen(FEE_COMPOSE)}）。曲は形になってきた（Q${Q}）——どの客層に刺す一曲に仕上げる？`, `Recording a new song at the studio (recording fee ${yen(FEE_COMPOSE)}). It's taking shape (Q${Q}) — which audience should it target?`),
+          text: L(`スタジオで新曲を録る（録音費 ${yen(K.feeCompose)}）。曲は形になってきた（Q${Q}）——どの客層に刺す一曲に仕上げる？`, `Recording a new song at the studio (recording fee ${yen(K.feeCompose)}). It's taking shape (Q${Q}) — which audience should it target?`),
           choices: SEGMENTS.map(dirChoice),
         },
       ],
@@ -409,12 +447,12 @@ function resolveMusic(
   }
   // practice — needs a param; item buffs multiply the gain
   const p = param ?? "T";
-  const gain = Math.round(6 * state.buffs.practiceMult);
+  const gain = Math.round(K.practiceGain * state.buffs.practiceMult);
   addParam(state, p, gain);
   spend(state, 16);
-  pay(state, FEE_PRACTICE); // スタジオ代
+  pay(state, K.feePractice); // スタジオ代
   state.practiceFreshness = 100;
-  pushLog(state, L(`練習：${paramLabel(p)}を強化（+${gain} / 全員）・スタジオ代 ${yen(FEE_PRACTICE)}・鮮度MAX`, `Practice: ${paramLabel(p)} up (+${gain} / all) · studio ${yen(FEE_PRACTICE)} · freshness MAX`));
+  pushLog(state, L(`練習：${paramLabel(p)}を強化（+${gain} / 全員）・スタジオ代 ${yen(K.feePractice)}・鮮度MAX`, `Practice: ${paramLabel(p)} up (+${gain} / all) · studio ${yen(K.feePractice)} · freshness MAX`));
   const scenes = practiceScenes(p, gain, rng);
   // Sometimes a bandmate turns to the leader mid-session for a word (choice event).
   if (rng() < 0.5) scenes.splice(2, 0, ...practiceTalk(state, rng));
@@ -430,9 +468,9 @@ function resolvePromo(state: GameState, rng: () => number): { scenes: Scene[] } 
   state.segFans.core += c;
   state.totalFans += f + c;
   spend(state, 10);
-  pay(state, FEE_PROMO); // フライヤー・広告費
-  pushLog(state, L(`広報活動：SNS・宣伝を強化（知名度+3 / ファン+${f + c} / 宣伝費 ${yen(FEE_PROMO)}）`, `Promotion: SNS & ads (Fame +3 / Fans +${f + c} / ad cost ${yen(FEE_PROMO)})`));
-  return { scenes: promoScenes(L(`知名度 +3・SNS効果UP・ファン +${f + c}（宣伝費 ${yen(FEE_PROMO)}）`, `Fame +3 · SNS boost · Fans +${f + c} (ad cost ${yen(FEE_PROMO)})`), rng) };
+  pay(state, K.feePromo); // フライヤー・広告費
+  pushLog(state, L(`広報活動：SNS・宣伝を強化（知名度+3 / ファン+${f + c} / 宣伝費 ${yen(K.feePromo)}）`, `Promotion: SNS & ads (Fame +3 / Fans +${f + c} / ad cost ${yen(K.feePromo)})`));
+  return { scenes: promoScenes(L(`知名度 +3・SNS効果UP・ファン +${f + c}（宣伝費 ${yen(K.feePromo)}）`, `Fame +3 · SNS boost · Fans +${f + c} (ad cost ${yen(K.feePromo)})`), rng) };
 }
 
 function resolveNetwork(state: GameState, sub: string, rng: () => number): { scenes: Scene[] } {
@@ -1086,7 +1124,7 @@ export function resolveRecruit(state: GameState, role: StaffRole): { scenes: Sce
 }
 
 function resolveMoney(state: GameState, rng: () => number): { scenes: Scene[] } {
-  const amt = 40_000 + Math.floor(rng() * 30_000); // 40k–70k（活動費で足りなくなりがち）
+  const amt = K.baitMin + Math.floor(rng() * K.baitVar); // 活動費で足りなくなりがち
   state.funds += amt;
   spend(state, 12);
   pushLog(state, L(`アルバイト：${yen(amt)}稼いだ`, `Part-time job: earned ${yen(amt)}`));
@@ -1262,11 +1300,11 @@ export const bandPower = (s: GameState): number => {
 };
 
 export const MILESTONES: Milestone[] = [
-  { id: "gateway", label: L("アマチュア登竜門ライブ", "Amateur Proving-Ground Show"), deadline: 8, req: { power: 52, fans: 1600 }, bg: "venueSmall", flavor: L("登竜門ライブを勝ち抜いた！シーンに名前が知れ渡る。", "You conquered the proving-ground show! Your name spreads through the scene."), intro: L("アマチュアバンドの登竜門ライブ。ここに立てなければ話にならない。まずは演奏力を鍛え、動員できるファンを集めろ。", "The proving-ground show for amateur bands. If you can't stand here, nothing else matters. First, build your musicianship and gather fans you can pull in.") },
-  { id: "indiefes", label: L("インディーズメタルフェス", "Indie Metal Festival"), deadline: 15, req: { power: 58, fans: 3200, songs: 3 }, bg: "venueBig", flavor: L("インディーズフェスのステージへ！観客の規模が跳ね上がる。", "Onto the indie festival stage! Your audience leaps in size."), intro: L("インディーズメタルフェスからのオファーを掴む。より高い演奏力とファンに加え、武器となる楽曲の数（曲数）も問われる。", "Land an offer from the Indie Metal Festival. On top of higher musicianship and more fans, the number of songs in your arsenal matters too.") },
-  { id: "major", label: L("メジャーデビュー", "Major-Label Debut"), deadline: 24, req: { power: 66, fans: 6000, bond: 50 }, bg: "venueBig", flavor: L("メジャーデビュー決定！大箱ライブとサポート招致が解禁。ここからが本当の勝負だ。", "Major-label debut confirmed! Big-venue shows and support-staff recruiting unlock. The real fight starts here."), intro: L("夢の入り口、メジャーデビュー。実力とファンはもちろん、ここまで来たバンドの結束が試される。", "The doorway to the dream: a major-label debut. Skill and fans, of course — but the unity you've built this far is put to the test too.") },
-  { id: "bigfes", label: L("大型フェスのオファー", "Major Festival Offer"), deadline: 36, req: { power: 74, fans: 14000, fame: 64 }, bg: "venueBig", flavor: L("大型フェスのメインステージへ大抜擢！", "Handpicked for the main stage of a major festival!"), intro: L("大型フェスのメインステージ。圧倒的な演奏力と、広く届く知名度がものを言う。", "The main stage of a major festival. Overwhelming musicianship and far-reaching fame are what count.") },
-  { id: "overseas", label: L("海外進出", "Going Overseas"), deadline: 50, req: { power: 80, fans: 36000, fame: 78 }, bg: "venueBig", flavor: L("ついに海外へ——世界がバンドを待っている！", "Overseas at last——the world is waiting for the band!"), intro: L("最終目標、海外進出。世界に通用する実力・知名度・そして膨大なファン。全てを頂点まで引き上げろ。", "The final goal: going overseas. World-class skill, fame, and a massive fanbase. Push it all to the peak.") },
+  { id: "gateway", label: L("アマチュア登竜門ライブ", "Amateur Proving-Ground Show"), deadline: 7, req: { power: 54, fans: 2000 }, bg: "venueSmall", flavor: L("登竜門ライブを勝ち抜いた！シーンに名前が知れ渡る。", "You conquered the proving-ground show! Your name spreads through the scene."), intro: L("アマチュアバンドの登竜門ライブ。ここに立てなければ話にならない。まずは演奏力を鍛え、動員できるファンを集めろ。", "The proving-ground show for amateur bands. If you can't stand here, nothing else matters. First, build your musicianship and gather fans you can pull in.") },
+  { id: "indiefes", label: L("インディーズメタルフェス", "Indie Metal Festival"), deadline: 13, req: { power: 60, fans: 4200, songs: 3 }, bg: "venueBig", flavor: L("インディーズフェスのステージへ！観客の規模が跳ね上がる。", "Onto the indie festival stage! Your audience leaps in size."), intro: L("インディーズメタルフェスからのオファーを掴む。より高い演奏力とファンに加え、武器となる楽曲の数（曲数）も問われる。", "Land an offer from the Indie Metal Festival. On top of higher musicianship and more fans, the number of songs in your arsenal matters too.") },
+  { id: "major", label: L("メジャーデビュー", "Major-Label Debut"), deadline: 21, req: { power: 68, fans: 7800, bond: 50 }, bg: "venueBig", flavor: L("メジャーデビュー決定！大箱ライブとサポート招致が解禁。ここからが本当の勝負だ。", "Major-label debut confirmed! Big-venue shows and support-staff recruiting unlock. The real fight starts here."), intro: L("夢の入り口、メジャーデビュー。実力とファンはもちろん、ここまで来たバンドの結束が試される。", "The doorway to the dream: a major-label debut. Skill and fans, of course — but the unity you've built this far is put to the test too.") },
+  { id: "bigfes", label: L("大型フェスのオファー", "Major Festival Offer"), deadline: 32, req: { power: 76, fans: 17000, fame: 66 }, bg: "venueBig", flavor: L("大型フェスのメインステージへ大抜擢！", "Handpicked for the main stage of a major festival!"), intro: L("大型フェスのメインステージ。圧倒的な演奏力と、広く届く知名度がものを言う。", "The main stage of a major festival. Overwhelming musicianship and far-reaching fame are what count.") },
+  { id: "overseas", label: L("海外進出", "Going Overseas"), deadline: 46, req: { power: 82, fans: 39000, fame: 80 }, bg: "venueBig", flavor: L("ついに海外へ——世界がバンドを待っている！", "Overseas at last——the world is waiting for the band!"), intro: L("最終目標、海外進出。世界に通用する実力・知名度・そして膨大なファン。全てを頂点まで引き上げろ。", "The final goal: going overseas. World-class skill, fame, and a massive fanbase. Push it all to the peak.") },
 ];
 
 /** Summarize a milestone's requirements as "演奏力55・ファン2,000" for text. */

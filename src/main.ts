@@ -9,6 +9,8 @@ import {
   advanceTurn,
   buildAfterPartyScenes,
   buildIntroSequence,
+  canAfford,
+  cardUnaffordable,
   buildLivePreScenes,
   buildLiveReactionScenes,
   buildTieupOfferScenes,
@@ -226,6 +228,8 @@ const handlers: Handlers = {
   },
   onPlayCard(kind) {
     if (isCardLocked(state, kind)) return; // exhausted: only 休息 is allowed
+    const card = state.hand.find((c) => c.kind === kind);
+    if (card && cardUnaffordable(state, card)) return; // broke: every option unpayable
     // During the hands-on tutorial the scripted card auto-resolves to its
     // scripted sub/param (the coach box already explained the choice).
     const ts = tutorialStepFor(state);
@@ -233,7 +237,6 @@ const handlers: Handlers = {
       playAction(kind, ts.sub, ts.param);
       return;
     }
-    const card = state.hand.find((c) => c.kind === kind);
     if (card?.subs && card.subs.length > 0) {
       ui.pendingCard = kind;
       ui.mode = "cardSub";
@@ -245,6 +248,7 @@ const handlers: Handlers = {
   onChooseSub(subId) {
     const kind = ui.pendingCard;
     if (!kind) return;
+    if (!canAfford(state, kind, subId)) return; // broke: this paid sub is locked
     if (kind === "music" && subId === "practice") {
       ui.mode = "practiceChoice"; // keep pendingCard; wait for the param pick
       redraw();
