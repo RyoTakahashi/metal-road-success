@@ -866,7 +866,7 @@ const LIVE_ENCORE_MC_SCRIPTS: McOption[][] = [
     { label: L("「最後の一音まで、魂込める」", "\"We pour our souls into the very last note.\""), favored: ["expert", "core"], base: 3 },
   ],
   [
-    { label: L("「声が嗄れるまで叫べェ!!」", "\"Scream until your voice cracks!!\""), favored: ["core", "light"], base: 3 },
+    { label: L("「声が枯れるまで叫べェ!!」", "\"Scream until your voice cracks!!\""), favored: ["core", "light"], base: 3 },
     { label: L("「この一体感、最高だろ？」", "\"This unity — it's the best, right?\""), favored: ["light", "core"], base: 3 },
     { label: L("「幕引きは、静かに、美しく」", "\"We bring the curtain down quietly, beautifully.\""), favored: ["visual", "expert"], base: 3 },
   ],

@@ -386,17 +386,57 @@ const MUSE_GENERAL: { art: string; mood: MuseMood; line: string }[] = [
 
 /** A bandmate musing over what to do this turn (playful board flavor). Stable
  *  per turn (keyed by month/turn), context-aware for fatigue / stale songs / cash. */
+// Hand-aware board comments: keyed by the two non-rest cards on offer, so the
+// bandmate's line nudges toward what's actually available this turn (e.g. no
+// music card → talk up promotion / connections). Falls back to MUSE_GENERAL.
+const HAND_MUSE: Record<string, { art: string; mood: MuseMood; line: string }[]> = {
+  "music,promo": [
+    { art: "RYO", mood: "fired", line: L("「鍛えるか、広めるか。今日は攻めの二択だな」", "\"Sharpen up or spread the word — an aggressive pair of options today.\"") },
+    { art: "KEN", mood: "normal", line: L("「音を磨くのも、知ってもらうのも、どっちも武器だ」", "\"Polishing the sound or getting noticed — both are weapons.\"") },
+  ],
+  "music,network": [
+    { art: "KEN", mood: "normal", line: L("「腕を磨くのも、人脈を作るのも、遠回りに見えて近道だ」", "\"Sharpening our skills or building connections — both are shortcuts in disguise.\"") },
+    { art: "MIO", mood: "normal", line: L("「音を詰めるか、仲間と語らうか……今日はどっち？」", "\"Tighten the sound, or talk it out with the crew... which today?\"") },
+  ],
+  "money,music": [
+    { art: "MIO", mood: "normal", line: L("「音を磨くか、軍資金を稼ぐか。地に足つけていこ」", "\"Polish the sound or earn some funds. Let's keep our feet on the ground.\"") },
+    { art: "GO", mood: "happy", line: L("「練習もバイトも全力！ どっちも大事だもんね！」", "\"Give practice and the part-time job everything! Both matter!\"") },
+  ],
+  "network,promo": [
+    { art: "MIO", mood: "normal", line: L("「曲づくりはお預け。どうやってバンドを知ってもらうかも大事だよ」", "\"No songwriting today. How we get the band known matters too.\"") },
+    { art: "RYO", mood: "normal", line: L("「今日は音出しはナシか。じゃあ、名前の売り方で勝負だ」", "\"No playing today, huh. Then let's win on getting our name out.\"") },
+  ],
+  "money,promo": [
+    { art: "RYO", mood: "normal", line: L("「先立つものと、宣伝か。地味だけど、じわじわ効くぞ」", "\"Seed money and promotion, huh. Unshowy, but it pays off slowly.\"") },
+    { art: "GO", mood: "happy", line: L("「稼いで広めて——今日は縁の下、がんばるぞっ！」", "\"Earn and spread the word — grunt work today, let's go!\"") },
+  ],
+  "money,network": [
+    { art: "MIO", mood: "normal", line: L("「軍資金も人脈も、コツコツが効いてくるんだ」", "\"Funds and connections both — chipping away is what pays off.\"") },
+    { art: "GO", mood: "happy", line: L("「バイトか、仲間と作戦会議か！ どっちも楽しそう！」", "\"A shift, or a strategy huddle with the crew! Both sound fun!\"") },
+  ],
+};
+
+/** The two non-rest cards in hand, as a sorted key ("network,promo"). */
+function handKey(state: GameState): string {
+  return state.hand.map((c) => c.kind).filter((k) => k !== "rest").sort().join(",");
+}
+
 function boardMuse(state: GameState): string {
   let art: string, mood: MuseMood, line: string;
   const newest = state.songs.reduce((a, s) => Math.min(a, s.age), 99);
+  const idx = state.month * 3 + state.turn;
+  const handPool = HAND_MUSE[handKey(state)];
   if (bandStamina(state) < FATIGUE_FLOOR) {
     art = "GO"; mood = "sad"; line = L("「もう体力げんかい…今日は休も？ ね？」", "\"I'm running on empty... let's rest today? Please?\"");
   } else if (newest >= 4) {
     art = "KEN"; mood = "normal"; line = L("「そろそろ新曲、書かないか。ネタは腐るぞ」", "\"Time to write a new song. Ideas go stale.\"");
   } else if (state.funds < 150 * K.venueCostPerSeat) {
     art = "MIO"; mood = "normal"; line = L("「……お金、心もとない。バイトも要るかも」", "\"...Cash is thin. We may need a shift.\"");
+  } else if (handPool) {
+    const m = handPool[idx % handPool.length];
+    art = m.art; mood = m.mood; line = m.line;
   } else {
-    const m = MUSE_GENERAL[(state.month * 3 + state.turn) % MUSE_GENERAL.length];
+    const m = MUSE_GENERAL[idx % MUSE_GENERAL.length];
     art = m.art; mood = m.mood; line = m.line;
   }
   return `<div class="boardmuse">
