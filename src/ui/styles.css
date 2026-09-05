@@ -499,6 +499,8 @@ body {
   font-size: 34px; font-weight: 900; font-style: italic; color: #fff;
   animation: rankPop 0.4s cubic-bezier(.2,1.2,.3,1.2) both;
 }
+/* S = legendary (holographic), distinct from A's gold. */
+.rank-legend { background: linear-gradient(135deg, #ff5fae 0%, #b061ff 45%, #33d6ff 100%); box-shadow: 0 0 26px rgba(176,97,255,0.65); color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.45); }
 .rank-great { background: linear-gradient(160deg, var(--accent), #d99a00); box-shadow: 0 0 22px rgba(255,207,58,0.6); color: #201400; }
 .rank-good { background: linear-gradient(160deg, var(--blue), #1b6fd0); }
 .rank-poor { background: linear-gradient(160deg, #64748b, #3d4757); }

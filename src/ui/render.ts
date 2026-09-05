@@ -658,7 +658,7 @@ function liveModal(state: GameState, ui: UiState): string {
 }
 
 function liveVerdict(sat: number): { rank: string; tone: string; line: string } {
-  if (sat >= 80) return { rank: "S", tone: "great", line: L("伝説のライブ！会場が一つになった！", "A legendary show — the whole room became one!") };
+  if (sat >= 80) return { rank: "S", tone: "legend", line: L("伝説のライブ！会場が一つになった！", "A legendary show — the whole room became one!") };
   if (sat >= 70) return { rank: "A", tone: "great", line: L("最高のステージ！確かな手応え！", "A killer set — real momentum!") };
   if (sat >= 60) return { rank: "B", tone: "good", line: L("良いライブだった。爪痕を残した。", "A good show. You left a mark.") };
   if (sat >= 50) return { rank: "C", tone: "good", line: L("悪くない。次につながる出来。", "Not bad — something to build on.") };
