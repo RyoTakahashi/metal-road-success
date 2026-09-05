@@ -68,21 +68,18 @@ body {
 .stat .v { font-weight: 800; font-size: 18px; }
 .stat .k { font-size: 11px; color: var(--muted); }
 
-/* ---- BGM toggle ---- */
-.bgm-btn {
-  position: fixed; right: 12px; bottom: 12px; z-index: 60;
-  width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
-  border: 2px solid var(--accent-2); background: rgba(20,12,24,0.85); color: #fff;
-  font-size: 20px; line-height: 1; box-shadow: var(--shadow);
+/* ---- Header controls (language + BGM), in the topbar / title screen ---- */
+.hdr-ctrls { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.hdr-btn {
+  min-width: 40px; height: 40px; padding: 0 10px; border-radius: 20px; cursor: pointer;
+  border: 2px solid var(--accent); background: rgba(20,12,24,0.6); color: var(--accent);
+  font-size: 15px; font-weight: 900; letter-spacing: 1px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
 }
-.bgm-btn:hover { border-color: var(--accent); }
-.lang-btn {
-  position: fixed; right: 12px; bottom: 64px; z-index: 60;
-  min-width: 44px; height: 44px; padding: 0 10px; border-radius: 22px; cursor: pointer;
-  border: 2px solid var(--accent); background: rgba(20,12,24,0.85); color: var(--accent);
-  font-size: 14px; font-weight: 900; letter-spacing: 1px; line-height: 1; box-shadow: var(--shadow);
-}
-.lang-btn:hover { color: #fff; border-color: #fff; }
+.hdr-btn.hdr-bgm { border-color: var(--accent-2); color: #fff; font-size: 19px; padding: 0; width: 40px; }
+.hdr-btn:hover { color: #fff; border-color: #fff; }
+/* On the title screen the header controls float top-right over the splash. */
+.title-screen .hdr-ctrls { position: absolute; top: 14px; right: 14px; z-index: 3; }
 .langpick { display: flex; gap: 12px; justify-content: center; margin-top: 8px; flex-wrap: wrap; }
 .langpick .btn { min-width: 140px; font-size: 16px; }
 
@@ -591,6 +588,8 @@ body {
   .stat .v .turn { font-size: 10px; }
   .stat .k { font-size: 10px; }
 
-  /* Move the BGM toggle out of the way of the scene's 次へ button. */
-  body:has(.scene-overlay) .bgm-btn { top: 12px; bottom: auto; }
+  /* Compact header toggles; they wrap within the header on narrow screens. */
+  .hdr-ctrls { gap: 6px; }
+  .hdr-btn { min-width: 34px; height: 34px; font-size: 13px; }
+  .hdr-btn.hdr-bgm { width: 34px; font-size: 16px; }
 }

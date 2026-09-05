@@ -35,7 +35,8 @@ import type {
   StaffRole,
 } from "../game/types";
 import { ACTION_ICON, actionLabel, paramLabel, PARAMS, segLabel, SEGMENTS, staffLabel } from "../game/types";
-import { L, type Lang } from "../game/i18n";
+import { getLang, L, type Lang } from "../game/i18n";
+import { isMuted } from "./audio";
 import { bgSrc, charSrc, setEvolution } from "./assets";
 import { EVO_LOOK, evolutionInfix, SEG_INFIX } from "../game/evolution";
 import { hottestSegment, OPPOSED, rivalOf, songDir, trendIcon, trendMult } from "../game/market";
@@ -55,6 +56,7 @@ export interface UiState {
 export interface Handlers {
   onChooseLang: (lang: Lang) => void;
   onToggleLang: () => void;
+  onToggleBgm: () => void;
   onStart: () => void;
   onChoosePart: (part: string, name: string) => void;
   onPlayCard: (kind: ActionKind) => void;
@@ -106,6 +108,16 @@ function gaugeRow(label: string, value: number, cls = ""): string {
     </div>`;
 }
 
+/** Language + BGM toggles for the header (replaces the floating buttons, which
+ *  overlapped content on mobile). Text/icon reflect current state. */
+export function hdrControls(): string {
+  return `
+    <div class="hdr-ctrls">
+      <button class="hdr-btn hdr-lang" id="hdr-lang" aria-label="Language / 言語">${getLang() === "en" ? "JA" : "EN"}</button>
+      <button class="hdr-btn hdr-bgm" id="hdr-bgm" aria-label="${L("BGMのオン/オフ", "Toggle BGM")}">${isMuted() ? "🔇" : "🔊"}</button>
+    </div>`;
+}
+
 function topbar(state: GameState): string {
   return `
     <div class="topbar">
@@ -117,6 +129,7 @@ function topbar(state: GameState): string {
         <div class="stat"><div class="v">${state.fame}</div><div class="k">${L("知名度", "Fame")}</div></div>
         <div class="stat"><div class="v">¥${state.funds.toLocaleString()}</div><div class="k">${L("資金", "Funds")}</div></div>
       </div>
+      ${hdrControls()}
     </div>`;
 }
 
@@ -699,6 +712,7 @@ function titleScreen(): string {
   return `
     <div class="title-screen" style="background-image:url('${bgSrc("venueBig")}')">
       <div class="title-scrim"></div>
+      ${hdrControls()}
       <div class="title-band">${chars}</div>
       <div class="title-copy">
         <div class="title-logo">Metal Road<span>~ SUCCESS! ~</span></div>
@@ -716,6 +730,7 @@ function partSelectScreen(): string {
   return `
     <div class="title-screen" style="background-image:url('${bgSrc("backstage")}')">
       <div class="title-scrim"></div>
+      ${hdrControls()}
       <div class="partselect">
         <h2>${L("あなたのパートは？", "What's your part?")}</h2>
         <div class="hint">${L("あなたはこのバンドのリーダー。担当パートを選び、名前を決めよう。", "You're the band's leader. Pick your instrument and set a name.")}</div>
@@ -729,6 +744,12 @@ function partSelectScreen(): string {
     </div>`;
 }
 
+/** Bind the header language + BGM toggles (present on title + gameplay). */
+function bindHdr(root: HTMLElement, h: Handlers): void {
+  root.querySelector("#hdr-lang")?.addEventListener("click", () => h.onToggleLang());
+  root.querySelector("#hdr-bgm")?.addEventListener("click", () => h.onToggleBgm());
+}
+
 export function render(root: HTMLElement, state: GameState, ui: UiState, h: Handlers): void {
   setEvolution(evolutionInfix(state.evoUnlocked)); // pick the sprite variant for this frame
   if (ui.mode === "language") {
@@ -740,6 +761,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   if (ui.mode === "title") {
     root.innerHTML = titleScreen();
     root.querySelector("#start")?.addEventListener("click", () => h.onStart());
+    bindHdr(root, h);
     return;
   }
   if (ui.mode === "gameover" || ui.mode === "clear") {
@@ -749,6 +771,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   }
   if (ui.mode === "partSelect") {
     root.innerHTML = partSelectScreen();
+    bindHdr(root, h);
     let part = "";
     const nameEl = root.querySelector<HTMLInputElement>("#leader-name");
     const startBtn = root.querySelector<HTMLButtonElement>("#confirm-part");
@@ -798,6 +821,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
     autoBtn.textContent = ui.auto ? L("⏸ オート中", "⏸ Auto on") : L("▶ オート", "▶ Auto");
   }
 
+  bindHdr(root, h);
   root.querySelectorAll<HTMLButtonElement>("[data-card]").forEach((el) =>
     el.addEventListener("click", () => h.onPlayCard(el.dataset.card as ActionKind)),
   );

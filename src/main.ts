@@ -193,15 +193,8 @@ async function autoLoop(): Promise<void> {
   }
 }
 
-// Language toggle (fixed, like the BGM button). Text shows the language to
-// switch TO, so "EN" flips to English and "JA" back to Japanese.
-const langBtn = document.createElement("button");
-langBtn.className = "lang-btn";
-langBtn.setAttribute("aria-label", "Language / 言語");
-langBtn.textContent = getLang() === "en" ? "JA" : "EN";
-langBtn.addEventListener("click", () => handlers.onToggleLang());
-document.body.appendChild(langBtn);
-
+// Language + BGM toggles live in the header (see render's hdrControls) so they
+// don't overlap content on mobile. Text/icon reflect state via re-render.
 const handlers: Handlers = {
   onChooseLang(lang) {
     // Reload so every module-load constant (items, milestones, scene pools…)
@@ -212,6 +205,10 @@ const handlers: Handlers = {
   onToggleLang() {
     setLang(getLang() === "en" ? "ja" : "en");
     location.reload();
+  },
+  onToggleBgm() {
+    bgm.toggleMute();
+    redraw(); // header re-renders with the new 🔊/🔇 icon
   },
   onStart() {
     ui.mode = "partSelect";
@@ -362,16 +359,6 @@ const handlers: Handlers = {
     redraw();
   },
 };
-
-// Persistent BGM mute toggle (lives outside #app so re-renders don't drop it).
-const bgmBtn = document.createElement("button");
-bgmBtn.className = "bgm-btn";
-bgmBtn.setAttribute("aria-label", L("BGMのオン/オフ", "Toggle BGM"));
-bgmBtn.textContent = bgm.isMuted() ? "🔇" : "🔊";
-bgmBtn.addEventListener("click", () => {
-  bgmBtn.textContent = bgm.toggleMute() ? "🔇" : "🔊";
-});
-document.body.appendChild(bgmBtn);
 
 // Unlock audio on the first user gesture (autoplay is blocked until then).
 const unlock = (): void => {
