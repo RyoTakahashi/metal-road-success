@@ -454,8 +454,12 @@ body {
 }
 .title-scrim {
   position: absolute; inset: 0;
-  background: radial-gradient(120% 80% at 50% 20%, transparent 30%, #050a12 100%),
-              linear-gradient(180deg, rgba(5,10,18,0.55), rgba(5,10,18,0.15) 40%, rgba(5,10,18,0.9));
+  /* Stage-light pool behind the band lifts the backdrop so the characters'
+     dark boots/gloves don't merge into the dark background. Bottom is eased
+     from 0.9 → 0.62 for the same reason. */
+  background: radial-gradient(70% 55% at 50% 82%, rgba(150,140,180,0.34), transparent 72%),
+              radial-gradient(120% 80% at 50% 20%, transparent 30%, #050a12 100%),
+              linear-gradient(180deg, rgba(5,10,18,0.55), rgba(5,10,18,0.15) 40%, rgba(5,10,18,0.62));
 }
 .title-band {
   position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: center;
@@ -463,7 +467,9 @@ body {
 }
 .title-char {
   height: 100%; margin: 0 -2.2%; object-fit: contain;
-  filter: drop-shadow(0 10px 14px rgba(0,0,0,0.6));
+  /* Light rim (two soft white halos) separates dark edges from the dark stage,
+     then the usual drop shadow grounds them. */
+  filter: drop-shadow(0 0 2px rgba(255,255,255,0.5)) drop-shadow(0 0 7px rgba(210,225,255,0.28)) drop-shadow(0 10px 14px rgba(0,0,0,0.6));
   animation: titleIn 0.5s cubic-bezier(.2,.9,.3,1.2) both, idleBob 3.4s ease-in-out infinite;
   animation-delay: calc(var(--i) * 0.09s), calc(0.5s + var(--i) * 0.12s);
 }
