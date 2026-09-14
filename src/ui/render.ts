@@ -36,6 +36,7 @@ import type {
 } from "../game/types";
 import { ACTION_ICON, actionLabel, paramLabel, PARAMS, segLabel, SEGMENTS, staffLabel } from "../game/types";
 import { getLang, L, type Lang } from "../game/i18n";
+import { IS_SHORT } from "../game/edition";
 import { isMuted } from "./audio";
 import { bgSrc, charSrc, setEvolution } from "./assets";
 import { EVO_LOOK, evolutionInfix, SEG_INFIX } from "../game/evolution";
@@ -355,7 +356,7 @@ function endScreen(state: GameState, kind: "gameover" | "clear"): string {
         <div class="title-band">${band}</div>
         <div class="end-copy">
           <div class="end-logo win">CONGRATULATIONS!</div>
-          <div class="end-sub">${L("海外進出を成し遂げ、Metal Road は世界へ羽ばたいた！", "Metal Road broke overseas and took flight across the world!")}</div>
+          <div class="end-sub">${IS_SHORT ? L("メジャーデビューを掴み、Metal Road は夢の舞台へ羽ばたいた！", "Metal Road landed a major-label debut and soared to the stage of their dreams!") : L("海外進出を成し遂げ、Metal Road は世界へ羽ばたいた！", "Metal Road broke overseas and took flight across the world!")}</div>
           <div class="end-stat">${L("クリア：", "Cleared in ")}${L(`${state.month}ヶ月`, `${state.month} mo`)}${L(" ／ ファン ", " / Fans ")}${state.totalFans.toLocaleString()}</div>
           <button class="btn title-start" id="restart">${L("▶ もう一度はじめる", "▶ Play again")}</button>
         </div>

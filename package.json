@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "build:long": "tsc --noEmit && EDITION=long vite build",
+    "build:short": "tsc --noEmit && EDITION=short vite build --outDir dist-short",
     "preview": "vite preview",
+    "preview:short": "vite preview --outDir dist-short",
     "prompts": "node scripts/build-prompts.mjs",
     "art:risa-evo": "node scripts/build-risa-evolution.mjs",
     "sim": "esbuild --bundle scripts/sim.ts --platform=node --format=esm --loader:.ts=ts --outfile=node_modules/.cache/sim.mjs && node node_modules/.cache/sim.mjs"

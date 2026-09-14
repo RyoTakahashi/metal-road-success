@@ -26,10 +26,24 @@
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # 型チェック + 本番ビルド (dist/)
-npm run preview  # ビルド結果をプレビュー
+npm run dev        # http://localhost:5173
+npm run build      # 型チェック + 本番ビルド（ロング版・全5関門）→ dist/
+npm run preview    # ビルド結果をプレビュー
 ```
+
+### エディション（ショート版 / ロング版）
+
+同一ソースからビルド時に切り替えます。ショート版は**メジャーデビュー（第3関門）で完結**する、itch.io向けの気軽なカジュアル版です。
+
+```bash
+npm run build:short    # ショート版 → dist-short/
+npm run build:long     # ロング版（= npm run build）→ dist/
+npm run preview:short  # ショート版をプレビュー
+```
+
+- 切り替えは `EDITION` 環境変数（`vite.config.ts` の `define` で `__METAL_EDITION__` に注入）。判定は `src/game/edition.ts`。
+- ショート版は関門ラダーを3つに切り詰め（`MILESTONES`）、メジャーデビュー達成のフレーバーとクリア画面のテキストがフィナーレ仕様に差し替わります。
+- itch.io には `dist-short/` の中身をアップロードします。
 
 ## 技術スタック
 
