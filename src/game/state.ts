@@ -1517,6 +1517,34 @@ export function buildLeaderStoryBeat(state: GameState, clearedId: string): Scene
   return build(state, leaderArt(state), nameOf(state, leaderArt(state)));
 }
 
+// --- SHORT edition finale ----------------------------------------------------
+// In the short edition (ends at Major Debut) the leader's arc has no later
+// checkpoint to pay off, so this per-part closing beat lands the emotional bow
+// — adapting each character's would-be big-festival payoff to the debut moment.
+const SHORT_FINALE: Record<string, (s: GameState, lead: string, nm: string) => Scene[]> = {
+  Vo: (s, lead) => [
+    solo(s, "venueBig", lead, "happy", L("大観衆のうねりの中、RISAがふっと笑う。「路上で燻ってたあたしが、メジャーのステージに立ってる。……昔のあたしに教えてやりたいよ。お前、ちゃんと居場所を見つけるぞって」\n\n寂しがり屋のフロントウーマンは、もう一人じゃない。", "In the surging crowd, RISA quietly smiles. \"The girl who was smoldering on the streets is standing on a major stage. ...I wish I could tell my old self — hey, you're gonna find where you belong.\"\n\nThe lonely frontwoman isn't alone anymore."), "flash"),
+  ],
+  Gt: (s, lead) => [
+    solo(s, "venueBig", lead, "fired", L("メジャーの看板の下、NAOが静かに弦を鳴らす。「『メタルなんて』と眉をひそめた奴らに、これが答えだ。……俺の音は、間違ってなかった」\n\n理想を曲げなかった速弾きが、確かに夢の舞台まで届いた。", "Under the major-label banner, NAO quietly sounds a string. \"To everyone who sneered 'metal, of all things' — this is my answer. ...My sound wasn't wrong.\"\n\nThe shredding she never compromised carried her all the way to the stage of her dreams."), "flash"),
+  ],
+  Ba: (s, lead) => [
+    solo(s, "venueBig", lead, "happy", L("大きな舞台の上でも、MAKOの願いはひとつ。「……ね、約束、覚えてる？ ずっと一緒だよって」\n\nはにかんだ小指が、そっと差し出される。この仲間と、この音を、いつまでも。", "Even on the big stage, MAKO's wish is a single one. \"...Hey, you remember the promise? That we'd stay together, always?\"\n\nA bashful pinky reaches out. These bandmates, this sound — forever."), "flash"),
+  ],
+  Dr: (s, lead) => [
+    solo(s, "venueBig", lead, "happy", L("鳴り止まぬ歓声の中、TOMOがからっと笑う。「あたし、気づいちゃった。ドラム、たぶん足は速くならない！ でも——こんなに好きになれたんだから、ぜんぜんアリ！」\n\n嘘から始まった夢が、メジャーの舞台で本物になった。", "Amid the endless cheers, TOMO laughs brightly. \"I figured it out — drumming probably won't make me run faster! But — I got to love it this much, so it's totally worth it!\"\n\nA dream that started from a little lie became real on the major stage."), "flash"),
+  ],
+};
+
+/** SHORT edition only: the leader's closing beat + a four-piece send-off,
+ *  played right after clearing the final checkpoint (Major Debut). */
+export function buildShortFinale(state: GameState): Scene[] {
+  const lead = leaderArt(state);
+  const beat = SHORT_FINALE[state.leaderPart];
+  const closing = scene("venueBig", ["RYO", "KEN", "MIO", "GO"], L("四人で顔を見合わせ、どちらからともなく吹き出す。「……メジャー、獲っちゃったね」「ここからが本番だろ！」\n\n路上から始まった轟音は、確かに夢の舞台まで届いた。Metal Road の物語は、まだ終わらない——。", "The four of them catch each other's eyes and burst out laughing. \"...We actually took the majors, huh.\" \"The real show starts here!\"\n\nThe roar that started on the streets reached the stage of their dreams. The story of Metal Road is far from over——."), { fx: "flash" });
+  return beat ? [...beat(state, lead, nameOf(state, lead)), closing] : [closing];
+}
+
 export function buildOpeningScenes(state: GameState): Scene[] {
   return [
     ...buildLeaderIntro(state),
@@ -1669,6 +1697,8 @@ export function checkProgress(state: GameState): ProgressResult {
       scene(target.bg, ["KEN", "RYO", "MIO", "GO"], L(`【${target.label}】達成！\n\n${target.flavor}`, `[${target.label}] cleared!\n\n${target.flavor}`), { fx: "flash" }),
       // the chosen leader's personal arc advances at each checkpoint
       ...buildLeaderStoryBeat(state, target.id),
+      // SHORT edition: no later checkpoint to pay off the arc, so land the bow.
+      ...(IS_SHORT && cleared ? buildShortFinale(state) : []),
       // when a new checkpoint appears, introduce it and hype the band up
       ...(!cleared && next ? buildMilestoneIntro(state, next) : []),
     ];
