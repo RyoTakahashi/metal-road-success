@@ -65,6 +65,12 @@ function promptFor(combo, mood) {
     ? "wearing the ULTIMATE evolved stage costume — the most GORGEOUS, luxurious and regal metal-queen outfit: an elaborate ornate ballgown blending black gothic lace, deep-crimson velvet and shining gold, encrusted with glittering jewels and gemstones, a grand ornate jewelled crown, a flowing cape and intricate gold-and-silver filigree accents. Opulent, dazzling and beautiful. Keep a CLEAN beautiful face with elegant glamorous makeup — absolutely NO corpse paint, face paint, war paint or skull makeup. A legendary diva final form, one coherent luxurious outfit."
     : `wearing a FUSION that blends these two metal looks into ONE coherent outfit — mix their key garments and accessories together, not split down the middle: ${looks.join(" AND ")}.`;
 
+  // Death fusions must keep the signature corpse paint (the model tends to drop
+  // it, leaving a plain base-like face). Force it explicitly.
+  const deathPaint = (!isUlt && keys.includes("death"))
+    ? " CRITICAL: she MUST wear distinct black-and-white CORPSE-PAINT / war-paint face makeup (as in the death reference) — clearly visible on her face. Do NOT leave her face plain or bare, and do NOT keep any pink base T-shirt."
+    : "";
+
   const neg = [
     ...style.negatives_global,
     ...(char.negatives || []),
@@ -83,7 +89,7 @@ function promptFor(combo, mood) {
       : [comboNormal, join(ROOT, `public/assets/chars/${ARTFILE}.v2.normal.png`)];
 
   const moodNote = mood === "normal" ? "" : "\n\nKeep the EXACT SAME outfit, accessories, hair and makeup as the first reference image — change ONLY the facial expression and pose to match.";
-  const positive = `${base}, ${fusionText}${tail}\n\n${sprite}${moodNote}\n\nKeep the SAME character identity (species ears/tail/hair and instrument) as the reference images.\n\nAspect ratio: 2:3 (vertical).\n\nAvoid: ${neg}.`;
+  const positive = `${base}, ${fusionText}${deathPaint}${tail}\n\n${sprite}${moodNote}\n\nKeep the SAME character identity (species ears/tail/hair and instrument) as the reference images.\n\nAspect ratio: 2:3 (vertical).\n\nAvoid: ${neg}.`;
   return { positive, refs };
 }
 
