@@ -208,10 +208,14 @@ body {
 
 /* ---- Home hero (band in the studio) ---- */
 .home-hero {
-  position: relative; margin-top: 14px; height: clamp(200px, 28vw, 290px);
+  position: relative; margin-top: 14px; height: clamp(150px, 22vw, 240px);
   border-radius: 12px; overflow: hidden; border: 1px solid var(--line);
   background-size: cover; background-position: center 32%; box-shadow: var(--shadow);
 }
+/* Shrink / drop the decorative hero on short viewports so the action cards stay
+   reachable without scrolling (matters most inside itch's fixed-size iframe). */
+@media (max-height: 860px) { .home-hero { height: clamp(110px, 15vh, 170px); } }
+@media (max-height: 700px) { .home-hero { display: none; } .boardpanel { min-height: 0; } }
 .hero-scrim {
   position: absolute; inset: 0;
   background: linear-gradient(180deg, rgba(14,23,38,0.1) 30%, rgba(14,23,38,0.8));
