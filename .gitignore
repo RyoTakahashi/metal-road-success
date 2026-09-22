@@ -4,3 +4,5 @@ dist/
 .DS_Store
 dist-short/
 *.zip
+scratch-dialogue.txt
+story-text.txt
