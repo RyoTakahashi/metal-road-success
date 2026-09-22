@@ -5,6 +5,7 @@
 
 import type { BgKey, Param, Scene, SceneChar } from "./types";
 import { paramLabel } from "./types";
+import { IS_SHORT } from "./edition";
 import { L } from "./i18n";
 
 type Mood = NonNullable<SceneChar["mood"]>;
@@ -124,7 +125,9 @@ export function promoScenes(resultText: string, rng: Rng): Scene[] {
 export function contactScenes(resultText: string, rng: Rng): Scene[] {
   const who = pick(rng, ALL);
   const line = pick(rng, [
-    L("対バン相手やハコの店長と繋がった。人脈は将来サポート陣を招く鍵になる。", "Connected with fellow acts and venue owners. Contacts are the key to landing support crew down the line."),
+    IS_SHORT
+      ? L("対バン相手やハコの店長と繋がった。顔が広がれば、宣伝の伝手も増えていく。", "Connected with fellow acts and venue owners. A wider circle means more ways to get the word out.")
+      : L("対バン相手やハコの店長と繋がった。人脈は将来サポート陣を招く鍵になる。", "Connected with fellow acts and venue owners. Contacts are the key to landing support crew down the line."),
     L("打ち上げで隣り合った他バンドと意気投合。名刺代わりに音源を交換。", "Hit it off with another band at the after-party. Swapped tracks instead of business cards."),
     L("顔なじみの店長に次を約束してもらえた。少しずつ地盤が固まる。", "A familiar venue owner promised us a next gig. The groundwork is slowly firming up."),
   ]);

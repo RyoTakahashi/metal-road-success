@@ -54,7 +54,7 @@ export const isCardLocked = (s: GameState, kind: ActionKind): boolean =>
 /** Short stamina hint shown on a card. */
 export function staminaTag(kind: ActionKind): string {
   if (kind === "rest") return L("体力 回復", "Stamina up");
-  if (kind === "network") return L("体力+ / 人脈・結束", "Stamina+ / contacts & bond");
+  if (kind === "network") return IS_SHORT ? L("体力+ / 交流・結束", "Stamina+ / mingling & bond") : L("体力+ / 人脈・結束", "Stamina+ / contacts & bond");
   return L("体力 消費", "Costs stamina");
 }
 
@@ -164,7 +164,7 @@ const CARD: Record<ActionKind, ActionCard> = {
     kind: "network",
     subs: [
       { id: "band", label: L("バンド関係者", "Bandmates"), desc: L("結束を高め体力回復", "Raise bond & recover stamina") },
-      { id: "contact", label: L("新たな人脈", "New Contacts"), desc: L("マーケ力・知名度↑", "Marketing reach & fame up") },
+      { id: "contact", label: IS_SHORT ? L("業界交流", "Industry Mingling") : L("新たな人脈", "New Contacts"), desc: L("マーケ力・知名度↑", "Marketing reach & fame up") },
     ],
   },
   money: { kind: "money" },
@@ -482,6 +482,10 @@ function resolveNetwork(state: GameState, sub: string, rng: () => number): { sce
     state.support.mk = Math.min(1, state.support.mk + 0.03);
     state.fame = Math.min(100, state.fame + 1);
     spend(state, 10);
+    if (IS_SHORT) {
+      pushLog(state, L(`業界交流：顔が広がり、宣伝の伝手が増えた（マーケ力・知名度↑）`, `Industry mingling: a wider circle and more promo channels (marketing & fame up)`));
+      return { scenes: contactScenes(L(`マーケ力UP・知名度 +1`, `Marketing up · Fame +1`), rng) };
+    }
     pushLog(state, L(`新たな人脈：業界の知り合いが増えた（人脈+1 → ${state.contacts} / マーケ力・知名度↑）`, `New contacts: another industry connection (Contacts +1 → ${state.contacts} / marketing & fame up)`));
     return { scenes: contactScenes(L(`人脈 +1（計${state.contacts}）・マーケ力UP・知名度 +1`, `Contacts +1 (total ${state.contacts}) · marketing up · Fame +1`), rng) };
   }
@@ -1453,7 +1457,9 @@ const LEADER_ARC: Record<string, Record<string, (s: GameState, lead: string, nm:
   },
   Ba: {
     gateway: (s, lead) => [
-      solo(s, "street", lead, "happy", L("MAKOのインディーズ知識が火を噴く。「あのハコの店長、昔◯◯ってバンドで…」——マニアックな縁が、思わぬ対バンを呼び込んだ。（人脈+1）", "MAKO's deep indie knowledge catches fire. \"That venue's owner used to be in a band called ◯◯...\"——an obscure connection lands an unexpected joint gig. (contacts +1)")),
+      solo(s, "street", lead, "happy", IS_SHORT
+        ? L("MAKOのインディーズ知識が火を噴く。「あのハコの店長、昔◯◯ってバンドで…」——マニアックな縁が、思わぬ対バンを呼び込んだ。", "MAKO's deep indie knowledge catches fire. \"That venue's owner used to be in a band called ◯◯...\"——an obscure connection lands an unexpected joint gig.")
+        : L("MAKOのインディーズ知識が火を噴く。「あのハコの店長、昔◯◯ってバンドで…」——マニアックな縁が、思わぬ対バンを呼び込んだ。（人脈+1）", "MAKO's deep indie knowledge catches fire. \"That venue's owner used to be in a band called ◯◯...\"——an obscure connection lands an unexpected joint gig. (contacts +1)")),
       { bg: "street", chars: [{ member: lead, pos: "center", mood: "normal" }], text: L("地味だが、彼女の愛と知識がバンドを一歩前へ進めた。", "Understated, but her love and knowledge moved the band one step forward."), fx: "flash", choices: undefined },
     ],
     indiefes: (s, lead) => [

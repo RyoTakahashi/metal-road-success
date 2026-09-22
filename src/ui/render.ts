@@ -497,7 +497,7 @@ function handView(state: GameState): string {
       ${milestoneBanner(state)}
       <div class="handbar">
         <span class="meter ${songTone}">${L("最新曲", "Newest")} ${newest === 0 ? "NEW" : `${newest}${L("ヶ月前", "mo ago")}`}</span>
-        <span class="meter">🤝 ${L("人脈", "Contacts")} ${state.contacts}</span>
+        ${IS_SHORT ? "" : `<span class="meter">🤝 ${L("人脈", "Contacts")} ${state.contacts}</span>`}
         <span class="meter">🔥 ${L("結束", "Bond")} ${Math.round(state.bond)}</span>
         ${state.staff.length ? `<span class="meter">🎧 ${L("サポート", "Support")} ${state.staff.length}/${STAFF_CAP}</span>` : ""}
       </div>

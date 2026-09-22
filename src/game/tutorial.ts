@@ -16,6 +16,7 @@
 
 import type { ActionKind, GameState, Param } from "./types";
 import { K } from "./coreLoop";
+import { IS_SHORT } from "./edition";
 import { L } from "./i18n";
 
 const yen = (n: number) => `¥${n.toLocaleString()}`;
@@ -39,14 +40,23 @@ const STEPS: Record<string, TutorialStep> = {
       `Start with 'Music > Practice > Musicianship (T)'. Every member's Musicianship goes up +6, lifting the whole band's power. It's the key stat for landing with Core and Connoisseur crowds. Costs ${yen(K.feePractice)} studio and some stamina.`,
     ),
   },
-  "1-2": {
-    card: "network", sub: "contact", coach: "MIO",
-    step: L("② 関係性構築：新たな人脈", "② Networking: New Contacts"),
-    body: L(
-      "次は『関係性構築 ＞ 新たな人脈』。人脈が +1、マーケ力と知名度が少し上がる。人脈が貯まると、メジャー昇格後にサポート陣（PA・マネージャーなど）を招けるようになる。",
-      "Now 'Networking > New Contacts'. Contacts +1, with a small bump to marketing reach and fame. Build enough contacts and — once you go major — you can recruit support staff (PA, manager, and so on).",
-    ),
-  },
+  "1-2": IS_SHORT
+    ? {
+        card: "network", sub: "contact", coach: "MIO",
+        step: L("② 関係性構築：業界交流", "② Networking: Industry Mingling"),
+        body: L(
+          "次は『関係性構築 ＞ 業界交流』。対バンやハコの店長と顔をつなぐと、マーケ力と知名度が少し上がる。宣伝の伝手が増え、ライブの動員にじわっと効いてくる。",
+          "Now 'Networking > Industry Mingling'. Getting to know fellow acts and venue owners bumps up your marketing reach and fame a little — more promo channels that slowly feed into live attendance.",
+        ),
+      }
+    : {
+        card: "network", sub: "contact", coach: "MIO",
+        step: L("② 関係性構築：新たな人脈", "② Networking: New Contacts"),
+        body: L(
+          "次は『関係性構築 ＞ 新たな人脈』。人脈が +1、マーケ力と知名度が少し上がる。人脈が貯まると、メジャー昇格後にサポート陣（PA・マネージャーなど）を招けるようになる。",
+          "Now 'Networking > New Contacts'. Contacts +1, with a small bump to marketing reach and fame. Build enough contacts and — once you go major — you can recruit support staff (PA, manager, and so on).",
+        ),
+      },
   "1-3": {
     card: "money", coach: "GO",
     step: L("③ アルバイト", "③ Part-time Job"),
