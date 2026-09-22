@@ -4,7 +4,7 @@
 
 import { bandParam, K } from "./coreLoop";
 import { EVO_LOOK, evolutionInfix } from "./evolution";
-import { acceptTieup, initMarket, leanToward, tickMarket } from "./market";
+import { acceptTieup, initMarket, leanToward, OPPOSED, tickMarket } from "./market";
 import { IS_SHORT } from "./edition";
 import { tutorialActive, tutorialStepFor } from "./tutorial";
 import { L } from "./i18n";
@@ -579,9 +579,9 @@ const BOND_TOPICS: Topic[] = [
   {
     line: L("「なあ、最近ちゃんと前に進めてるのかな……ふと不安になる時があってさ」", "\"Hey... are we actually getting anywhere lately? Sometimes I just get this uneasy feeling.\""),
     replies: [
-      { label: L("「大丈夫、ちゃんと進んでる。俺が保証する」", "\"We're good. We're moving forward — I guarantee it.\""), love: 9, bond: 8, mood: "happy", react: L("「……そっか。あんたがそう言うなら、信じられるよ」", "\"...Yeah. If you say so, I can believe it.\"") },
+      { label: L("「大丈夫、ちゃんと進んでる。あたしが保証する」", "\"We're good. We're moving forward — I guarantee it.\""), love: 9, bond: 8, mood: "happy", react: L("「……そっか。あんたがそう言うなら、信じられるよ」", "\"...Yeah. If you say so, I can believe it.\"") },
       { label: L("「不安なら練習で埋めろ。手を動かせ」", "\"Anxious? Drown it in practice. Keep your hands moving.\""), love: 2, bond: 10, stam: -4, mood: "fired", react: L("「……くっ、違いない。やってやるよ！」", "\"...Heh, can't argue with that. Let's do this!\"") },
-      { label: L("「わかる。俺も同じだよ」と弱音を共有", "\"I get it. I feel the same way\" — sharing the doubt"), love: 6, bond: 6, mood: "normal", react: L("「なんだ、あんたもか。ちょっと安心した」", "\"Huh, you too? That's kind of a relief.\"") },
+      { label: L("「わかる。あたしも同じだよ」と弱音を共有", "\"I get it. I feel the same way\" — sharing the doubt"), love: 6, bond: 6, mood: "normal", react: L("「なんだ、あんたもか。ちょっと安心した」", "\"Huh, you too? That's kind of a relief.\"") },
     ],
   },
   {
@@ -723,7 +723,7 @@ const MEMBER_EVENTS: MemberEvent[] = [
     bg: "backstage",
     line: L("「……お金、足りてる？ わたし、バイト増やそうか」", "\"...Are we okay on money? Maybe I should pick up more shifts.\""),
     replies: [
-      { label: L("「気にすんな。ここは俺が持つ」", "\"Don't worry about it. I've got this one.\""), love: 8, funds: -20_000, mood: "happy", react: L("「……そう。じゃあ、甘えとく。ありがと」", "\"...Okay. Then I'll lean on you. Thanks.\"") },
+      { label: L("「気にすんな。ここはあたしが持つ」", "\"Don't worry about it. I've got this one.\""), love: 8, funds: -20_000, mood: "happy", react: L("「……そう。じゃあ、甘えとく。ありがと」", "\"...Okay. Then I'll lean on you. Thanks.\"") },
       { label: L("「助かる。頼めるか？」", "\"That'd help. Can I count on you?\""), love: 5, funds: 30_000, stam: -4, mood: "normal", react: L("「ん。……たまには頼ってくれて、嬉しい」", "\"Mm. ...Nice to be relied on once in a while.\"") },
       { label: L("「金の心配より練習しろ」", "\"Forget the money, just practice.\""), love: -3, mood: "sad", react: L("「……そうだね。余計なこと言った」", "\"...You're right. Forget I said anything.\"") },
     ],
@@ -833,66 +833,146 @@ function pickIdxNoRepeat(state: GameState, key: string, len: number, rng: () => 
   return i;
 }
 
-/** One MC option: its line, which layers it flatters, base satisfaction, effect. */
-interface McOption { label: string; favored: Segment[]; base: number; extra?: (s: GameState) => void; note?: string }
+/** One MC line: its shout, the ONE audience segment it plays to, and an optional
+ *  side-effect. A script's three lines always use three DISTINCT segments, so
+ *  against any target crowd their resonances are three different values — which
+ *  is what guarantees exactly one 正解 / 普通 / 不正解 every time (see mcTiers). */
+interface McLine { label: string; seg: Segment; extra?: (s: GameState) => void; note?: string }
 
-/** 5 opening-MC scripts (第一声). Picked with no back-to-back repeats. */
-const LIVE_MC_SCRIPTS: McOption[][] = [
+const fameUp1: Pick<McLine, "extra" | "note"> = { note: L("・知名度+1", " / fame +1"), extra: (s) => { s.fame = Math.min(100, s.fame + 1); } };
+const unityUp = (n: number): Pick<McLine, "extra" | "note"> => ({ note: L(`・結束+${n}`, ` / unity +${n}`), extra: (s) => { s.bond = Math.min(100, s.bond + n); } });
+
+/** Opening-MC scripts (第一声). Picked with no back-to-back repeats. */
+const LIVE_MC_SCRIPTS: McLine[][] = [
   [
-    { label: L("「準備はいいかァ——ッ!? 声、聞かせろォ!!」", "\"You ready——!? Let me hear you SCREAM!!\""), favored: ["core", "light"], base: 3 },
-    { label: L("「俺たちがMetal Roadだ！ 名前、刻んで帰れ！」", "\"We're Metal Road! Carve the name in and take it home!\""), favored: ["light", "visual"], base: 3, note: L("・知名度+1", " / fame +1"), extra: (s) => { s.fame = Math.min(100, s.fame + 1); } },
-    { label: L("「……来てくれてありがとう。全部込める」", "\"...Thanks for coming. We'll pour everything in.\""), favored: ["expert", "core"], base: 3, note: L("・結束+4", " / unity +4"), extra: (s) => { s.bond = Math.min(100, s.bond + 4); } },
+    { label: L("「準備はいいかァ——ッ!? 声、聞かせろォ!!」", "\"You ready——!? Let me hear you SCREAM!!\""), seg: "core" },
+    { label: L("「あたしたちがMetal Roadだ！ 名前、刻んで帰れ！」", "\"We're Metal Road! Carve the name in and take it home!\""), seg: "light", ...fameUp1 },
+    { label: L("「……来てくれてありがとう。全部、音に込める」", "\"...Thanks for coming. We'll pour it all into the sound.\""), seg: "expert", ...unityUp(4) },
   ],
   [
-    { label: L("「今夜、暴れる覚悟はできてるかァ!?」", "\"You ready to go wild tonight!?\""), favored: ["core", "light"], base: 3 },
-    { label: L("「初めての奴も常連も、まとめて持ってく！」", "\"First-timers, regulars — we're taking all of you!\""), favored: ["light", "visual"], base: 3, note: L("・知名度+1", " / fame +1"), extra: (s) => { s.fame = Math.min(100, s.fame + 1); } },
-    { label: L("「今の俺たちの音、その目に焼きつけろ」", "\"Our sound, right now — burn it into your eyes.\""), favored: ["expert", "visual"], base: 3 },
+    { label: L("「今夜、暴れる覚悟はできてるかァ!?」", "\"You ready to go wild tonight!?\""), seg: "core" },
+    { label: L("「初めての奴も常連も、まとめて持ってく！」", "\"First-timers, regulars — we're taking all of you!\""), seg: "light", ...fameUp1 },
+    { label: L("「今のあたしたちの音、その目に焼きつけろ」", "\"Our sound, right now — burn it into your eyes.\""), seg: "visual" },
   ],
   [
-    { label: L("「声、限界まで出していけェ——!!」", "\"Push your voices to the limit——!!\""), favored: ["core", "light"], base: 3 },
-    { label: L("「ようこそ、俺たちの世界へ」", "\"Welcome to our world.\""), favored: ["visual", "light"], base: 3, note: L("・知名度+1", " / fame +1"), extra: (s) => { s.fame = Math.min(100, s.fame + 1); } },
-    { label: L("「難しい話は抜きだ。ぶちかますぞ」", "\"No fancy talk. Let's blow the roof off.\""), favored: ["core", "expert"], base: 3 },
+    { label: L("「声、限界まで出していけェ——!!」", "\"Push your voices to the limit——!!\""), seg: "core" },
+    { label: L("「ようこそ、あたしたちの世界へ」", "\"Welcome to our world.\""), seg: "visual", ...fameUp1 },
+    { label: L("「難しい話は抜きだ。本物、ぶちかますぞ」", "\"No fancy talk. We're blowing the roof off with the real thing.\""), seg: "expert" },
   ],
   [
-    { label: L("「ヘドバンの準備、いいなァ!?」", "\"Ready to headbang!?\""), favored: ["core", "light"], base: 3 },
-    { label: L("「今日を一生忘れられない夜にする」", "\"We're making tonight a night you'll never forget.\""), favored: ["visual", "expert"], base: 3, note: L("・結束+3", " / unity +3"), extra: (s) => { s.bond = Math.min(100, s.bond + 3); } },
-    { label: L("「ここからは無礼講だ。全部出せ！」", "\"No rules from here on. Give it everything!\""), favored: ["core", "light"], base: 3 },
+    { label: L("「ヘドバンの準備、いいなァ!?」", "\"Ready to headbang!?\""), seg: "core" },
+    { label: L("「今日を一生忘れられない夜にする」", "\"We're making tonight a night you'll never forget.\""), seg: "visual", ...unityUp(3) },
+    { label: L("「ここからは無礼講だ。とにかく楽しめ！」", "\"No rules from here on. Just have the time of your life!\""), seg: "light" },
   ],
   [
-    { label: L("「叫びたい奴、全員かかってこい!!」", "\"Anyone who wants to scream — bring it on, all of you!!\""), favored: ["core", "light"], base: 3 },
-    { label: L("「見せてやる、これがメタルロードだ」", "\"We'll show you — this is Metal Road.\""), favored: ["light", "visual"], base: 3, note: L("・知名度+1", " / fame +1"), extra: (s) => { s.fame = Math.min(100, s.fame + 1); } },
-    { label: L("「静かに始めよう……嵐の前の、な」", "\"Let's start quiet... the calm before the storm.\""), favored: ["expert", "visual"], base: 3 },
+    { label: L("「叫びたい奴、全員かかってこい!!」", "\"Anyone who wants to scream — bring it on, all of you!!\""), seg: "core" },
+    { label: L("「見せてやる、これがメタルロードだ」", "\"We'll show you — this is Metal Road.\""), seg: "light", ...fameUp1 },
+    { label: L("「静かに始めよう……嵐の前の、な」", "\"Let's start quiet... the calm before the storm.\""), seg: "expert" },
+  ],
+  [
+    { label: L("「今日は最高の一日にしようぜ、いくよ!!」", "\"Let's make today the best day ever — here we go!!\""), seg: "light", ...fameUp1 },
+    { label: L("「耳の肥えたお前らに、本気を聴かせる」", "\"For you sharp-eared lot — here's the real deal.\""), seg: "expert" },
+    { label: L("「体の芯まで歪ませてやる、覚悟しろ!!」", "\"We'll distort you down to your core — brace yourselves!!\""), seg: "core" },
+  ],
+  [
+    { label: L("「照明を落とせ。あたしたちの美学、見せる」", "\"Kill the lights. We'll show you our aesthetic.\""), seg: "visual", ...unityUp(3) },
+    { label: L("「一曲目からアクセル全開だァ!!」", "\"Pedal to the floor from the very first song!!\""), seg: "core" },
+    { label: L("「みんなで叫べば、怖いもんなんてない！」", "\"Scream together and there's nothing to fear!\""), seg: "light" },
+  ],
+  [
+    { label: L("「今日は攻めるぞ。玄人好みの一撃だ」", "\"We're going for the throat tonight — a connoisseur's strike.\""), seg: "expert" },
+    { label: L("「難しいことは抜き、とにかく踊れ!!」", "\"Forget the hard stuff — just dance!!\""), seg: "light", ...fameUp1 },
+    { label: L("「この一夜を、一枚の絵みたいに焼き付けろ」", "\"Burn tonight into memory like a painting.\""), seg: "visual" },
+  ],
+  [
+    { label: L("「地鳴りみたいなリフ、喰らえ!!」", "\"Take this — a riff like an earthquake!!\""), seg: "core" },
+    { label: L("「妖しく、美しく——夜を塗り替える」", "\"Bewitching, beautiful — we'll repaint the night.\""), seg: "visual" },
+    { label: L("「精緻に、獰猛に。技を刻んでいく」", "\"Precise and savage — we carve every technique.\""), seg: "expert" },
+  ],
+  [
+    { label: L("「ハイ、テンション上げてこ——!!」", "\"Alright, let's crank the energy up——!!\""), seg: "light", ...fameUp1 },
+    { label: L("「魂のこもった音しか、鳴らさねえ」", "\"We play nothing that isn't pure soul.\""), seg: "core" },
+    { label: L("「静寂の緊張から、爆ぜる。ついてこい」", "\"From dead silence, we detonate. Keep up.\""), seg: "expert" },
   ],
 ];
 
-/** 5 encore-MC scripts (間奏〜アンコールの煽り). Picked with no repeats. */
-const LIVE_ENCORE_MC_SCRIPTS: McOption[][] = [
+/** Encore-MC scripts (間奏〜アンコールの煽り). Picked with no repeats. */
+const LIVE_ENCORE_MC_SCRIPTS: McLine[][] = [
   [
-    { label: L("「もう一曲——付き合えるかァ!?」", "\"One more song——you still with us!?\""), favored: ["core", "light"], base: 3 },
-    { label: L("「最後まで声、枯らしていけ!!」", "\"Scream till your voices give out!!\""), favored: ["core", "light"], base: 3 },
-    { label: L("「この余韻、忘れんなよ」", "\"Don't forget this afterglow.\""), favored: ["expert", "visual"], base: 3 },
+    { label: L("「もう一曲——付き合えるかァ!?」", "\"One more song——you still with us!?\""), seg: "core" },
+    { label: L("「最後まで、笑顔で叫んでけ!!」", "\"Scream your heart out, smiling, to the very end!!\""), seg: "light" },
+    { label: L("「この余韻、目に焼き付けて帰れ」", "\"Burn this afterglow into your eyes before you go.\""), seg: "visual" },
   ],
   [
-    { label: L("「まだ帰さねえぞ、覚悟しろ!!」", "\"We're not letting you leave yet — brace yourselves!!\""), favored: ["core", "light"], base: 3 },
-    { label: L("「みんなで最高のラスト、作ろう」", "\"Let's build the best finale together.\""), favored: ["light", "visual"], base: 3 },
-    { label: L("「耳、澄ませてろ——本気の一発だ」", "\"Ears open——here comes the real one.\""), favored: ["expert", "core"], base: 3 },
+    { label: L("「まだ帰さねえぞ、覚悟しろ!!」", "\"We're not letting you leave yet — brace yourselves!!\""), seg: "core" },
+    { label: L("「みんなで最高のラスト、作ろう!!」", "\"Let's build the best finale together!!\""), seg: "light", ...fameUp1 },
+    { label: L("「耳、澄ませてろ——本気の一発だ」", "\"Ears open——here comes the real one.\""), seg: "expert" },
   ],
   [
-    { label: L("「アンコールありがとう！ ブチかますぞ!!」", "\"Thanks for the encore! Let's tear it up!!\""), favored: ["core", "light"], base: 3 },
-    { label: L("「今夜いちばんデカい声、聞かせろ!!」", "\"Give me the loudest you've got tonight!!\""), favored: ["core", "light"], base: 3 },
-    { label: L("「締めは、俺たちの美学を見せる」", "\"For the close, we show you our aesthetic.\""), favored: ["visual", "expert"], base: 3 },
+    { label: L("「アンコールありがとう！ ブチかますぞ!!」", "\"Thanks for the encore! Let's tear it up!!\""), seg: "core" },
+    { label: L("「今夜いちばんデカい声、聞かせろ!!」", "\"Give me the loudest you've got tonight!!\""), seg: "light" },
+    { label: L("「締めは、あたしたちの美学を見せる」", "\"For the close, we show you our aesthetic.\""), seg: "visual" },
   ],
   [
-    { label: L("「体力、まだ残ってるよなァ!?」", "\"You've still got energy left, right!?\""), favored: ["core", "light"], base: 3 },
-    { label: L("「一生分の思い出、置いてけ」", "\"Leave a lifetime of memories right here.\""), favored: ["visual", "expert"], base: 3 },
-    { label: L("「最後の一音まで、魂込める」", "\"We pour our souls into the very last note.\""), favored: ["expert", "core"], base: 3 },
+    { label: L("「体力、まだ残ってるよなァ!?」", "\"You've still got energy left, right!?\""), seg: "core" },
+    { label: L("「一生分の思い出、ここに置いてけ」", "\"Leave a lifetime of memories right here.\""), seg: "visual", ...unityUp(3) },
+    { label: L("「最後の一音まで、魂込める」", "\"We pour our souls into the very last note.\""), seg: "expert" },
   ],
   [
-    { label: L("「声が枯れるまで叫べェ!!」", "\"Scream until your voice cracks!!\""), favored: ["core", "light"], base: 3 },
-    { label: L("「この一体感、最高だろ？」", "\"This unity — it's the best, right?\""), favored: ["light", "core"], base: 3 },
-    { label: L("「幕引きは、静かに、美しく」", "\"We bring the curtain down quietly, beautifully.\""), favored: ["visual", "expert"], base: 3 },
+    { label: L("「声が枯れるまで叫べェ!!」", "\"Scream until your voice cracks!!\""), seg: "core" },
+    { label: L("「この一体感、最高だろ？」", "\"This unity — it's the best, right?\""), seg: "light" },
+    { label: L("「幕引きは、静かに、美しく」", "\"We bring the curtain down quietly, beautifully.\""), seg: "visual" },
+  ],
+  [
+    { label: L("「最後は技の応酬だ。刮目しろ」", "\"We close with a trade of techniques. Watch closely.\""), seg: "expert" },
+    { label: L("「ラストは全員でジャンプ!!」", "\"For the last one — everybody jump!!\""), seg: "light", ...fameUp1 },
+    { label: L("「限界の向こう、一緒に行くぞ!!」", "\"Past your limit — we go there together!!\""), seg: "core" },
+  ],
+  [
+    { label: L("「余韻すら、作品にしてみせる」", "\"We'll turn even the afterglow into art.\""), seg: "visual" },
+    { label: L("「まだ足りねえ、もっと寄越せ!!」", "\"Not enough yet — give me more!!\""), seg: "core" },
+    { label: L("「笑って終わろう、最高の夜だ!!」", "\"Let's end it laughing — what a night!!\""), seg: "light" },
+  ],
+  [
+    { label: L("「聴き逃すなよ、渾身のアウトロだ」", "\"Don't miss it — an outro with everything in it.\""), seg: "expert" },
+    { label: L("「ラストは耽美に、沈めてやる」", "\"For the finish, we sink you into pure decadence.\""), seg: "visual", ...unityUp(3) },
+    { label: L("「ぶっ壊れるまで鳴らすぞ!!」", "\"We play till it all falls apart!!\""), seg: "core" },
+  ],
+  [
+    { label: L("「アンコール、もうひと暴れいくよ!!」", "\"Encore — one more rampage, let's go!!\""), seg: "light", ...fameUp1 },
+    { label: L("「締めこそ、細部に神を宿す」", "\"In the close, the devil's in the details.\""), seg: "expert" },
+    { label: L("「地の底から突き上げる、最後の一撃!!」", "\"A final blow, thrust up from the abyss!!\""), seg: "core" },
+  ],
+  [
+    { label: L("「夜を閉じる、美しい一曲を」", "\"A beautiful song to close the night.\""), seg: "visual" },
+    { label: L("「みんなの声が、今日の主役だ!!」", "\"Your voices are the star of tonight!!\""), seg: "light" },
+    { label: L("「最後の音符に、全部賭ける」", "\"We bet everything on the final note.\""), seg: "expert" },
   ],
 ];
+
+/** Audience resonance to the night's target crowd. 3 = the crowd itself,
+ *  2 = its allied crowd, 1 = neutral, 0 = the opposed crowd. Because these are a
+ *  bijection over the four segments, any THREE DISTINCT segments map to three
+ *  distinct values — the property the 正解/普通/不正解 ranking relies on. */
+const SEG_ALLY: Record<Segment, Segment> = { visual: "light", light: "visual", core: "expert", expert: "core" };
+const resonance = (target: Segment, seg: Segment): number =>
+  seg === target ? 3 : SEG_ALLY[target] === seg ? 2 : OPPOSED[target] === seg ? 0 : 1;
+
+/** Rank items with a `seg` against the target and return each item's tier in the
+ *  ORIGINAL order (0 = 正解 / 1 = 普通 / 2 = 不正解). Ties break by index, so the
+ *  result is always exactly one of each tier when the segs are distinct. */
+function segTiers<T extends { seg: Segment }>(items: T[], target: Segment): number[] {
+  const ranked = items
+    .map((it, i) => ({ i, r: resonance(target, it.seg) }))
+    .sort((a, b) => b.r - a.r || a.i - b.i);
+  const tier = new Array<number>(items.length);
+  ranked.forEach((o, rank) => { tier[o.i] = rank; });
+  return tier;
+}
+/** Satisfaction by tier: 正解 / 普通 / 不正解. Middle (普通) is set near the old
+ *  flat payoff so unoptimized play keeps the tuned difficulty; the spread makes a
+ *  right read clearly better and a wrong one a real (but survivable) cost. */
+const TIER_SAT = [7, 5, 2] as const;
 
 const SOLO_INSTR: Record<string, string> = { RYO: L("ボーカル", "Vocals"), KEN: L("ギター", "Guitar"), MIO: L("ベース", "Bass"), GO: L("ドラム", "Drums") };
 const SOLO_BURST: Record<string, string> = {
@@ -901,8 +981,6 @@ const SOLO_BURST: Record<string, string> = {
   MIO: L("の重低音が地面ごと客を揺らし、地鳴りの縦ノリが起きる", "'s low end shakes the ground and the crowd with it, a rumbling wave of headbanging erupts"),
   GO: L("の連打がBPMをねじ上げ、モッシュの渦が爆ぜる", "'s barrage cranks up the BPM and a mosh pit bursts open"),
 };
-
-const MATCH_BONUS = 2;
 
 /** Each instrument (part) resonates with one audience segment — this drives the
  *  live "solo" bonus (the band's overall stats drive the rest of the show). */
@@ -914,10 +992,6 @@ export const SOLO_AFFINITY: Record<string, Segment> = {
 };
 /** The audience segment a part is the "ace" soloist for. */
 export const partAffinity = (artKey: string): Segment | undefined => SOLO_AFFINITY[artKey];
-/** The non-leader whose instrument is the ace for the target crowd (or none —
- *  e.g. when that ace is the frontperson/leader, who does MC not the solo). */
-const bestSoloistKey = (s: GameState, t: Segment): string | undefined =>
-  nonLeaders(s).find((m) => SOLO_AFFINITY[m.artKey] === t)?.artKey;
 
 /** Pre-show, now a two-round set (本編 → 間奏MC → アンコール). Each choice's
  *  payoff and reaction depend on the target fan layer and member 相性. */
@@ -930,31 +1004,86 @@ export function buildLivePreScenes(state: GameState, decision: LiveDecision, rng
   const seg = segLabel(target);
   const others = nonLeaders(state).map((m) => m.artKey);
   const bud = pick(rng, others);
-  const ideal = bestSoloistKey(state, target); // the member who best fits the target layer
   const react = (member: string, mood: Mood, text: string, fx?: Scene["fx"]): Scene => ({
     bg, chars: [{ member, pos: "center", mood }], speaker: nameOf(state, member), text, fx,
   });
-  // A choice whose satisfaction and reaction depend on fitting the target layer.
-  const fit = (
-    label: string,
-    favored: Segment[],
-    base: number,
-    whenMatch: (sat: number) => Scene,
-    whenMiss: (sat: number) => Scene,
-    extra?: (s: GameState) => void,
-  ) => {
-    const matched = favored.includes(target);
-    const sat = base + (matched ? MATCH_BONUS : 0);
-    return { label, apply: (s: GameState) => { s.buffs.liveSat += sat; extra?.(s); }, next: [matched ? whenMatch(sat) : whenMiss(sat)] };
+  // MC reaction, keyed to the choice's rank against tonight's crowd (0=正解,
+  // 1=普通, 2=不正解). Wording differs for the opening vs the encore.
+  const mcReact = (phase: "open" | "encore", tier: number, sat: number, note: string): Scene => {
+    if (phase === "open") {
+      if (tier === 0) return react(bud, "fired", L(`${nameOf(state, bud)}の第一声に客席が爆発！ ${seg}層のど真ん中に突き刺さった！（満足度+${sat}${note}）`, `${nameOf(state, bud)}'s opening call blows the crowd up! It hit ${seg} fans dead center! (satisfaction +${sat}${note})`), "shake");
+      if (tier === 1) return react(bud, "normal", L(`煽りはしっかり通った。${seg}層もそれなりに温まってきた。（満足度+${sat}${note}）`, `The call landed cleanly. ${seg} fans are warming up nicely too. (satisfaction +${sat}${note})`));
+      return react(bud, "sad", L(`……少し空回り。${seg}層の食いつきは今ひとつだ。（満足度+${sat}${note}）`, `...It spun its wheels a little. ${seg} fans didn't quite bite. (satisfaction +${sat}${note})`));
+    }
+    if (tier === 0) return react(bud, "fired", L(`締めの一撃が突き刺さった！ ${seg}層が最後の力で咆哮を返す！（満足度+${sat}${note}）`, `The closing blow lands! ${seg} fans roar back with the last of their strength! (satisfaction +${sat}${note})`), "shake");
+    if (tier === 1) return react(bud, "normal", L(`熱はしっかり保った。${seg}層、悪くない乗りだ。（満足度+${sat}${note}）`, `The heat held. ${seg} fans, a decent groove. (satisfaction +${sat}${note})`));
+    return react(bud, "sad", L(`勢い任せが少し裏目。${seg}層はふっと冷めかけた。（満足度+${sat}${note}）`, `Running on momentum backfired a touch. ${seg} fans nearly cooled off. (satisfaction +${sat}${note})`));
   };
-  // Build one MC option from a script entry, with shared match/miss reactions.
-  const mkMc = (o: McOption) => fit(o.label, o.favored, o.base,
-    (sat) => react(bud, "fired", L(`${nameOf(state, bud)}と客席が呼応！ ${seg}層のど真ん中に突き刺さった！（満足度+${sat}${o.note ?? ""}）`, `${nameOf(state, bud)} and the crowd feed off each other! It hit ${seg} fans dead center! (satisfaction +${sat}${o.note ?? ""})`), "shake"),
-    (sat) => react(bud, "normal", L(`煽りはしっかり通った。が、${seg}層への刺さりはそこそこ。（満足度+${sat}${o.note ?? ""}）`, `The call landed cleanly. But for ${seg} fans, it only connected so-so. (satisfaction +${sat}${o.note ?? ""})`)),
-    o.extra);
-  // 5-pattern scripts, no back-to-back repeats.
-  const mcChoices = LIVE_MC_SCRIPTS[pickIdxNoRepeat(state, "liveMc", LIVE_MC_SCRIPTS.length, rng)].map(mkMc);
-  const encChoices = LIVE_ENCORE_MC_SCRIPTS[pickIdxNoRepeat(state, "liveEncoreMc", LIVE_ENCORE_MC_SCRIPTS.length, rng)].map(mkMc);
+  // Turn a 3-line script into 3 ranked choices (exactly one 正解/普通/不正解).
+  const mkMcChoices = (lines: McLine[], phase: "open" | "encore"): SceneChoice[] => {
+    const tiers = segTiers(lines, target);
+    return lines.map((o, i) => {
+      const tier = tiers[i];
+      const sat = TIER_SAT[tier];
+      const note = o.note ?? "";
+      return { label: o.label, apply: (s: GameState) => { s.buffs.liveSat += sat; o.extra?.(s); }, next: [mcReact(phase, tier, sat, note)] };
+    });
+  };
+  const mcChoices = mkMcChoices(LIVE_MC_SCRIPTS[pickIdxNoRepeat(state, "liveMc", LIVE_MC_SCRIPTS.length, rng)], "open");
+  const encChoices = mkMcChoices(LIVE_ENCORE_MC_SCRIPTS[pickIdxNoRepeat(state, "liveEncoreMc", LIVE_ENCORE_MC_SCRIPTS.length, rng)], "encore");
+
+  // Solo trade: rank the three non-leaders by how their instrument's crowd fits
+  // the target (each part has a distinct affinity → one 正解/普通/不正解).
+  const soloItems = others.map((art) => ({ art, seg: SOLO_AFFINITY[art] }));
+  const soloTiers = segTiers(soloItems, target);
+  const SOLO_SAT = [6, 5, 3] as const; // a solo always fires the crowd up somewhat
+  const soloChoices: SceneChoice[] = soloItems.map((it, i) => {
+    const tier = soloTiers[i];
+    const sat = SOLO_SAT[tier];
+    const art = it.art;
+    const nm = nameOf(state, art);
+    const burst = SOLO_BURST[art] ?? L("のソロが炸裂", "'s solo detonates");
+    const line =
+      tier === 0
+        ? react(art, "fired", L(`${nm}${burst}！ ${seg}層のツボにドハマり、大爆発だ！（満足度+${sat}・${nm}の愛情度+3）`, `${nm}${burst}! It hits the ${seg} sweet spot dead-on — total explosion! (satisfaction +${sat} / ${nm} affection +3)`), "shake")
+        : tier === 1
+        ? react(art, "fired", L(`${nm}${burst}！ 客席が大きくどよめく、確かな見せ場だ。（満足度+${sat}・${nm}の愛情度+3）`, `${nm}${burst}! The crowd surges — a real showcase moment. (satisfaction +${sat} / ${nm} affection +3)`), "shake")
+        : react(art, "normal", L(`${nm}${burst}！ 沸くには沸くが、${seg}層への刺さりは今ひとつ。（満足度+${sat}・${nm}の愛情度+3）`, `${nm}${burst}! The crowd goes off, but for ${seg} fans it only connects so-so. (satisfaction +${sat} / ${nm} affection +3)`));
+    return {
+      label: L(`「${SOLO_INSTR[art] ?? "ソロ"}——${nm}ッ!!」`, `"${SOLO_INSTR[art] ?? L("ソロ", "Solo")}——${nm}!!"`),
+      apply: (s: GameState) => { s.buffs.liveSat += sat; addLove(s, art, 3); },
+      next: [line],
+    };
+  });
+
+  // Last-song close: three thematic finishers, each aimed at a distinct crowd,
+  // ranked the same way (extras always apply; satisfaction follows the rank).
+  interface CloseItem { label: string; seg: Segment; extra?: (s: GameState) => void; hit: (sat: number) => Scene; other: (sat: number) => Scene }
+  const closeItems: CloseItem[] = [
+    {
+      label: L("定番曲でブチ上げてフィニッシュ", "Finish big with a crowd favorite"), seg: "light",
+      hit: (sat) => react(bud, "fired", L(`全員大合唱、会場が一つの生き物になる。${seg}層、大満足の大団円！（満足度+${sat}）`, `Everyone sings along, the venue becomes one living thing. ${seg} fans, a triumphant, thrilled finale! (satisfaction +${sat})`), "flash"),
+      other: (sat) => react(bud, "happy", L(`手堅く締める。しっかり温まった。（満足度+${sat}）`, `A safe, solid close. Nicely warmed up. (satisfaction +${sat})`)),
+    },
+    {
+      label: L("出来たばかりの未発表曲で勝負を賭ける", "Gamble on a brand-new unreleased song"), seg: "expert",
+      extra: (s) => { s.fame = Math.min(100, s.fame + 1); },
+      hit: (sat) => react(bud, "fired", L(`攻めの未発表曲——耳の肥えた${seg}層が唸り、深く頷く。挑戦が実った！（満足度+${sat}・知名度+1）`, `A daring unreleased song——discerning ${seg} fans murmur and nod deep. The gamble paid off! (satisfaction +${sat} / fame +1)`), "flash"),
+      other: (sat) => react(bud, "normal", L(`出来たばかりの一曲を叩きつける。反応は分かれたが、爪痕は残した。（満足度+${sat}・知名度+1）`, `You slam down a freshly written track. Reactions were split, but you left a mark. (satisfaction +${sat} / fame +1)`)),
+    },
+    {
+      label: L("バラードでしっとり締める", "Close softly with a ballad"), seg: "visual",
+      extra: (s) => { s.bond = Math.min(100, s.bond + 3); },
+      hit: (sat) => react(lead, "happy", L(`揺れる無数のライト。${seg}層がうっとりと聴き入る、美しい幕引き。（満足度+${sat}・結束+3）`, `Countless lights sway. ${seg} fans listen, entranced — a beautiful curtain call. (satisfaction +${sat} / unity +3)`), "flash"),
+      other: (sat) => react(lead, "normal", L(`余韻を残して締める。悪くない、が熱量はやや落ち着いた。（満足度+${sat}・結束+3）`, `You close on a lingering note. Not bad, though the heat settled a touch. (satisfaction +${sat} / unity +3)`)),
+    },
+  ];
+  const closeTiers = segTiers(closeItems, target);
+  const closeChoices: SceneChoice[] = closeItems.map((it, i) => {
+    const tier = closeTiers[i];
+    const sat = TIER_SAT[tier];
+    return { label: it.label, apply: (s: GameState) => { s.buffs.liveSat += sat; it.extra?.(s); }, next: [tier === 0 ? it.hit(sat) : it.other(sat)] };
+  });
 
   return [
     {
@@ -968,21 +1097,11 @@ export function buildLivePreScenes(state: GameState, decision: LiveDecision, rng
       text: L(`【本編・MC】${seg}層で埋まった客席へ、第一声は？`, `[Main Set / MC] The house is packed with ${seg} fans. Your opening line?`),
       choices: mcChoices,
     },
-    // === 本編：ソロ回し（相性＝ターゲット最適メンバー）===
+    // === 本編：ソロ回し（パート特性＝ターゲット最適メンバー / 正解・普通・不正解）===
     {
       bg, chars: [{ member: lead, pos: "center", mood: "fired" }], speaker: lname,
       text: L(`【本編・ソロ回し】曲が最高潮。ここぞの見せ場、誰に振る？（${seg}層に刺さるのは…？）`, `[Main Set / Solo trade] The song peaks. Who gets the spotlight moment? (Who lands with ${seg} fans...?)`),
-      choices: others.map((art) => {
-        const matched = art === ideal;
-        const sat = 3 + (matched ? MATCH_BONUS : 0);
-        return {
-          label: L(`「${SOLO_INSTR[art] ?? "ソロ"}——${nameOf(state, art)}ッ!!」`, `"${SOLO_INSTR[art] ?? L("ソロ", "Solo")}——${nameOf(state, art)}!!"`),
-          apply: (s: GameState) => { s.buffs.liveSat += sat; addLove(s, art, 3); },
-          next: [matched
-            ? react(art, "fired", L(`${nameOf(state, art)}${SOLO_BURST[art] ?? "のソロが炸裂"}！${seg}層のツボにドハマり、大爆発だ！（満足度+${sat}・${nameOf(state, art)}の愛情度+3）`, `${nameOf(state, art)}${SOLO_BURST[art] ?? L("のソロが炸裂", "'s solo detonates")}! It hits the ${seg} sweet spot dead-on — total explosion! (satisfaction +${sat} / ${nameOf(state, art)} affection +3)`), "shake")
-            : react(art, "fired", L(`${nameOf(state, art)}${SOLO_BURST[art] ?? "のソロが炸裂"}！ 沸くには沸くが、${seg}層への刺さりはそこそこ。（満足度+${sat}・${nameOf(state, art)}の愛情度+3）`, `${nameOf(state, art)}${SOLO_BURST[art] ?? L("のソロが炸裂", "'s solo detonates")}! The crowd goes off, but for ${seg} fans it only connects so-so. (satisfaction +${sat} / ${nameOf(state, art)} affection +3)`), "shake")],
-        };
-      }),
+      choices: soloChoices,
     },
     // === アンコール導入 ===
     {
@@ -990,29 +1109,17 @@ export function buildLivePreScenes(state: GameState, decision: LiveDecision, rng
       text: L("本編ラスト——照明が落ちても鳴り止まぬ「アンコール！」の大合唱。もう一度、ステージへ！", "End of the main set——even with the lights down, the \"Encore!\" chant won't stop. Back to the stage, once more!"),
       fx: "flash",
     },
-    // === アンコール：間奏MC（5パターン・連続同一なし）===
+    // === アンコール：間奏MC（連続同一なし / 正解・普通・不正解）===
     {
       bg, chars: [{ member: lead, pos: "center", mood: "fired" }], speaker: lname,
       text: L("【アンコール・MC】再びマイクを取る。締めの煽り、どういく？", "[Encore / MC] You grab the mic again. How do you rile them up for the close?"),
       choices: encChoices,
     },
-    // === アンコール：ラストソングの締め ===
+    // === アンコール：ラストソングの締め（正解・普通・不正解）===
     {
       bg, chars: [{ member: lead, pos: "center", mood: "fired" }], speaker: lname,
       text: L("【アンコール・締め】ラストソング。どう終わらせる？", "[Encore / Close] The last song. How do you end it?"),
-      choices: [
-        fit(L("定番曲でブチ上げてフィニッシュ", "Finish big with a crowd favorite"), ["core", "light"], 4,
-          (sat) => react(bud, "fired", L(`全員大合唱、会場が一つの生き物になる。${seg}層、大満足の大団円！（満足度+${sat}）`, `Everyone sings along, the venue becomes one living thing. ${seg} fans, a triumphant, thrilled finale! (satisfaction +${sat})`), "flash"),
-          (sat) => react(bud, "happy", L(`手堅く締める。しっかり温まった。（満足度+${sat}）`, `A safe, solid close. Nicely warmed up. (satisfaction +${sat})`))),
-        fit(L("出来たばかりの未発表曲で勝負を賭ける", "Gamble on a brand-new unreleased song"), ["expert", "core"], 4,
-          (sat) => react(bud, "fired", L(`攻めの未発表曲——耳の肥えた${seg}層が唸り、深く頷く。挑戦が実った！（満足度+${sat}・知名度+1）`, `A daring unreleased song——discerning ${seg} fans murmur and nod deep. The gamble paid off! (satisfaction +${sat} / fame +1)`), "flash"),
-          (sat) => react(bud, "normal", L(`出来たばかりの一曲を叩きつける。反応は分かれたが、爪痕は残した。（満足度+${sat}・知名度+1）`, `You slam down a freshly written track. Reactions were split, but you left a mark. (satisfaction +${sat} / fame +1)`)),
-          (s) => { s.fame = Math.min(100, s.fame + 1); }),
-        fit(L("バラードでしっとり締める", "Close softly with a ballad"), ["visual", "expert"], 4,
-          (sat) => react(lead, "happy", L(`揺れる無数のライト。${seg}層がうっとりと聴き入る、美しい幕引き。（満足度+${sat}・結束+3）`, `Countless lights sway. ${seg} fans listen, entranced — a beautiful curtain call. (satisfaction +${sat} / unity +3)`), "flash"),
-          (sat) => react(lead, "normal", L(`余韻を残して締める。悪くない、が熱量はやや落ち着いた。（満足度+${sat}・結束+3）`, `You close on a lingering note. Not bad, though the heat settled a touch. (satisfaction +${sat} / unity +3)`)),
-          (s) => { s.bond = Math.min(100, s.bond + 3); }),
-      ],
+      choices: closeChoices,
     },
   ];
 }
@@ -1449,7 +1556,7 @@ const LEADER_ARC: Record<string, Record<string, (s: GameState, lead: string, nm:
         choices: [
           { label: L("「音で黙らせてやれ」と焚きつける", "\"Silence them with your sound\" — fire her up"), apply: (st) => { addParam(st, "S", 1); addLove(st, lead, 3); pushLog(st, L("個別STORY：NAOに火がついた（センス+1・愛情度+3）", "Personal STORY: lit a fire in NAO (Songcraft +1 / affection +3)")); },
             next: [solo(s, "studio", lead, "fired", L("「……ああ。俺の速弾きが、本物だって証明してやる。」瞳に、静かな炎。（センス+1・愛情度+3）", "\"...Yeah. I'll prove my shredding is the real thing.\" A quiet flame in her eyes. (Songcraft +1 / affection +3)"), "flash")] },
-          { label: L("「気にするな。俺たちが家族だ」", "\"Don't mind them. We're your family.\""), apply: (st) => { addLove(st, lead, 6); st.bond = Math.min(100, st.bond + 4); pushLog(st, L("個別STORY：NAOに寄り添った（愛情度+6・結束+4）", "Personal STORY: stood by NAO (affection +6 / unity +4)")); },
+          { label: L("「気にするな。あたしたちが家族だ」", "\"Don't mind them. We're your family.\""), apply: (st) => { addLove(st, lead, 6); st.bond = Math.min(100, st.bond + 4); pushLog(st, L("個別STORY：NAOに寄り添った（愛情度+6・結束+4）", "Personal STORY: stood by NAO (affection +6 / unity +4)")); },
             next: [solo(s, "studio", lead, "happy", L("「……そう、だな。ここが、俺の居場所か。」手紙をそっと畳んだ。（愛情度+6・結束+4）", "\"...Yeah. So this is where I belong.\" She quietly folded the letter away. (affection +6 / unity +4)"), "flash")] },
         ],
       },
