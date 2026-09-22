@@ -19,6 +19,7 @@ import {
   isCardLocked,
   itemDef,
   nameOf,
+  partAffinity,
   recruitableRoles,
   reqValue,
   staminaTag,
@@ -175,8 +176,13 @@ function memberCard(m: Member): string {
       </div>
       <div class="minfo">
         <div class="mname">${esc(m.name)}${m.isLeader ? ' <span class="leadtag">YOU</span>' : `<span class="love">${loveHearts(m.love)}</span>`}</div>
+        ${(() => {
+          const seg = partAffinity(m.artKey);
+          return seg
+            ? `<div class="solotag">${L("ソロで沸く客層", "Solo crowd")}：<b>${segLabel(seg)}</b></div>`
+            : "";
+        })()}
         <div class="gauges">
-          ${PARAMS.map((p) => gaugeRow(paramLabel(p), m[p])).join("")}
           ${gaugeRow(L("体力", "Stamina"), m.stamina, "stamina")}
         </div>
       </div>

@@ -2,7 +2,7 @@
 // Progression is a monthly loop: turnsPerMonth action cards, then a live.
 // See docs/phase1-cards.md.
 
-import { bandParam, K, SEG_WEIGHTS } from "./coreLoop";
+import { bandParam, K } from "./coreLoop";
 import { EVO_LOOK, evolutionInfix } from "./evolution";
 import { acceptTieup, initMarket, leanToward, tickMarket } from "./market";
 import { IS_SHORT } from "./edition";
@@ -75,12 +75,16 @@ export const canRecruit = (s: GameState): boolean =>
   s.rank === "major" && s.staff.length < STAFF_CAP && recruitableRoles(s).length > 0;
 
 /** The four founding members (Vo/Gt/Ba/Dr). artKey is the sprite key. */
+// The band shares ONE ability profile (no per-member stat differences): every
+// member starts identical, and practice raises them together. Values = the
+// band-level T/P/S/V (equal to the old roster's mean, so appeal is unchanged).
 function initialMembers(): Member[] {
+  const base = { T: 58, P: 50, S: 50, V: 47, stamina: 100, love: 30 } as const;
   return [
-    { name: "RISA", artKey: "RYO", part: "Vo", isLeader: false, T: 48, P: 60, S: 52, V: 58, stamina: 100, love: 30 },
-    { name: "NAO", artKey: "KEN", part: "Gt", isLeader: false, T: 64, P: 50, S: 55, V: 46, stamina: 100, love: 30 },
-    { name: "MAKO", artKey: "MIO", part: "Ba", isLeader: false, T: 58, P: 46, S: 50, V: 44, stamina: 100, love: 30 },
-    { name: "TOMO", artKey: "GO", part: "Dr", isLeader: false, T: 62, P: 44, S: 42, V: 40, stamina: 100, love: 30 },
+    { name: "RISA", artKey: "RYO", part: "Vo", isLeader: false, ...base },
+    { name: "NAO", artKey: "KEN", part: "Gt", isLeader: false, ...base },
+    { name: "MAKO", artKey: "MIO", part: "Ba", isLeader: false, ...base },
+    { name: "TOMO", artKey: "GO", part: "Dr", isLeader: false, ...base },
   ];
 }
 
@@ -100,8 +104,6 @@ export function newGame(part = "Vo", leaderName = "", rng: () => number = Math.r
   const leader = members.find((m) => m.artKey === artKey)!;
   leader.isLeader = true;
   if (leaderName.trim()) leader.name = leaderName.trim().slice(0, 12);
-  // small leader bonus in their part's signature stat
-  leader.P = clampStat(leader.P + 4);
 
   const state: GameState = {
     month: 1,
@@ -881,14 +883,22 @@ const SOLO_BURST: Record<string, string> = {
   GO: L("の連打がBPMをねじ上げ、モッシュの渦が爆ぜる", "'s barrage cranks up the BPM and a mosh pit bursts open"),
 };
 
-/** How well a member's stats fit a target layer (higher = better solo pick). */
 const MATCH_BONUS = 2;
-const segFit = (m: Member, t: Segment): number =>
-  (["T", "P", "S", "V"] as Param[]).reduce((a, p) => a + SEG_WEIGHTS[t][p] * m[p], 0);
-const bestSoloistKey = (s: GameState, t: Segment): string => {
-  const cand = nonLeaders(s);
-  return cand.reduce((best, m) => (segFit(m, t) > segFit(best, t) ? m : best), cand[0]).artKey;
+
+/** Each instrument (part) resonates with one audience segment — this drives the
+ *  live "solo" bonus (the band's overall stats drive the rest of the show). */
+export const SOLO_AFFINITY: Record<string, Segment> = {
+  RYO: "visual", // Vo: フロントの華 → 映え(ビジュ)
+  KEN: "core", //   Gt: 技巧・硬派 → 王道(コア)
+  MIO: "expert", // Ba: 重低音・玄人好み → 玄人
+  GO: "light", //   Dr: ノリ・盛り上げ → ライト
 };
+/** The audience segment a part is the "ace" soloist for. */
+export const partAffinity = (artKey: string): Segment | undefined => SOLO_AFFINITY[artKey];
+/** The non-leader whose instrument is the ace for the target crowd (or none —
+ *  e.g. when that ace is the frontperson/leader, who does MC not the solo). */
+const bestSoloistKey = (s: GameState, t: Segment): string | undefined =>
+  nonLeaders(s).find((m) => SOLO_AFFINITY[m.artKey] === t)?.artKey;
 
 /** Pre-show, now a two-round set (本編 → 間奏MC → アンコール). Each choice's
  *  payoff and reaction depend on the target fan layer and member 相性. */
@@ -1585,12 +1595,12 @@ export function buildFormationScenes(state: GameState): Scene[] {
   ];
 }
 
-/** Per-member intro: part, personality, signature stats. Leader is tagged. */
-const MEMBER_BLURB: Record<string, { tag: string; mood: Mood; stat: string; line: string }> = {
-  RYO: { tag: L("Vo / ボーカル", "Vo / Vocals"), mood: "fired", stat: L("パフォーマンス・ビジュ力", "Performance & Looks"), line: L("喉ひとつで会場を掌握するカリスマ・フロントウーマン。目立ちたがりで、いつも本気の一歩手前……らしい。", "A charismatic frontwoman who commands a venue with her voice alone. A born show-off, always one step short of full seriousness... supposedly.") },
-  KEN: { tag: L("Gt / ギター", "Gt / Guitar"), mood: "normal", stat: L("演奏基礎・音楽センス", "Musicianship & Songcraft"), line: L("理想の音を追い求めるクールな職人肌。速弾きとリフ作りにかけては一切妥協しない。", "A cool, craftsman-type who chases her ideal sound. When it comes to shredding and riff-writing, she never compromises.") },
-  MIO: { tag: L("Ba / ベース", "Ba / Bass"), mood: "normal", stat: L("演奏基礎・音楽センス", "Musicianship & Songcraft"), line: L("無口だが芯は誰より熱い。地を這う低音で、バンドの土台を静かに支える。", "Quiet, but hotter at the core than anyone. With low end that crawls along the ground, she quietly holds up the band's foundation.") },
-  GO: { tag: L("Dr / ドラム", "Dr / Drums"), mood: "happy", stat: L("演奏基礎・体力", "Musicianship & Stamina"), line: L("元・陸上部のパワフルドラマー。とにかく元気で、手数の暴力でバンドを前へ引っぱる。", "An ex-track-team powerhouse drummer. Relentlessly energetic, she drags the band forward with sheer barrages of hits.") },
+/** Per-member intro: part, personality, and the crowd their solo shines with. */
+const MEMBER_BLURB: Record<string, { tag: string; mood: Mood; solo: string; line: string }> = {
+  RYO: { tag: L("Vo / ボーカル", "Vo / Vocals"), mood: "fired", solo: L("喉ひとつで沸かせる魅せのボーカル", "show-stopping vocals that own the stage"), line: L("喉ひとつで会場を掌握するカリスマ・フロントウーマン。目立ちたがりで、いつも本気の一歩手前……らしい。", "A charismatic frontwoman who commands a venue with her voice alone. A born show-off, always one step short of full seriousness... supposedly.") },
+  KEN: { tag: L("Gt / ギター", "Gt / Guitar"), mood: "normal", solo: L("鋭いリフと速弾きのギター", "razor riffs and blistering guitar solos"), line: L("理想の音を追い求めるクールな職人肌。速弾きとリフ作りにかけては一切妥協しない。", "A cool, craftsman-type who chases her ideal sound. When it comes to shredding and riff-writing, she never compromises.") },
+  MIO: { tag: L("Ba / ベース", "Ba / Bass"), mood: "normal", solo: L("地を這う重低音のベース", "low end that crawls along the ground"), line: L("無口だが芯は誰より熱い。地を這う低音で、バンドの土台を静かに支える。", "Quiet, but hotter at the core than anyone. With low end that crawls along the ground, she quietly holds up the band's foundation.") },
+  GO: { tag: L("Dr / ドラム", "Dr / Drums"), mood: "happy", solo: L("手数で押し切るパワフルなドラム", "a relentless barrage of powerful drumming"), line: L("元・陸上部のパワフルドラマー。とにかく元気で、手数の暴力でバンドを前へ引っぱる。", "An ex-track-team powerhouse drummer. Relentlessly energetic, she drags the band forward with sheer barrages of hits.") },
 };
 
 /** Introduce all four members (Vo→Gt→Ba→Dr), tagging the player's own. */
@@ -1599,7 +1609,11 @@ export function buildMemberIntros(state: GameState): Scene[] {
     const m = state.members.find((x) => x.artKey === art)!;
     const b = MEMBER_BLURB[art];
     const you = m.isLeader ? L("（＝あなた）", " (= You)") : "";
-    return solo(state, "studio", art, b.mood, L(`【${b.tag}】${nameOf(state, art)}${you}\n\n${b.line}\n\n★得意ステータス：${b.stat}`, `[${b.tag}] ${nameOf(state, art)}${you}\n\n${b.line}\n\n★ Signature stats: ${b.stat}`), "flash");
+    const seg = partAffinity(art);
+    const soloLine = seg
+      ? L(`★ライブのソロで${segLabel(seg)}層が沸く：${b.solo}`, `★ Solos land with ${segLabel(seg)} fans: ${b.solo}`)
+      : "";
+    return solo(state, "studio", art, b.mood, L(`【${b.tag}】${nameOf(state, art)}${you}\n\n${b.line}\n\n${soloLine}`, `[${b.tag}] ${nameOf(state, art)}${you}\n\n${b.line}\n\n${soloLine}`), "flash");
   });
 }
 
@@ -1607,8 +1621,9 @@ export function buildMemberIntros(state: GameState): Scene[] {
 export function buildStatPrimer(state: GameState): Scene[] {
   const lead = leaderArt(state);
   return [
-    scene("studio", [lead], L("【能力の見かた】メンバーは４つの能力を持つ。\n\n🥁 演奏基礎(T)…土台の演奏力／🎤 パフォーマンス(P)…ステージでの魅せ／🎼 音楽センス(S)…曲・アレンジの質／🖤 ビジュ力(V)…見た目の華。", "[Reading the stats] Each member has four abilities.\n\n🥁 Musicianship (T)... core playing ability / 🎤 Performance (P)... stage presence / 🎼 Songcraft (S)... song & arrangement quality / 🖤 Looks (V)... visual flair."), { fx: "flash" }),
+    scene("studio", [lead], L("【能力の見かた】バンドは４つの能力を持つ。\n\n🥁 演奏基礎(T)…土台の演奏力／🎤 パフォーマンス(P)…ステージでの魅せ／🎼 音楽センス(S)…曲・アレンジの質／🖤 ビジュ力(V)…見た目の華。練習や作曲でバンド全体を伸ばしていく。", "[Reading the stats] The band has four abilities.\n\n🥁 Musicianship (T)... core playing ability / 🎤 Performance (P)... stage presence / 🎼 Songcraft (S)... song & arrangement quality / 🖤 Looks (V)... visual flair. Practice and composing raise the whole band."), { fx: "flash" }),
     scene("studio", [lead], L("客層によって刺さる能力は違う。\n\nコア＝演奏基礎＆センス／玄人＝演奏基礎＆センス／ビジュ＝ビジュ力＆パフォ／ライト＝パフォ＆ビジュ。狙う客層に合わせて能力を伸ばすのがコツだ。", "Different audiences respond to different abilities.\n\nCore = Musicianship & Songcraft / Connoisseur = Musicianship & Songcraft / Visual = Looks & Performance / Casual = Performance & Looks. The trick is to grow abilities to match the audience you're targeting.")),
+    scene("studio", [lead], L("ライブのソロ枠では、パートごとの特性で刺さる客層が変わる。ギターはコア、ベースは玄人、ボーカルはビジュ、ドラムはライト——狙う客層と得意なパートが噛み合うと、盛り上がりが跳ねる。", "In a live's solo spotlight, each part lands with a different crowd. Guitar hits Core, bass hits Connoisseurs, vocals hit Visual, drums hit Casual fans——when the crowd you aim for matches the right part, the excitement spikes."), { fx: "flash" }),
     scene("studio", [lead], L("そして ⚡体力。行動するほど消耗し、尽きると「休息」しか選べなくなる。無理は禁物——休むのも立派な戦略だ。", "And then ⚡ stamina. The more you act, the more it drains, and when it runs out you can only pick 'Rest.' Don't push it——resting is a solid strategy too."), { fx: "flash" }),
   ];
 }

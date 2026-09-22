@@ -253,6 +253,8 @@ body {
 .part { font-size: 10px; color: var(--muted); margin-top: 2px; }
 .minfo { flex: 1; }
 .mname { font-weight: 800; font-size: 14px; }
+.solotag { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.solotag b { color: var(--accent-2); }
 .gauges { margin-top: 4px; }
 .gauge { display: flex; align-items: center; gap: 6px; font-size: 11px; margin: 2px 0; }
 .gauge .lbl { width: 78px; color: var(--muted); }
