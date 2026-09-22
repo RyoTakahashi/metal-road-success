@@ -115,6 +115,7 @@ export interface Buffs {
   practiceTurns: number; // turns the practiceMult stays active (0 = inactive)
   restFull: boolean; // this turn: resting fully restores stamina
   composeQ95: boolean; // this turn: composing yields Q95
+  staminaZeroEnd: boolean; // this turn: stamina drops to 0 AFTER the action resolves
   liveSat: number; // added to the next live's satisfaction
   liveSellout: boolean; // next live sells out regardless of draw
 }

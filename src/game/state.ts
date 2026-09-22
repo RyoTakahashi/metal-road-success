@@ -39,6 +39,11 @@ import { paramLabel, segLabel, SEGMENTS, staffLabel } from "./types";
 const TURNS_PER_MONTH = 4;
 const clampStat = (n: number) => Math.max(0, Math.min(99, n));
 const yen = (n: number) => `¥${n.toLocaleString()}`;
+/** Kanji numeral for small band sizes (falls back to the digit). */
+const JP_NUM = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"] as const;
+const jpCount = (n: number): string => JP_NUM[n] ?? String(n);
+/** "四人" / "4 members" — the band's current head count, for dialogue. */
+const memberCountLabel = (s: GameState): string => L(`${jpCount(s.members.length)}人`, `${s.members.length}`);
 
 /** Below this average stamina the band is too exhausted to do anything but rest. */
 export const FATIGUE_FLOOR = 25;
@@ -111,7 +116,7 @@ export function newGame(part = "Vo", leaderName = "", rng: () => number = Math.r
     stage: 0,
     staff: [],
     items: { metalianD: 2 },
-    buffs: { practiceMult: 1, practiceTurns: 0, restFull: false, composeQ95: false, liveSat: 0, liveSellout: false },
+    buffs: { practiceMult: 1, practiceTurns: 0, restFull: false, composeQ95: false, staminaZeroEnd: false, liveSat: 0, liveSellout: false },
     turn: 1,
     turnsPerMonth: TURNS_PER_MONTH,
     hand: [],
@@ -324,18 +329,28 @@ export function resolveAction(
   param: Param | undefined,
   rng: () => number = Math.random,
 ): { scenes: Scene[] } {
-  switch (kind) {
-    case "rest":
-      return resolveRest(state, subId ?? "full", rng);
-    case "music":
-      return resolveMusic(state, subId ?? "practice", param, rng);
-    case "promo":
-      return resolvePromo(state, rng);
-    case "network":
-      return resolveNetwork(state, subId ?? "band", rng);
-    case "money":
-      return resolveMoney(state, rng);
+  const out = ((): { scenes: Scene[] } => {
+    switch (kind) {
+      case "rest":
+        return resolveRest(state, subId ?? "full", rng);
+      case "music":
+        return resolveMusic(state, subId ?? "practice", param, rng);
+      case "promo":
+        return resolvePromo(state, rng);
+      case "network":
+        return resolveNetwork(state, subId ?? "band", rng);
+      case "money":
+        return resolveMoney(state, rng);
+    }
+  })();
+  // 「白い粉」: the crash lands only after this turn's action has resolved, so the
+  // song it powered still gets written before stamina bottoms out.
+  if (state.buffs.staminaZeroEnd) {
+    state.buffs.staminaZeroEnd = false;
+    state.members.forEach((m) => (m.stamina = 0));
+    pushLog(state, L("——反動が来た。全身から力が抜け、体力が尽き果てた（体力0）", "——the crash hits. Strength drains from every limb; stamina bottoms out (0)."));
   }
+  return out;
 }
 
 function resolveRest(state: GameState, sub: string, rng: () => number): { scenes: Scene[] } {
@@ -989,9 +1004,9 @@ export function buildLivePreScenes(state: GameState, decision: LiveDecision, rng
         fit(L("定番曲でブチ上げてフィニッシュ", "Finish big with a crowd favorite"), ["core", "light"], 4,
           (sat) => react(bud, "fired", L(`全員大合唱、会場が一つの生き物になる。${seg}層、大満足の大団円！（満足度+${sat}）`, `Everyone sings along, the venue becomes one living thing. ${seg} fans, a triumphant, thrilled finale! (satisfaction +${sat})`), "flash"),
           (sat) => react(bud, "happy", L(`手堅く締める。しっかり温まった。（満足度+${sat}）`, `A safe, solid close. Nicely warmed up. (satisfaction +${sat})`))),
-        fit(L("新曲で勝負を賭ける", "Gamble on a new song"), ["expert", "core"], 4,
-          (sat) => react(bud, "fired", L(`攻めの新曲——耳の肥えた${seg}層が唸り、深く頷く。挑戦が実った！（満足度+${sat}・知名度+1）`, `A daring new song——discerning ${seg} fans murmur and nod deep. The gamble paid off! (satisfaction +${sat} / fame +1)`), "flash"),
-          (sat) => react(bud, "normal", L(`新曲を叩きつける。反応は分かれたが、爪痕は残した。（満足度+${sat}・知名度+1）`, `You slam down a new song. Reactions were split, but you left a mark. (satisfaction +${sat} / fame +1)`)),
+        fit(L("出来たばかりの未発表曲で勝負を賭ける", "Gamble on a brand-new unreleased song"), ["expert", "core"], 4,
+          (sat) => react(bud, "fired", L(`攻めの未発表曲——耳の肥えた${seg}層が唸り、深く頷く。挑戦が実った！（満足度+${sat}・知名度+1）`, `A daring unreleased song——discerning ${seg} fans murmur and nod deep. The gamble paid off! (satisfaction +${sat} / fame +1)`), "flash"),
+          (sat) => react(bud, "normal", L(`出来たばかりの一曲を叩きつける。反応は分かれたが、爪痕は残した。（満足度+${sat}・知名度+1）`, `You slam down a freshly written track. Reactions were split, but you left a mark. (satisfaction +${sat} / fame +1)`)),
           (s) => { s.fame = Math.min(100, s.fame + 1); }),
         fit(L("バラードでしっとり締める", "Close softly with a ballad"), ["visual", "expert"], 4,
           (sat) => react(lead, "happy", L(`揺れる無数のライト。${seg}層がうっとりと聴き入る、美しい幕引き。（満足度+${sat}・結束+3）`, `Countless lights sway. ${seg} fans listen, entranced — a beautiful curtain call. (satisfaction +${sat} / unity +3)`), "flash"),
@@ -1179,7 +1194,7 @@ export const ITEMS: ItemDef[] = [
   { id: "silentGuitar", name: L("サイレントギター", "Silent Guitar"), tier: "A", effect: L("使用するとそのターンから3ターンの間練習効果が2倍", "Doubles practice gains for 3 turns starting this one"), desc: L("これで夜中も練習し放題！", "Now you can practice all night long!"), apply: (s) => setPracticeBuff(s, 2, 3) },
   { id: "starStrings", name: L("星の弦", "Star Strings"), tier: "A", effect: L("使用したターンにライブをすると動員数が満員になるが満足度は-30される", "Sells out attendance if you play a show this turn, but satisfaction -30"), desc: L("人気になるってのは、それはそれで大変だよな", "Getting popular is its own kind of hard, huh."), appearReq: (s) => s.rank === "major" && bandAvg(s, "V") >= 50, apply: (s) => { s.buffs.liveSellout = true; s.buffs.liveSat -= 30; } },
   { id: "batThing", name: L("例のコウモリ", "That Infamous Bat"), tier: "S", effect: L("使用したターンにライブがある場合、顧客満足度が+40", "If there's a show this turn, satisfaction +40"), desc: L("コウモリの人形を食べるパフォーマンスのはずが本物のコウモリだったんだよ", "It was supposed to be a stunt biting a toy bat — turns out it was a real one."), apply: (s) => { s.buffs.liveSat += 40; } },
-  { id: "whitePowder", name: L("白い粉", "White Powder"), tier: "S", effect: L("使用したターンに作成した曲の完成度が95になる、ただし体力が0になり親密度も-20になる", "A song written this turn hits quality 95, but stamina drops to 0 and rapport -20"), desc: L("危険な粉。すべてを差し出す覚悟はあるか？", "A dangerous powder. Ready to give up everything?"), apply: (s) => { s.buffs.composeQ95 = true; s.members.forEach((m) => (m.stamina = 0)); addStaffIntimacy(s, -20); } },
+  { id: "whitePowder", name: L("白い粉", "White Powder"), tier: "S", effect: L("使用したターンに作成した曲の完成度が95になる、ただしその行動を終えた後に体力が0になり親密度も-20になる", "A song written this turn hits quality 95, but once that action is done stamina drops to 0 and rapport -20"), desc: L("危険な粉。すべてを差し出す覚悟はあるか？", "A dangerous powder. Ready to give up everything?"), apply: (s) => { s.buffs.composeQ95 = true; s.buffs.staminaZeroEnd = true; addStaffIntimacy(s, -20); } },
   { id: "metalGodProof", name: L("メタルゴッドの証", "Proof of the Metal God"), tier: "S", effect: L("使用すると演奏基礎、パフォーマンス、音楽センス、ビジュ力が+30され、総ファン数が2倍になる", "Musicianship, Performance, Songcraft, and Looks all +30, and total fans doubled"), desc: L("メタルゴッドはすべてのメタルバンドを愛している", "The Metal God loves every metal band."), appearReq: (s) => s.stage >= 4, apply: (s) => { (["T", "P", "S", "V"] as Param[]).forEach((p) => addParam(s, p, 30)); s.totalFans *= 2; } },
 ];
 
@@ -1190,6 +1205,7 @@ export const itemDef = (id: string): ItemDef | undefined => ITEM_BY_ID[id];
 export function tickTurnBuffs(state: GameState): void {
   state.buffs.restFull = false;
   state.buffs.composeQ95 = false;
+  state.buffs.staminaZeroEnd = false;
   if (state.buffs.practiceTurns > 0) {
     state.buffs.practiceTurns -= 1;
     if (state.buffs.practiceTurns <= 0) state.buffs.practiceMult = 1;
@@ -1481,7 +1497,7 @@ const LEADER_ARC: Record<string, Record<string, (s: GameState, lead: string, nm:
         bg: "studio", chars: [{ member: lead, pos: "center", mood: "normal" }],
         text: L("売れることより、このメンバーで長く。彼女の願いに、どう応える？", "Longevity with these members over making it big. How do you answer her wish?"),
         choices: [
-          { label: L("「何があっても、この五人で行く」", "\"No matter what, we go with these five.\""), apply: (st) => { st.bond = Math.min(100, st.bond + 12); addLove(st, lead, 8); pushLog(st, L("個別STORY：MAKOに絆を誓った（結束+12・愛情度+8）", "Personal STORY: vowed the bond to MAKO (unity +12 / affection +8)")); },
+          { label: L(`「何があっても、この${memberCountLabel(s)}で行く」`, `"No matter what, the ${s.members.length} of us go together."`), apply: (st) => { st.bond = Math.min(100, st.bond + 12); addLove(st, lead, 8); pushLog(st, L("個別STORY：MAKOに絆を誓った（結束+12・愛情度+8）", "Personal STORY: vowed the bond to MAKO (unity +12 / affection +8)")); },
             next: [solo(s, "studio", lead, "happy", L("「……えへへ。じゃあ、あたし、どこまでもついていく。」不安が、笑顔にほどけた。（結束+12・愛情度+8）", "\"...Ehehe. Then I'll follow you anywhere.\" Her anxiety unraveled into a smile. (unity +12 / affection +8)"), "flash")] },
           { label: L("「大きくなるのも、悪くないぞ」", "\"Getting big isn't so bad, you know.\""), apply: (st) => { st.fame = Math.min(100, st.fame + 4); st.bond = Math.max(0, st.bond - 4); addLove(st, lead, 1); pushLog(st, L("個別STORY：規模拡大を優先（知名度+4・結束-4）", "Personal STORY: prioritized growth (fame +4 / unity -4)")); },
             next: [solo(s, "street", lead, "sad", L("「……うん、わかってる。ついていく、けど。」少しだけ、俯いた。（知名度+4・結束-4）", "\"...Yeah, I know. I'll follow, but.\" She looked down, just a little. (fame +4 / unity -4)"))] },

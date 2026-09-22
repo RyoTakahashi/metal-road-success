@@ -129,7 +129,7 @@ function topbar(state: GameState): string {
       <div class="stats">
         <div class="stat"><div class="v">${state.month}<span class="turn">·${state.turn}/${state.turnsPerMonth}</span></div><div class="k">${L("月・ターン", "Mo/Turn")}</div></div>
         <div class="stat"><div class="v">${state.totalFans.toLocaleString()}</div><div class="k">${L("ファン", "Fans")}</div></div>
-        <div class="stat"><div class="v">${state.fame}</div><div class="k">${L("知名度", "Fame")}</div></div>
+        <div class="stat"><div class="v">${Math.floor(state.fame)}</div><div class="k">${L("知名度", "Fame")}</div></div>
         <div class="stat"><div class="v">¥${state.funds.toLocaleString()}</div><div class="k">${L("資金", "Funds")}</div></div>
       </div>
       ${hdrControls()}
@@ -713,7 +713,7 @@ function resultModal(state: GameState, ui: UiState): string {
           <div class="kpi"><div class="v" data-count="${r.draw}">0</div><div class="sub">/${r.capacity.toLocaleString()}</div><div class="k">${L("動員数", "Attendance")} ${r.soldOut ? "🎉" : `${Math.round(r.occupancy * 100)}%`}</div></div>
           <div class="kpi"><div class="v" data-count="${r.satisfaction}">0</div><div class="k">${L("観客満足度", "Satisfaction")}</div></div>
           <div class="kpi"><div class="v pos" data-count="${r.newFans}" data-prefix="+">0</div><div class="k">${L("新規ファン", "New Fans")}</div></div>
-          <div class="kpi"><div class="v" data-count="${r.streams}">0</div><div class="k">${L("ストリーミング再生", "Streams")}</div></div>
+          <div class="kpi"><div class="v" data-count="${r.streams}">0</div><div class="sub">${L("売上に加算", "adds to revenue")}</div><div class="k">${L("ライブ後の配信再生", "Post-show Streams")}</div></div>
         </div>
         <div class="kpi money-row">
           <div class="v money ${money}">${sign}¥${Math.abs(Math.round(r.profit)).toLocaleString()}</div>
