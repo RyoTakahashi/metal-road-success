@@ -192,6 +192,8 @@ export interface Scene {
   speaker?: string; // name shown on the textbox tag (dialogue)
   fx?: "shake" | "flash"; // optional punch-up effect
   choices?: SceneChoice[]; // if set, the player picks a reply instead of 次へ
+  back?: boolean; // allow ◀ 戻る within a contiguous run of back-enabled scenes
+  nextLabel?: string; // override the advance-button label (e.g. the final "▶ スタート")
 }
 
 /** Practice outcome = stat changes (for the board floats) + a scene sequence. */

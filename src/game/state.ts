@@ -1292,6 +1292,8 @@ export interface Milestone {
   bg: BgKey;
   flavor: string; // shown on achievement
   intro: string; // shown when this milestone becomes the next target
+  tip?: string; // qualitative "how to approach it" line for the intro (the
+  //             numeric target still shows on the board checklist)
 }
 
 /** Band "演奏力" = mean of every member's T/P/S/V. */
@@ -1301,13 +1303,13 @@ export const bandPower = (s: GameState): number => {
 };
 
 const MILESTONES_ALL: Milestone[] = [
-  { id: "gateway", label: L("アマチュア登竜門ライブ", "Amateur Proving-Ground Show"), deadline: 7, req: { power: 54, fans: 2000 }, bg: "venueSmall", flavor: L("登竜門ライブを勝ち抜いた！シーンに名前が知れ渡る。", "You conquered the proving-ground show! Your name spreads through the scene."), intro: L("アマチュアバンドの登竜門ライブ。ここに立てなければ話にならない。まずは演奏力を鍛え、動員できるファンを集めろ。", "The proving-ground show for amateur bands. If you can't stand here, nothing else matters. First, build your musicianship and gather fans you can pull in.") },
-  { id: "indiefes", label: L("インディーズメタルフェス", "Indie Metal Festival"), deadline: 13, req: { power: 60, fans: 4200, songs: 3 }, bg: "venueBig", flavor: L("インディーズフェスのステージへ！観客の規模が跳ね上がる。", "Onto the indie festival stage! Your audience leaps in size."), intro: L("インディーズメタルフェスからのオファーを掴む。より高い演奏力とファンに加え、武器となる楽曲の数（曲数）も問われる。", "Land an offer from the Indie Metal Festival. On top of higher musicianship and more fans, the number of songs in your arsenal matters too.") },
+  { id: "gateway", label: L("アマチュア登竜門ライブ", "Amateur Proving-Ground Show"), deadline: 7, req: { power: 54, fans: 2000 }, bg: "venueSmall", flavor: L("登竜門ライブを勝ち抜いた！シーンに名前が知れ渡る。", "You conquered the proving-ground show! Your name spreads through the scene."), intro: L("アマチュアバンドの登竜門ライブ。ここに立てなければ話にならない。まずは演奏力を鍛え、動員できるファンを集めろ。", "The proving-ground show for amateur bands. If you can't stand here, nothing else matters. First, build your musicianship and gather fans you can pull in."), tip: L("まずは練習を重ねて、小さな箱で地道にファンを増やそう。", "First, keep practicing and grow your fanbase steadily with small-venue shows.") },
+  { id: "indiefes", label: L("インディーズメタルフェス", "Indie Metal Festival"), deadline: 13, req: { power: 60, fans: 4200, songs: 3 }, bg: "venueBig", flavor: L("インディーズフェスのステージへ！観客の規模が跳ね上がる。", "Onto the indie festival stage! Your audience leaps in size."), intro: L("インディーズメタルフェスからのオファーを掴む。より高い演奏力とファンに加え、武器となる楽曲の数（曲数）も問われる。", "Land an offer from the Indie Metal Festival. On top of higher musicianship and more fans, the number of songs in your arsenal matters too."), tip: L("曲を書きためつつ、狙う客層に刺さるライブでファンを伸ばそう。", "Stock up on songs, and grow your fans with shows that land with your target crowd.") },
   // In the SHORT edition this is the finale, so its achievement flavor reads as
   // the ending rather than "the real fight starts here".
-  { id: "major", label: L("メジャーデビュー", "Major-Label Debut"), deadline: 21, req: { power: 68, fans: 7800, bond: 50 }, bg: "venueBig", flavor: IS_SHORT ? L("メジャーデビュー決定——！ 路上から始まったMetal Roadが、ついに夢の舞台へ。最高の景色だ。", "Major-label debut——! Metal Road, which started on the streets, finally reaches the stage of their dreams. What a view.") : L("メジャーデビュー決定！大箱ライブとサポート招致が解禁。ここからが本当の勝負だ。", "Major-label debut confirmed! Big-venue shows and support-staff recruiting unlock. The real fight starts here."), intro: L("夢の入り口、メジャーデビュー。実力とファンはもちろん、ここまで来たバンドの結束が試される。", "The doorway to the dream: a major-label debut. Skill and fans, of course — but the unity you've built this far is put to the test too.") },
-  { id: "bigfes", label: L("大型フェスのオファー", "Major Festival Offer"), deadline: 32, req: { power: 76, fans: 17000, fame: 66 }, bg: "venueBig", flavor: L("大型フェスのメインステージへ大抜擢！", "Handpicked for the main stage of a major festival!"), intro: L("大型フェスのメインステージ。圧倒的な演奏力と、広く届く知名度がものを言う。", "The main stage of a major festival. Overwhelming musicianship and far-reaching fame are what count.") },
-  { id: "overseas", label: L("海外進出", "Going Overseas"), deadline: 46, req: { power: 82, fans: 39000, fame: 80 }, bg: "venueBig", flavor: L("ついに海外へ——世界がバンドを待っている！", "Overseas at last——the world is waiting for the band!"), intro: L("最終目標、海外進出。世界に通用する実力・知名度・そして膨大なファン。全てを頂点まで引き上げろ。", "The final goal: going overseas. World-class skill, fame, and a massive fanbase. Push it all to the peak.") },
+  { id: "major", label: L("メジャーデビュー", "Major-Label Debut"), deadline: 21, req: { power: 68, fans: 7800, bond: 50 }, bg: "venueBig", flavor: IS_SHORT ? L("メジャーデビュー決定——！ 路上から始まったMetal Roadが、ついに夢の舞台へ。最高の景色だ。", "Major-label debut——! Metal Road, which started on the streets, finally reaches the stage of their dreams. What a view.") : L("メジャーデビュー決定！大箱ライブとサポート招致が解禁。ここからが本当の勝負だ。", "Major-label debut confirmed! Big-venue shows and support-staff recruiting unlock. The real fight starts here."), intro: L("夢の入り口、メジャーデビュー。実力とファンはもちろん、ここまで来たバンドの結束が試される。", "The doorway to the dream: a major-label debut. Skill and fans, of course — but the unity you've built this far is put to the test too."), tip: L("バンドの結束を深めながら、動員を増やして名を上げよう。", "Deepen the band's unity while boosting attendance and making a name.") },
+  { id: "bigfes", label: L("大型フェスのオファー", "Major Festival Offer"), deadline: 32, req: { power: 76, fans: 17000, fame: 66 }, bg: "venueBig", flavor: L("大型フェスのメインステージへ大抜擢！", "Handpicked for the main stage of a major festival!"), intro: L("大型フェスのメインステージ。圧倒的な演奏力と、広く届く知名度がものを言う。", "The main stage of a major festival. Overwhelming musicianship and far-reaching fame are what count."), tip: L("広報で知名度を広げ、大箱を沸かせる実力をつけよう。", "Spread your fame through promotion and build the power to fill big venues.") },
+  { id: "overseas", label: L("海外進出", "Going Overseas"), deadline: 46, req: { power: 82, fans: 39000, fame: 80 }, bg: "venueBig", flavor: L("ついに海外へ——世界がバンドを待っている！", "Overseas at last——the world is waiting for the band!"), intro: L("最終目標、海外進出。世界に通用する実力・知名度・そして膨大なファン。全てを頂点まで引き上げろ。", "The final goal: going overseas. World-class skill, fame, and a massive fanbase. Push it all to the peak."), tip: L("全てを頂点へ。世界に届く演奏と、膨大なファンを掴み取れ。", "Push everything to the peak — world-class playing and a massive fanbase.") },
 ];
 
 /** The active checkpoint ladder. SHORT edition (itch/casual) ends at Major
@@ -1566,7 +1568,9 @@ export function buildMilestoneIntro(state: GameState, m: Milestone): Scene[] {
   const name = nameOf(state, lead);
   return [
     scene(m.bg, ["KEN", "RYO", "MIO", "GO"], L(`【次の関門】${m.label}\n\n${m.intro}`, `[Next Checkpoint] ${m.label}\n\n${m.intro}`), { speaker: name }),
-    scene("studio", [lead], L(`期限は${m.deadline}ヶ月目。条件は ${reqSummary(m)}。\n\n——やってやる。次のステージへ、駆け上がるぞ。`, `Deadline: month ${m.deadline}. Requirements: ${reqSummary(m)}.\n\n——We'll pull this off. Onward and up to the next stage.`), { fx: "flash" }),
+    m.tip
+      ? scene("studio", [lead], L(`期限は${m.deadline}ヶ月目。${m.tip}\n\n（詳しい目標は画面上部のチェックリストで確認できる）`, `Deadline: month ${m.deadline}. ${m.tip}\n\n(The exact targets are on the checklist at the top of the screen.)`), { fx: "flash" })
+      : scene("studio", [lead], L(`期限は${m.deadline}ヶ月目。条件は ${reqSummary(m)}。\n\n——やってやる。次のステージへ、駆け上がるぞ。`, `Deadline: month ${m.deadline}. Requirements: ${reqSummary(m)}.\n\n——We'll pull this off. Onward and up to the next stage.`), { fx: "flash" }),
   ];
 }
 
@@ -1643,14 +1647,23 @@ export function buildLiveReactionScenes(state: GameState, r: LiveResult, rng: ()
 
 export function buildIntroSequence(state: GameState): Scene[] {
   const first = MILESTONES[state.stage];
-  return [
+  // The backstory + member intros + stat primer are reviewable (◀ 戻る);
+  // from the how-to-play tutorial onward it's forward-only.
+  const reviewable = [
     ...buildOpeningScenes(state),
     ...buildFormationScenes(state),
     ...buildMemberIntros(state),
     ...buildStatPrimer(state),
+  ].map((s) => ({ ...s, back: true }));
+  const scenes = [
+    ...reviewable,
     ...buildTutorialScenes(),
     ...(first ? buildMilestoneIntro(state, first) : []),
   ];
+  // The very last intro beat kicks off the game — label it "Start".
+  const lastBeat = scenes[scenes.length - 1];
+  if (lastBeat && !lastBeat.choices) lastBeat.nextLabel = L("▶ スタート", "▶ Start");
+  return scenes;
 }
 
 /** Current value of a requirement key (for the checklist). */

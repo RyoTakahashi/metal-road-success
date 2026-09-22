@@ -438,6 +438,7 @@ body {
 .sc-text { min-height: 56px; font-size: 17px; line-height: 1.7; font-weight: 700; white-space: pre-wrap; color: var(--ink); }
 .sc-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
 .dots { display: flex; gap: 6px; }
+.sc-navbtns { display: flex; gap: 8px; align-items: center; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #ffffff33; }
 .dot.on { background: var(--accent); }
 /* Reply choices inside a scene (branching event). */

@@ -278,6 +278,16 @@ const handlers: Handlers = {
     }
     finishSlides();
   },
+  onSlidePrev() {
+    // Only within a contiguous run of back-enabled scenes (the intro backstory
+    // + stat primer); never crosses into forward-only territory.
+    const cur = ui.sceneSeq[ui.sceneIndex];
+    const prev = ui.sceneSeq[ui.sceneIndex - 1];
+    if (ui.sceneIndex > 0 && cur?.back && prev?.back) {
+      ui.sceneIndex -= 1;
+      redraw();
+    }
+  },
   onChooseReply(index) {
     const sc = ui.sceneSeq[ui.sceneIndex];
     const choice = sc?.choices?.[index];

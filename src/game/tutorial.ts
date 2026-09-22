@@ -15,7 +15,10 @@
 // From Month 2, Turn 3 onward the game hands out random hands as normal.
 
 import type { ActionKind, GameState, Param } from "./types";
+import { K } from "./coreLoop";
 import { L } from "./i18n";
+
+const yen = (n: number) => `¥${n.toLocaleString()}`;
 
 export interface TutorialStep {
   card: ActionKind; // the single card the hand is forced to
@@ -32,8 +35,8 @@ const STEPS: Record<string, TutorialStep> = {
     card: "music", sub: "practice", param: "T", coach: "KEN",
     step: L("① 音楽活動：練習", "① Music: Practice"),
     body: L(
-      "まずは『音楽活動 ＞ 練習 ＞ 演奏基礎(T)』。全員の演奏基礎が +6 され、バンドの演奏力が底上げされる。コアや玄人の客層に刺さるようになる要の能力だ。スタジオ代¥8,000と体力を消費する。",
-      "Start with 'Music > Practice > Musicianship (T)'. Every member's Musicianship goes up +6, lifting the whole band's power. It's the key stat for landing with Core and Connoisseur crowds. Costs ¥8,000 studio and some stamina.",
+      `まずは『音楽活動 ＞ 練習 ＞ 演奏基礎(T)』。全員の演奏基礎が +6 され、バンドの演奏力が底上げされる。コアや玄人の客層に刺さるようになる要の能力だ。スタジオ代${yen(K.feePractice)}と体力を消費する。`,
+      `Start with 'Music > Practice > Musicianship (T)'. Every member's Musicianship goes up +6, lifting the whole band's power. It's the key stat for landing with Core and Connoisseur crowds. Costs ${yen(K.feePractice)} studio and some stamina.`,
     ),
   },
   "1-2": {
@@ -48,8 +51,8 @@ const STEPS: Record<string, TutorialStep> = {
     card: "money", coach: "GO",
     step: L("③ アルバイト", "③ Part-time Job"),
     body: L(
-      "『アルバイト』で¥40,000〜70,000を稼ぐ。ライブの会場費は前払いだから、その元手になる。稼ぐ月と鍛える月のバランスが大事だ。",
-      "'Part-time Job' earns ¥40,000–70,000. Live venue fees are paid up front, so this is your seed money. Balancing earning months against training months matters.",
+      `『アルバイト』で${yen(K.baitMin)}〜${yen(K.baitMin + K.baitVar)}を稼ぐ。ライブの会場費は前払いだから、その元手になる。稼ぐ月と鍛える月のバランスが大事だ。`,
+      `'Part-time Job' earns ${yen(K.baitMin)}–${yen(K.baitMin + K.baitVar)}. Live venue fees are paid up front, so this is your seed money. Balancing earning months against training months matters.`,
     ),
   },
   "1-4": {

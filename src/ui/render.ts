@@ -65,6 +65,7 @@ export interface Handlers {
   onRecruit: (role: StaffRole) => void;
   onChooseTraining: (param: Param) => void;
   onSlideNext: () => void;
+  onSlidePrev: () => void;
   onChooseReply: (index: number) => void;
   onOpenPanel: (panel: UiState["panel"]) => void;
   onClosePanel: () => void;
@@ -583,7 +584,10 @@ function sceneModal(state: GameState, ui: UiState): string {
         .join("")}</div>`
     : `<div class="sc-foot">
             <div class="dots">${dots}</div>
-            <button class="btn" id="scene-next">${last ? L("完了", "Done") : L("次へ ▶", "Next ▶")}</button>
+            <div class="sc-navbtns">
+              ${s.back && ui.sceneIndex > 0 && ui.sceneSeq[ui.sceneIndex - 1]?.back ? `<button class="btn secondary" id="scene-back">◀ ${L("戻る", "Back")}</button>` : ""}
+              <button class="btn" id="scene-next">${last ? (s.nextLabel ?? L("完了", "Done")) : L("次へ ▶", "Next ▶")}</button>
+            </div>
           </div>`;
   return `
     <div class="overlay scene-overlay">
@@ -883,6 +887,7 @@ export function render(root: HTMLElement, state: GameState, ui: UiState, h: Hand
   );
   root.querySelector("#close-panel")?.addEventListener("click", () => h.onClosePanel());
   root.querySelector("#scene-next")?.addEventListener("click", () => h.onSlideNext());
+  root.querySelector("#scene-back")?.addEventListener("click", () => h.onSlidePrev());
   root.querySelectorAll<HTMLButtonElement>("[data-choice]").forEach((el) =>
     el.addEventListener("click", () => h.onChooseReply(Number(el.dataset.choice))),
   );
