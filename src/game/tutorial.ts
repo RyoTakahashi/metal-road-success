@@ -85,8 +85,8 @@ const STEPS: Record<string, TutorialStep> = {
     card: "music", sub: "compose", coach: "KEN",
     step: L("⑥ 音楽活動：作曲", "⑥ Music: Compose"),
     body: L(
-      "『音楽活動 ＞ 作曲』で新曲を書く（録音費¥30,000）。どの客層に刺す曲か（〜寄り）を選び、タイトルを付ける。曲数は関門の条件にもなるし、時間が経つと曲は古びて効果が落ちるので、定期的に新曲を足していこう。",
-      "'Music > Compose' writes a new song (¥30,000 recording). Choose which audience it leans toward, then a title. Song count is a checkpoint requirement, and songs go stale over time — so keep adding fresh ones.",
+      `『音楽活動 ＞ 作曲』で新曲を書く（録音費${yen(K.feeCompose)}）。どの客層に刺す曲か（〜寄り）を選び、タイトルを付ける。曲数は関門の条件にもなるし、時間が経つと曲は古びて効果が落ちるので、定期的に新曲を足していこう。`,
+      `'Music > Compose' writes a new song (${yen(K.feeCompose)} recording). Choose which audience it leans toward, then a title. Song count is a checkpoint requirement, and songs go stale over time — so keep adding fresh ones.`,
     ),
   },
 };
