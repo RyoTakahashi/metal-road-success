@@ -577,18 +577,18 @@ function buildTalk(m: Member, topic: Topic, bg: BgKey): Scene[] {
 /** 交流（バンド関係者）：a random bandmate opens up; the reply shapes 結束/愛情度. */
 const BOND_TOPICS: Topic[] = [
   {
-    line: L("「なあ、最近ちゃんと前に進めてるのかな……ふと不安になる時があってさ」", "\"Hey... are we actually getting anywhere lately? Sometimes I just get this uneasy feeling.\""),
+    line: L("「なあ、最近ちゃんと前に進めてるのかな……ふと不安になる時があってさ」", "\"Hey... are we actually getting forward lately? Sometimes I just get this uneasy feeling.\""),
     replies: [
       { label: L("「大丈夫、ちゃんと進んでる。あたしが保証する」", "\"We're good. We're moving forward — I guarantee it.\""), love: 9, bond: 8, mood: "happy", react: L("「……そっか。あんたがそう言うなら、信じられるよ」", "\"...Yeah. If you say so, I can believe it.\"") },
       { label: L("「いちいち不安がるなよ、鬱陶しい」", "\"Quit fretting over every little thing, it's a drag.\""), love: -3, bond: 3, mood: "sad", react: L("「……そっか。悪かったね、変なこと言って」", "\"...I see. Sorry for bringing it up, then.\"") },
-      { label: L("「わかる。あたしも同じだよ」と弱音を共有", "\"I get it. I feel the same way\" — sharing the doubt"), love: 6, bond: 6, mood: "normal", react: L("「なんだ、あんたもか。ちょっと安心した」", "\"Huh, you too? That's kind of a relief.\"") },
+      { label: L("「わかる。あたしも同じだよ」と弱音を共有", "\"I get it. We are on the same page.\" — sharing the doubt"), love: 6, bond: 6, mood: "normal", react: L("「なんだ、あんたもか。ちょっと安心した」", "\"Huh, you too? That's kind of a relief.\"") },
     ],
   },
   {
     line: L("「ねえ、今夜このあと軽く飲みに行かない？ たまには馬鹿な話がしたい」", "\"Hey, wanna grab a drink after this? I could use some dumb small talk for once.\""),
     replies: [
       { label: L("「いいね、行こう。今日は付き合うよ」", "\"Sounds good, let's go. I'm with you tonight.\""), love: 8, bond: 9, stam: 6, mood: "happy", react: L("「よっしゃ！ こういう時間が一番効くんだって」", "\"Yes! Nights like this are the best medicine.\"") },
-      { label: L("「悪い、今日は曲作りたい」", "\"Sorry, I want to write tonight.\""), love: -3, bond: 4, mood: "sad", react: L("「……はいはい、真面目だこと。まあ、無理すんなよ」", "\"...Yeah yeah, always so serious. Don't overdo it, though.\"") },
+      { label: L("「悪い、今日は曲作りたい」", "\"Sorry, I want to write a new song tonight.\""), love: -3, bond: 4, mood: "sad", react: L("「……はいはい、真面目だこと。まあ、無理すんなよ」", "\"...Yeah yeah, I know you are workaholic. Don't overdo it, though.\"") },
       { label: L("「一杯だけな」と付き合う", "\"Just one, okay?\" — tagging along"), love: 5, bond: 7, mood: "normal", react: L("「一杯って言うやつに限って朝までなんだよなあ」", "\"The 'just one' people are always the ones who go till dawn.\"") },
     ],
   },
@@ -596,7 +596,7 @@ const BOND_TOPICS: Topic[] = [
     line: L("「正直さ、あんたがリーダーで良かったって思ってる。……柄じゃないけど、言っときたくて」", "\"Honestly, I'm glad you're our leader. ...Not like me to say it, but I wanted you to know.\""),
     replies: [
       { label: L("「……ありがとう。お前がいるからだよ」", "\"...Thanks. It's because you're here.\""), love: 12, bond: 8, mood: "happy", react: L("「うわ、照れるからやめろって！ ……でも、うん」", "\"Ugh, quit it, you're embarrassing me! ...But, yeah.\"") },
-      { label: L("「当たり前だろ、ついてこい」", "\"Obviously. Now follow me.\""), love: 4, bond: 9, mood: "fired", react: L("「ははっ、その強気、嫌いじゃないよ」", "\"Ha! That swagger — I don't hate it.\"") },
+      { label: L("「当たり前だろ、ついてこい」", "\"Obviously. Follow me.\""), love: 4, bond: 9, mood: "fired", react: L("「ははっ、その強気、嫌いじゃないよ」", "\"Ha! That swagger — I don't hate it.\"") },
       { label: L("「急にどうした、気持ち悪いな」と茶化す", "\"What's gotten into you? Creepy.\" — brushing it off"), love: -2, bond: 5, mood: "sad", react: L("「……せっかく良いこと言ったのに。もう知らね」", "\"...I finally say something nice and this is what I get. Forget it.\"") },
     ],
   },
@@ -612,7 +612,7 @@ const BOND_TOPICS: Topic[] = [
     line: L("「今度さ、練習抜きでどっか遊びに行かない？ たまにはバンド以外の顔も見たいんだ」", "\"Sometime, wanna go hang out with no practice involved? I'd like to see each other outside the band for once.\""),
     replies: [
       { label: L("「いいね、行こう。あたしもそういう時間、欲しかった」", "\"Sounds great, let's go. I've been wanting that too.\""), love: 9, bond: 8, stam: 4, mood: "happy", react: L("「やった、決まりね！ 予定合わせよ」", "\"Yes, it's settled! Let's line up our days.\"") },
-      { label: L("「行きたいけど、まずは今の曲を仕上げてからな」", "\"I want to, but let's finish the current song first.\""), love: 4, bond: 7, stam: -2, mood: "fired", react: L("「ふふ、真面目。……でも、その約束は忘れないでよ？」", "\"Heh, so diligent. ...But don't forget that promise, okay?\"") },
+      { label: L("「行きたいけど、まずは今の曲を仕上げてからな」", "\"That's nice, but let's finish the current song first.\""), love: 4, bond: 7, stam: -2, mood: "fired", react: L("「ふふ、真面目。……でも、その約束は忘れないでよ？」", "\"Heh, so diligent. ...But don't forget that promise, okay?\"") },
       { label: L("「遊んでる暇があると思ってんのか」", "\"You think we've got time to play around?\""), love: -3, bond: 3, mood: "sad", react: L("「……だよね。変なこと言った、ごめん」", "\"...Right. Weird thing to say, sorry.\"") },
     ],
   },
@@ -663,24 +663,24 @@ const PRACTICE_TOPICS_BY_MEMBER: Record<string, Topic[]> = {
       line: L("「ねえ、あたしのシャウト……今日、いつもよりキレてない？ ちゃんと見てた？」", "\"Hey, my scream today — sharper than usual, right? You were watching, weren't you?\""),
       replies: [
         { label: L("「見てた。鳥肌立った、マジで」", "\"I was. Gave me goosebumps, seriously.\""), love: 6, stat: { p: "P", d: 1 }, mood: "happy", react: L("「でしょ！？ ふふ、あんたに褒められると悪くないね」", "\"Right!? Heh, not bad getting praise from you.\"") },
-        { label: L("「あと一歩。喉の開き方、詰めよう」", "\"Almost there. Let's work on how you open your throat.\""), love: 3, stat: { p: "V", d: 1 }, stam: -2, mood: "fired", react: L("「……上等。あたしの限界、まだ先にあるってことね」", "\"...Bring it. So my limit's still further out there.\"") },
+        { label: L("「あと一歩。リズム、詰めよう」", "\"Almost there. Let's work on how you catch a rhythm.\""), love: 3, stat: { p: "V", d: 1 }, stam: -2, mood: "fired", react: L("「……上等。あたしの限界、まだ先にあるってことね」", "\"...Bring it. So my limit's still further out there.\"") },
         { label: L("「うーん、いつも通りじゃない？」", "\"Hmm, same as always, no?\""), love: -4, mood: "sad", react: L("「はぁ！？ ……今の、後悔するからね」", "\"Excuse me!? ...You're gonna regret that.\"") },
       ],
     },
     {
       line: L("「新しい衣装、攻めすぎかな？ ……あんたはどう思う？」", "\"Is the new outfit too much? ...What do you think?\""),
       replies: [
-        { label: L("「最高。誰よりお前が目立つ」", "\"It's perfect. You'll outshine everyone.\""), love: 7, stat: { p: "V", d: 1 }, mood: "happy", react: L("「ん、決まりね。ステージ、燃やしてやる」", "\"Settled, then. I'll set the stage on fire.\"") },
+        { label: L("「最高。誰よりお前が目立つ」", "\"It's perfect. You'll outshine everyone.\""), love: 7, stat: { p: "V", d: 1 }, mood: "happy", react: L("「ん、決まりね。ステージ、燃やしてやる」", "\"Thanks, then. I'll set the stage on fire.\"") },
         { label: L("「動きやすさも考えような」", "\"Let's think about mobility too.\""), love: 3, mood: "normal", react: L("「……たしかに。暴れられなきゃ意味ないもんね」", "\"...Fair. No point if I can't go wild in it.\"") },
         { label: L("「派手すぎない？」", "\"Isn't it a bit flashy?\""), love: -3, mood: "sad", react: L("「あたしに地味でいろって？ ありえない」", "\"You want me to play it plain? Not happening.\"") },
       ],
     },
     {
-      line: L("「あたしのMC、今日キレッキレだったっしょ？ 客、あたしの一言で沸いてたよね？」", "\"My stage banter was on fire today, right? The crowd popped off at every word I said, huh?\""),
+      line: L("「あたしのMC、今日キレッキレだったっしょ？ 客、あたしの一言で沸いてたよね？」", "\"My stage banter was great today, right? The crowd popped off at every word I said, huh?\""),
       replies: [
-        { label: L("「沸いてた。お前の言葉には熱がある」", "\"They did. Your words carry heat.\""), love: 7, stat: { p: "P", d: 1 }, mood: "happy", react: L("「でしょ！？ ふふ、あんたに言われると、余計に乗るわ」", "\"Right!? Heh, hearing it from you gets me even more hyped.\"") },
-        { label: L("「悪くない。あと、間の取り方詰めれば化ける」", "\"Not bad. Sharpen your timing and you'll transform.\""), love: 3, stat: { p: "V", d: 1 }, stam: -2, mood: "fired", react: L("「……上等。あたしのMC、もっと極めてやる」", "\"...Bring it. I'll perfect my banter even more.\"") },
-        { label: L("「MCより歌に集中したら？」", "\"Maybe focus on singing instead of talking?\""), love: -4, mood: "sad", react: L("「はぁ！？ ……あたしのステージ、全部が武器なんだけど」", "\"Excuse me!? ...Every part of my stage is a weapon, thanks.\"") },
+        { label: L("「沸いてた。お前の言葉には熱がある」", "\"They did. Your words carry heat.\""), love: 7, stat: { p: "P", d: 1 }, mood: "happy", react: L("「でしょ！？ ふふ、あんたに言われると、余計に乗るわ」", "\"Right! Heh, hearing it from you gets me even more excited.\"") },
+        { label: L("「悪くない。あと、間の取り方詰めれば化ける」", "\"Not bad. Sharpen your timing and you'll go forward.\""), love: 3, stat: { p: "V", d: 1 }, stam: -2, mood: "fired", react: L("「……上等。あたしのMC、もっと極めてやる」", "\"...Bring it. I'll perfect my banter even more.\"") },
+        { label: L("「MCより歌に集中したら？」", "\"Maybe focus on singing instead of talking?\""), love: -4, mood: "sad", react: L("「はぁ！？ ……あたしのステージ、全部が武器なんだけど」", "\"Excuse me!? ...Every part of my stage is fairly important.\"") },
       ],
     },
   ],
@@ -688,7 +688,7 @@ const PRACTICE_TOPICS_BY_MEMBER: Record<string, Topic[]> = {
     {
       line: L("「このリフ、まだ甘い気がする。……お前ならどう組む？」", "\"This riff still feels weak to me. ...How would you build it?\""),
       replies: [
-        { label: L("「今ので完成してる。信じろ」", "\"It's already finished. Trust it.\""), love: 6, stat: { p: "S", d: 1 }, mood: "happy", react: L("「……そうか。お前が言うなら、これでいく」", "\"...I see. If you say so, we go with this.\"") },
+        { label: L("「今ので完成してる。信じろ」", "\"It's already perfect. Trust it.\""), love: 6, stat: { p: "S", d: 1 }, mood: "happy", react: L("「……そうか。お前が言うなら、これでいく」", "\"...I see. If you say so, we go with this.\"") },
         { label: L("「もっと邪悪にできる。詰めよう」", "\"We can make it nastier. Let's push it.\""), love: 4, stat: { p: "T", d: 1 }, stam: -3, mood: "fired", react: L("「……っ、やっぱそう来るか。よし、朝までやるぞ」", "\"...Heh, figured you'd say that. Fine, we're at it till dawn.\"") },
         { label: L("「考えすぎ。手癖で弾け」", "\"Overthinking it. Just play on instinct.\""), love: -3, mood: "sad", react: L("「……お前に聞いた俺が馬鹿だった」", "\"...Stupid of me to even ask you.\"") },
       ],
@@ -696,7 +696,7 @@ const PRACTICE_TOPICS_BY_MEMBER: Record<string, Topic[]> = {
     {
       line: L("「指、ついてこなくなってきた……少し落とすか？」", "\"My fingers are starting to lag... should we ease off a bit?\""),
       replies: [
-        { label: L("「休め。壊したら元も子もない」", "\"Rest. No point if you break your hands.\""), love: 6, stam: 6, mood: "happy", react: L("「……悪いな。少し、休ませてもらう」", "\"...Sorry. I'll take a short rest.\"") },
+        { label: L("「休め。壊したら元も子もない」", "\"Take a rest. No point if you break your hands.\""), love: 6, stam: 6, mood: "happy", react: L("「……悪いな。少し、休ませてもらう」", "\"...Sorry. I'll take a short rest.\"") },
         { label: L("「限界の先に、答えがある」", "\"The answer's just past your limit.\""), love: 3, stat: { p: "T", d: 1 }, stam: -3, mood: "fired", react: L("「……ふっ、鬼だな。嫌いじゃない」", "\"...Heh, you're merciless. I don't hate it.\"") },
         { label: L("「気合が足りないだけだろ」", "\"You just lack drive, that's all.\""), love: -4, mood: "sad", react: L("「……そういうことを言う奴だったか」", "\"...So that's the kind of guy you are.\"") },
       ],
@@ -715,8 +715,8 @@ const PRACTICE_TOPICS_BY_MEMBER: Record<string, Topic[]> = {
       line: L("「……ベースライン、埋もれてない？ 正直に言って」", "\"...Is my bassline getting buried? Be honest.\""),
       replies: [
         { label: L("「土台として完璧に効いてる」", "\"It's holding the whole foundation perfectly.\""), love: 6, stat: { p: "T", d: 1 }, mood: "happy", react: L("「……よかった。ちゃんと、聴いてくれてるんだ」", "\"...Good. You really are listening.\"") },
-        { label: L("「もう少し前に出ていい」", "\"You can push out front a little more.\""), love: 4, stat: { p: "S", d: 1 }, stam: -2, mood: "fired", react: L("「ん。……じゃあ、少しだけ、暴れる」", "\"Mm. ...Then I'll cut loose, just a little.\"") },
-        { label: L("「ベースって聴こえてた？」", "\"Wait, could you even hear the bass?\""), love: -4, mood: "sad", react: L("「……最低。もう聞かない」", "\"...The worst. I'm not asking again.\"") },
+        { label: L("「もう少し前に出ていい」", "\"You can push out front a little more.\""), love: 4, stat: { p: "S", d: 1 }, stam: -2, mood: "fired", react: L("「ん。……じゃあ、少しだけ、暴れる」", "\"Mm. ...Then I'll get wild, just a little.\"") },
+        { label: L("「ベースって聴こえてた？」", "\"Wait, could you even play the bass?\""), love: -4, mood: "sad", react: L("「……最低。もう聞かない」", "\"...The worst. I'm not asking again.\"") },
       ],
     },
     {
@@ -740,9 +740,9 @@ const PRACTICE_TOPICS_BY_MEMBER: Record<string, Topic[]> = {
     {
       line: L("「ねえねえ、今のフィルどうだった！？ 新しいの入れてみたの！」", "\"Hey hey, how was that fill!? I tried out a new one!\""),
       replies: [
-        { label: L("「めっちゃ良かった！ 攻めてる！」", "\"So good! Super aggressive!\""), love: 7, stat: { p: "P", d: 1 }, mood: "happy", react: L("「やった〜！ もっと変なの入れちゃうもんね！」", "\"Yay~! I'm gonna throw in even weirder ones!\"") },
+        { label: L("「めっちゃ良かった！ 攻めてる！」", "\"So good! Super aggressive!\""), love: 7, stat: { p: "P", d: 1 }, mood: "happy", react: L("「やった〜！ もっとかっこいいの入れちゃうもんね！」", "\"Yay~! I'm gonna throw in even cooler ones!\"") },
         { label: L("「良いけど、走り気味かも」", "\"Nice, but you're rushing a touch.\""), love: 4, stat: { p: "T", d: 1 }, stam: -2, mood: "fired", react: L("「うっ……で、でも直す！ もう一回！」", "\"Ngh... b-but I'll fix it! One more time!\"") },
-        { label: L("「普通じゃない？」", "\"Isn't that kinda normal?\""), love: -4, mood: "sad", react: L("「えぇ〜っ、そんなぁ……ちぇっ」", "\"Whaat, come on... tch.\"") },
+        { label: L("「普通じゃない？」", "\"It's normal, isn't it?\""), love: -4, mood: "sad", react: L("「えぇ〜っ、そんなぁ……ちぇっ」", "\"Whaat, come on... tch.\"") },
       ],
     },
     {
@@ -756,7 +756,7 @@ const PRACTICE_TOPICS_BY_MEMBER: Record<string, Topic[]> = {
     {
       line: L("「ねえねえ、あたしのツーバス聴いた!? 足がもう別の生き物みたいに動くの! どうだった!?」", "\"Hey hey, did you hear my double bass!? My feet move like they're their own creature! How was it!?\""),
       replies: [
-        { label: L("「やばかった! 足が別の生き物、ほんとだ! 最高!」", "\"Insane! Your feet really are their own creature! Awesome!\""), love: 7, stat: { p: "P", d: 1 }, mood: "happy", react: L("「えへへ、やった〜! もっとドコドコ踏んじゃうもんね!」", "\"Ehehe, yay~! I'm gonna stomp even harder!\"") },
+        { label: L("「やばかった! とんでもない足さばきだよ! 最高!」", "\"Insane! Your feet really are their own creature! Awesome!\""), love: 7, stat: { p: "P", d: 1 }, mood: "happy", react: L("「えへへ、やった〜! もっとドコドコ踏んじゃうもんね!」", "\"Ehehe, yay~! I'm gonna stomp even harder!\"") },
         { label: L("「良い! あとは走らないよう、メトロノームで固めよ」", "\"Great! Now let's lock it to a metronome so it doesn't rush.\""), love: 4, stat: { p: "T", d: 1 }, stam: -2, mood: "fired", react: L("「うっ、走っちゃう癖! でも直す! カチカチに合わせる〜!」", "\"Ngh, my rushing habit! But I'll fix it! Locking to the click~!\"") },
         { label: L("「うるさいだけで疲れない？」", "\"Isn't it just noisy and tiring?\""), love: -4, mood: "sad", react: L("「えぇ〜っ、あたしの一番の得意技なのに……ちぇっ」", "\"Whaat, but that's my best move... tch.\"") },
       ],
@@ -813,9 +813,9 @@ const MEMBER_EVENTS: MemberEvent[] = [
     bg: "studio",
     line: L("「ねえ、あたしのステージング、ちゃんと『ヤバい』って言える？ 忖度なしで」", "\"Hey, can you honestly call my stage presence 'insane'? No sugarcoating.\""),
     replies: [
-      { label: L("「ヤバい。会場全部持ってける」", "\"Insane. You could own the whole venue.\""), love: 9, stat: { p: "V", d: 1 }, mood: "happy", react: L("「でしょ！？ ……ふふ、あんたに言われると悪くないね」", "\"Right!? ...Heh, coming from you, that's not bad.\"") },
-      { label: L("「まだ伸びる。もっと化けろ」", "\"You've got more in you. Transform harder.\""), love: 4, stat: { p: "P", d: 1 }, stam: -3, mood: "fired", react: L("「上等。あたしの限界、見せてやる」", "\"Bring it. I'll show you my limit.\"") },
-      { label: L("「普通じゃない？」と流す", "\"Isn't it kinda average?\" — brushing it off"), love: -4, mood: "sad", react: L("「……は？ 今の発言、後悔するよあんた」", "\"...Huh? You're gonna regret saying that.\"") },
+      { label: L("「ヤバい。会場全部持ってける」", "\"Absolutely Insane. You could own the whole venue.\""), love: 9, stat: { p: "V", d: 1 }, mood: "happy", react: L("「でしょ！？ ……ふふ、あんたに言われると悪くないね」", "\"Right!? ...Heh, coming from you, that's not bad.\"") },
+      { label: L("「まだ伸びる。もっと化けろ」", "\"You've got more in you. Show me your poitential.\""), love: 4, stat: { p: "P", d: 1 }, stam: -3, mood: "fired", react: L("「上等。あたしの限界、見せてやる」", "\"Bring it. I'll show you my limit.\"") },
+      { label: L("「普通じゃない？」", "\"Isn't it kinda average?\""), love: -4, mood: "sad", react: L("「……は？ 今の発言、後悔するよあんた」", "\"...Huh? You're gonna regret saying that.\"") },
     ],
   },
   {
@@ -834,7 +834,7 @@ const MEMBER_EVENTS: MemberEvent[] = [
     line: L("「……本番前だ。余計なことは言わない。俺は俺の仕事をする。それだけだ」", "\"...It's showtime. I won't say anything extra. I'll do my job. That's all.\""),
     replies: [
       { label: L("「ああ。お前の音、あたしは全部聴いてる。行ってこい」", "\"Yeah. I hear every note you play. Go get 'em.\""), love: 8, stat: { p: "S", d: 1 }, mood: "happy", react: L("「……そうか。なら、一音も外さない。見てろ」", "\"...I see. Then I won't miss a single note. Watch me.\"") },
-      { label: L("「肩の力抜けよ。固いと指も回らないぞ」", "\"Loosen your shoulders. Stiff hands won't move.\""), love: 4, stat: { p: "T", d: 1 }, mood: "fired", react: L("「……分かってる。だが、その言葉は覚えとく」", "\"...I know. But I'll keep those words in mind.\"") },
+      { label: L("「肩の力抜けよ。固いと指も動かないぞ」", "\"Loosen your shoulders. Stiff hands won't move.\""), love: 4, stat: { p: "T", d: 1 }, mood: "fired", react: L("「……分かってる。だが、その言葉は覚えとく」", "\"...I know. But I'll keep those words in mind.\"") },
       { label: L("「暗い顔すんな、縁起悪い」", "\"Quit the gloomy face, it's bad luck.\""), love: -2, mood: "sad", react: L("「……これが俺の顔だ。文句あるか」", "\"...This is just my face. Got a problem with it?\"") },
     ],
   },
@@ -853,7 +853,7 @@ const MEMBER_EVENTS: MemberEvent[] = [
     bg: "street",
     line: L("「あたしね、昔は陸上やってたの! だから体力だけは負けない! ……ねっ、走り込み一緒にやらない!?」", "\"I used to do track and field! So stamina's the one thing I won't lose at! ...Hey, wanna go running together!?\""),
     replies: [
-      { label: L("「いいね、やろう! あたしたちのスタミナ、武器にする」", "\"Sounds great, let's do it! We'll make stamina our weapon.\""), love: 9, stat: { p: "P", d: 1 }, stam: -3, mood: "happy", react: L("「やった〜! よーし、置いてかないでよね! れっつご〜!」", "\"Yay~! Alright, try to keep up with me! Let's go~!\"") },
+      { label: L("「いいね、やろう! あたしたちのスタミナ、武器にしよう」", "\"Sounds great, let's do it! We'll make stamina our weapon.\""), love: 9, stat: { p: "P", d: 1 }, stam: -3, mood: "happy", react: L("「やった〜! よーし、置いてかないでよね! れっつご〜!」", "\"Yay~! Alright, try to keep up with me! Let's go~!\"") },
       { label: L("「気持ちは嬉しい。けど今日は音に集中な」", "\"Love the energy. But let's focus on the music today.\""), love: 4, stat: { p: "T", d: 1 }, mood: "normal", react: L("「あ、たしかに! じゃあ走るのは明日ね! 約束!」", "\"Oh, true! Then we run tomorrow! Promise!\"") },
       { label: L("「体力しか取り柄ないもんな」", "\"Stamina's your only redeeming trait, huh.\""), love: -3, mood: "sad", react: L("「……えっ。それだけって……ちょっと、傷ついた」", "\"...Huh. Just that...? That kinda hurt.\"") },
     ],
@@ -883,7 +883,7 @@ const MEMBER_EVENTS: MemberEvent[] = [
     bg: "venueBig",
     line: L("「ねえ、今日の客、あたしから目ぇ離せてなかったでしょ？ あたしがステージの主役、そうだよね？」", "\"Hey, the crowd couldn't take their eyes off me tonight, right? I'm the star of this stage — right?\""),
     replies: [
-      { label: L("「主役はお前だ。会場全部、お前の色に染まってた」", "\"You're the star. The whole venue was dyed your color.\""), love: 9, stat: { p: "V", d: 1 }, mood: "happy", react: L("「でしょ！？ ふふっ、あんた、分かってるじゃん。上等」", "\"Right!? Heh, you get it. Nice.\"") },
+      { label: L("「主役はお前だ。会場全部、お前の色に染まってた」", "\"You're the star. The whole venue was dyed your color.\""), love: 9, stat: { p: "V", d: 1 }, mood: "happy", react: L("「でしょ！？ ふふっ、あんた、分かってるじゃん。最高」", "\"Right!? Heh, you get it. Nice.\"") },
       { label: L("「主役だよ。だからこそ、もう一段化けられる」", "\"You are. Which is exactly why you can level up one more notch.\""), love: 4, stat: { p: "P", d: 1 }, stam: -3, mood: "fired", react: L("「……言うね。上等、あたしの限界、まだ先だ」", "\"...Big talk. Fine — my limit's still further out.\"") },
       { label: L("「客はバンド全体を見てたと思うけど」", "\"I think the crowd was watching the whole band, though.\""), love: -4, mood: "sad", react: L("「……は？ 今の、あんた本気で言ってる？ 最悪」", "\"...Huh? You seriously mean that? The worst.\"") },
     ],
@@ -895,7 +895,7 @@ const MEMBER_EVENTS: MemberEvent[] = [
     replies: [
       { label: L("「ないよ。お前の声が刺さるサビ、それが正解だ」", "\"None. A chorus where your voice cuts through — that's the right call.\""), love: 9, stat: { p: "V", d: 1 }, mood: "happy", react: L("「ふふ、分かってるじゃん。じゃあ、最高のサビにしてやる」", "\"Heh, you get it. Then I'll make it the best chorus ever.\"") },
       { label: L("「いいけど、他の三人の見せ場も一個作ろう」", "\"Fine, but let's carve out one spotlight for the other three too.\""), love: 4, stat: { p: "S", d: 1 }, mood: "normal", react: L("「……ま、それもそっか。バンドだもんね。今回は譲る」", "\"...Well, fair enough. We're a band. I'll allow it this time.\"") },
-      { label: L("「自分ばっか目立とうとすんなよ」", "\"Quit trying to hog the spotlight.\""), love: -3, mood: "sad", react: L("「……はぁ。あたしのこと、そう見てたんだ。しらけた」", "\"...Sigh. So that's how you see me. Buzzkill.\"") },
+      { label: L("「自分ばっか目立とうとすんなよ」", "\"Quit trying to hog the spotlight.\""), love: -3, mood: "sad", react: L("「……はぁ。ボーカルが目立たないバンドなんて最悪だろ」", "\"...Sigh. What’s the point of a band if the vocalist doesn’t stand out? Buzzkill.\"") },
     ],
   },
 ];
@@ -944,7 +944,7 @@ const FRIENDSHIPS: Record<string, Friendship> = {
   },
   GO: {
     bg: "street",
-    line: L("「あたしね、このバンドが世界でいちばん好き！ みんなと叩いてると無敵になれるの。ずーっと一緒だよ！」", "\"You know what? I love this band more than anything in the world! When I'm drumming with everyone I feel unstoppable. We're together foreveeer!\""),
+    line: L("「あたしね、このバンドが世界でいちばん好き！ みんなとステージに立つとと無敵になれるの。ずーっと一緒だよ！」", "\"You know what? I love this band more than anything in the world! When I'm on the stage with you I feel unstoppable. We're together foreveeer!\""),
     boon: L("TOMOとの絆が深まった：ビジュ力+6（永続）", "Your bond with TOMO deepened: Looks +6 (permanent)"),
     apply: (s) => { const m = s.members.find((x) => x.artKey === "GO"); if (m) m.V = clampStat(m.V + 6); },
   },
@@ -1011,8 +1011,8 @@ const LIVE_MC_SCRIPTS: McLine[][] = [
   ],
   [
     { label: L("「今夜、暴れる覚悟はできてるかァ!?」", "\"You ready to go wild tonight!?\""), seg: "core" },
-    { label: L("「初めての奴も常連も、まとめて持ってく！」", "\"First-timers, regulars — we're taking all of you!\""), seg: "light", ...fameUp1 },
-    { label: L("「今のあたしたちの音、その目に焼きつけろ」", "\"Our sound, right now — burn it into your eyes.\""), seg: "visual" },
+    { label: L("「初めての奴も常連も、まとめてかかってこい！」", "\"First-timers, regulars — come at me, all of you all of you!\""), seg: "light", ...fameUp1 },
+    { label: L("「今のあたしたちの音、その心に刻んでいけ」", "\"Our sound, right now — carry it in your heart.\""), seg: "visual" },
   ],
   [
     { label: L("「声、限界まで出していけェ——!!」", "\"Push your voices to the limit——!!\""), seg: "core" },
@@ -1027,11 +1027,11 @@ const LIVE_MC_SCRIPTS: McLine[][] = [
   [
     { label: L("「叫びたい奴、全員かかってこい!!」", "\"Anyone who wants to scream — bring it on, all of you!!\""), seg: "core" },
     { label: L("「見せてやる、これがメタルロードだ」", "\"We'll show you — this is Metal Road.\""), seg: "light", ...fameUp1 },
-    { label: L("「静かに始めよう……嵐の前の、な」", "\"Let's start quiet... the calm before the storm.\""), seg: "expert" },
+    { label: L("「静かに始めよう……嵐の前の静けさ、って言うだろ」", "\"Let's start quiet... the calm before the storm.\""), seg: "expert" },
   ],
   [
     { label: L("「今日は最高の一日にしようぜ、いくよ!!」", "\"Let's make today the best day ever — here we go!!\""), seg: "light", ...fameUp1 },
-    { label: L("「耳の肥えたお前らに、本気を聴かせる」", "\"For you sharp-eared lot — here's the real deal.\""), seg: "expert" },
+    { label: L("「批評家気取りのお前らに、私たちの本気を聴かせてやる」", "\"To all you so-called critics, we’re going to make you hear what we’re truly capable of.\""), seg: "expert" },
     { label: L("「体の芯まで歪ませてやる、覚悟しろ!!」", "\"We'll distort you down to your core — brace yourselves!!\""), seg: "core" },
   ],
   [
@@ -1042,7 +1042,7 @@ const LIVE_MC_SCRIPTS: McLine[][] = [
   [
     { label: L("「今日は攻めるぞ。玄人好みの一撃だ」", "\"We're going for the throat tonight — a connoisseur's strike.\""), seg: "expert" },
     { label: L("「難しいことは抜き、とにかく踊れ!!」", "\"Forget the hard stuff — just dance!!\""), seg: "light", ...fameUp1 },
-    { label: L("「この一夜を、一枚の絵みたいに焼き付けろ」", "\"Burn tonight into memory like a painting.\""), seg: "visual" },
+    { label: L("「さぁ今夜もアートを作ろう」", "\"Come on, let’s make awesome art tonight.\""), seg: "visual" },
   ],
   [
     { label: L("「地鳴りみたいなリフ、喰らえ!!」", "\"Take this — a riff like an earthquake!!\""), seg: "core" },
@@ -1051,8 +1051,8 @@ const LIVE_MC_SCRIPTS: McLine[][] = [
   ],
   [
     { label: L("「ハイ、テンション上げてこ——!!」", "\"Alright, let's crank the energy up——!!\""), seg: "light", ...fameUp1 },
-    { label: L("「魂のこもった音しか、鳴らさねえ」", "\"We play nothing that isn't pure soul.\""), seg: "core" },
-    { label: L("「静寂の緊張から、爆ぜる。ついてこい」", "\"From dead silence, we detonate. Keep up.\""), seg: "expert" },
+    { label: L("「全身全霊で弾くから、お前らも全身全霊で応えてくれ」", "\"I’m gonna play with everything I’ve got, so I want you all to give me everything you’ve got too!\""), seg: "core" },
+    { label: L("「静寂の緊張から、爆ぜる。」", "\"From dead silence, we detonate.\""), seg: "expert" },
   ],
 ];
 
@@ -1061,10 +1061,10 @@ const LIVE_ENCORE_MC_SCRIPTS: McLine[][] = [
   [
     { label: L("「もう一曲——付き合えるかァ!?」", "\"One more song——you still with us!?\""), seg: "core" },
     { label: L("「最後まで、笑顔で叫んでけ!!」", "\"Scream your heart out, smiling, to the very end!!\""), seg: "light" },
-    { label: L("「この余韻、目に焼き付けて帰れ」", "\"Burn this afterglow into your eyes before you go.\""), seg: "visual" },
+    { label: L("「この余韻、心に刻んで帰れ」", "\"Keep this afterglow into your heart before you go.\""), seg: "visual" },
   ],
   [
-    { label: L("「まだ帰さねえぞ、覚悟しろ!!」", "\"We're not letting you leave yet — brace yourselves!!\""), seg: "core" },
+    { label: L("「まだ帰さねえぞ、もっと暴れていけ!!」", "\"We're not letting you leave yet — get wild!!\""), seg: "core" },
     { label: L("「みんなで最高のラスト、作ろう!!」", "\"Let's build the best finale together!!\""), seg: "light", ...fameUp1 },
     { label: L("「耳、澄ませてろ——本気の一発だ」", "\"Ears open——here comes the real one.\""), seg: "expert" },
   ],
@@ -1075,7 +1075,7 @@ const LIVE_ENCORE_MC_SCRIPTS: McLine[][] = [
   ],
   [
     { label: L("「体力、まだ残ってるよなァ!?」", "\"You've still got energy left, right!?\""), seg: "core" },
-    { label: L("「一生分の思い出、ここに置いてけ」", "\"Leave a lifetime of memories right here.\""), seg: "visual", ...unityUp(3) },
+    { label: L("「お前らのすべて、ここで出し切れ」", "\"Use your all energy right now.\""), seg: "visual", ...unityUp(3) },
     { label: L("「最後の一音まで、魂込める」", "\"We pour our souls into the very last note.\""), seg: "expert" },
   ],
   [
@@ -1089,12 +1089,12 @@ const LIVE_ENCORE_MC_SCRIPTS: McLine[][] = [
     { label: L("「限界の向こう、一緒に行くぞ!!」", "\"Past your limit — we go there together!!\""), seg: "core" },
   ],
   [
-    { label: L("「余韻すら、作品にしてみせる」", "\"We'll turn even the afterglow into art.\""), seg: "visual" },
+    { label: L("「お前らの熱で今夜の作品は完成する」", "\"Your energy tonight will complete this art.\""), seg: "visual" },
     { label: L("「まだ足りねえ、もっと寄越せ!!」", "\"Not enough yet — give me more!!\""), seg: "core" },
     { label: L("「笑って終わろう、最高の夜だ!!」", "\"Let's end it laughing — what a night!!\""), seg: "light" },
   ],
   [
-    { label: L("「聴き逃すなよ、渾身のアウトロだ」", "\"Don't miss it — an outro with everything in it.\""), seg: "expert" },
+    { label: L("「聴き逃すなよ、渾身のラストソングだ」", "\"Don't miss it — a last song with everything in it.\""), seg: "expert" },
     { label: L("「ラストは耽美に、沈めてやる」", "\"For the finish, we sink you into pure decadence.\""), seg: "visual", ...unityUp(3) },
     { label: L("「ぶっ壊れるまで鳴らすぞ!!」", "\"We play till it all falls apart!!\""), seg: "core" },
   ],
@@ -1106,7 +1106,7 @@ const LIVE_ENCORE_MC_SCRIPTS: McLine[][] = [
   [
     { label: L("「夜を閉じる、美しい一曲を」", "\"A beautiful song to close the night.\""), seg: "visual" },
     { label: L("「みんなの声が、今日の主役だ!!」", "\"Your voices are the star of tonight!!\""), seg: "light" },
-    { label: L("「最後の音符に、全部賭ける」", "\"We bet everything on the final note.\""), seg: "expert" },
+    { label: L("「最後の一音まで全身全霊を賭ける」", "\"I’ll give it everything I’ve got until the final note.\""), seg: "expert" },
   ],
 ];
 
@@ -1136,7 +1136,7 @@ const TIER_SAT = [7, 5, 2] as const;
 
 const SOLO_INSTR: Record<string, string> = { RYO: L("ボーカル", "Vocals"), KEN: L("ギター", "Guitar"), MIO: L("ベース", "Bass"), GO: L("ドラム", "Drums") };
 const SOLO_BURST: Record<string, string> = {
-  RYO: L("の絶叫がPAを突き破り、フロアが総立ちで咆哮を返す", "'s scream rips through the PA and the whole floor roars back on its feet"),
+  RYO: L("の絶叫が天井を突き破り、フロアが総立ちで咆哮を返す", "'s scream rips through the roof and the whole floor roars back on its feet"),
   KEN: L("の指が指板を疾走、速弾きに指笛と歓声が突き刺さる", "'s fingers race across the fretboard, whistles and cheers piercing the shred"),
   MIO: L("の重低音が地面ごと客を揺らし、地鳴りの縦ノリが起きる", "'s low end shakes the ground and the crowd with it, a rumbling wave of headbanging erupts"),
   GO: L("の連打がBPMをねじ上げ、モッシュの渦が爆ぜる", "'s barrage cranks up the BPM and a mosh pit bursts open"),
@@ -1229,7 +1229,7 @@ export function buildLivePreScenes(state: GameState, decision: LiveDecision, rng
       label: L("出来たばかりの未発表曲で勝負を賭ける", "Gamble on a brand-new unreleased song"), seg: "expert",
       extra: (s) => { s.fame = Math.min(100, s.fame + 1); },
       hit: (sat) => react(bud, "fired", L(`攻めの未発表曲——耳の肥えた${seg}層が唸り、深く頷く。挑戦が実った！（満足度+${sat}・知名度+1）`, `A daring unreleased song——discerning ${seg} fans murmur and nod deep. The gamble paid off! (satisfaction +${sat} / fame +1)`), "flash"),
-      other: (sat) => react(bud, "normal", L(`出来たばかりの一曲を叩きつける。反応は分かれたが、爪痕は残した。（満足度+${sat}・知名度+1）`, `You slam down a freshly written track. Reactions were split, but you left a mark. (satisfaction +${sat} / fame +1)`)),
+      other: (sat) => react(bud, "normal", L(`出来たばかりのまだ名も無い曲を叩きつける。反応は分かれたが、爪痕は残した。（満足度+${sat}・知名度+1）`, `You slam down a freshly written track which has no name yet. Reactions were split, but you left a mark. (satisfaction +${sat} / fame +1)`)),
     },
     {
       label: L("バラードでしっとり締める", "Close softly with a ballad"), seg: "visual",
@@ -1368,14 +1368,14 @@ const PARTY_SCRIPTS: PartyScript[] = [
     ask: L("「打ち上げ、今日は思いっきり騒ごうよ！ ……あ、でもリーダー的にはアリ？」", "\"Let's go all out at the after-party tonight! ...Wait, is that okay with you, leader?\""),
     options: [
       { label: L("「アリに決まってる。今日はあたしのおごりだ！」", "\"Of course it is. Tonight's on me!\""), love: 8, bond: 7, stam: 4, mood: "happy", react: L("「うおおマジ！？ リーダー最高！ かんぱーい！」", "\"Whoa, for real!? Best leader ever! Cheeers!\"") },
-      { label: L("「騒ぐのはいい。ただし明日は練習な」", "\"Party's fine. But tomorrow we practice.\""), love: 4, bond: 8, stam: -2, mood: "fired", react: L("「はいはい、分かってるって。今夜だけは無礼講ね！」", "\"Yeah yeah, I know. Just tonight, anything goes!\"") },
+      { label: L("「今日は思いっきり楽しめ。ただし明日は練習な」", "\"Party's fine. But tomorrow we practice.\""), love: 4, bond: 8, stam: -2, mood: "fired", react: L("「はいはい、分かってるって。今夜だけは無礼講ね！」", "\"Yeah yeah, I know. Just tonight, anything goes!\"") },
       { label: L("「騒ぐ気分じゃない。先に帰るわ」", "\"Not in the mood to party. I'm heading home.\""), love: -3, bond: 3, mood: "sad", react: L("「……えっ。そっか。うん、気をつけてね……」", "\"...Oh. I see. Yeah, get home safe...\"") },
     ],
   },
   {
     ask: L("「ねえ……あたしたち、このやり方で本当に合ってるのかな。ふと不安になってさ」", "\"Hey... are we really doing this the right way? I just got hit by this doubt.\""),
     options: [
-      { label: L("「合ってる。今日の客の顔が答えだろ。あたしを信じろ」", "\"We are. Tonight's crowd is the proof. Trust me.\""), love: 8, bond: 8, mood: "happy", react: L("「……うん。あんたがそう言うなら、迷うのやめる」", "\"...Yeah. If you say so, I'll stop second-guessing.\"") },
+      { label: L("「合ってるよ。今日の客の顔が答えだろ。あたしを信じろ」", "\"Don't worry. Tonight's crowd is the proof. Trust me.\""), love: 8, bond: 8, mood: "happy", react: L("「……うん。あんたがそう言うなら、迷うのやめる」", "\"...Yeah. If you say so, I'll stop second-guessing.\"") },
       { label: L("「不安なら、明日それも含めて話そう。今日は休め」", "\"If you're unsure, let's talk it through tomorrow. Rest tonight.\""), love: 5, bond: 6, stam: 4, mood: "normal", react: L("「……そうだね。ちゃんと聞いてくれて、助かる」", "\"...You're right. It helps that you actually listen.\"") },
       { label: L("「今さらそんなこと言うなよ、萎える」", "\"Don't bring that up now, it's a buzzkill.\""), love: -4, bond: 2, mood: "sad", react: L("「……ごめん。忘れて。もう言わないから」", "\"...Sorry. Forget it. I won't bring it up again.\"") },
     ],
@@ -1502,8 +1502,8 @@ export const ITEMS: ItemDef[] = [
   { id: "hellTraining", name: L("地獄のメカニカルトレーニング", "Hellish Mechanical Training"), tier: "B", effect: L("使用したターンの練習効果が2倍", "Doubles practice gains for the turn it's used"), desc: L("伝説の教則本。速弾きを極めるならこれだ。", "The legendary instruction book. If you want to master shredding, this is it."), apply: (s) => setPracticeBuff(s, 2, 1) },
   { id: "baaaan", name: "BAAAAN!!", tier: "B", effect: L("使用すると音楽センス+4", "Songcraft +4 when used"), desc: L("メタラーの愛読書。どれどれ、今月の表紙はだれかな？", "Every metalhead's favorite mag. Now, who's on this month's cover?"), apply: (s) => addParam(s, "S", 4) },
   { id: "studJacket", name: L("スタッズの付いた革ジャン", "Studded Leather Jacket"), tier: "B", effect: L("使用するとビジュ力+4", "Looks +4 when used"), desc: L("これを着ればモテモテ間違いなし！", "Wear this and you're guaranteed to turn heads!"), apply: (s) => addParam(s, "V", 4) },
-  { id: "boinKiller", name: L("ボインキラー", "Boin-Killer"), tier: "B", effect: L("使用したターンに休息を取ると体力が全回復する", "If you rest the turn it's used, stamina fully restores"), desc: L("エッチな本。", "A naughty magazine."), apply: (s) => { s.buffs.restFull = true; } },
-  { id: "jackDaniels", name: L("ジャックダミエルズ", "Jack Daniel's"), tier: "B", effect: L("使用したターンの練習効果が4倍になるが、親密度が-10する", "Quadruples practice gains for the turn, but rapport -10"), desc: L("飲まなきゃやってられねぇ", "Can't get through this sober."), apply: (s) => { setPracticeBuff(s, 4, 1); addStaffIntimacy(s, -10); } },
+  { id: "boinKiller", name: L("ボインキラー", "Basty Habits"), tier: "B", effect: L("使用したターンに休息を取ると体力が全回復する", "If you rest the turn it's used, stamina fully restores"), desc: L("エッチな本。", "A naughty magazine."), apply: (s) => { s.buffs.restFull = true; } },
+  { id: "jackDaniels", name: L("ジャックダミエルズ", "Jack Damiel's"), tier: "B", effect: L("使用したターンの練習効果が4倍になるが、親密度が-10する", "Quadruples practice gains for the turn, but rapport -10"), desc: L("飲まなきゃやってられねぇ", "Can't get through this sober."), apply: (s) => { setPracticeBuff(s, 4, 1); addStaffIntimacy(s, -10); } },
   { id: "hyperMetronome", name: L("ハイパーメトロノーム", "Hyper Metronome"), tier: "A", effect: L("使用すると演奏基礎+4、且つ使用したターンの練習効果が1.5倍", "Musicianship +4, and 1.5x practice gains for the turn"), desc: L("BPM300まで数えられるメトロノーム", "A metronome that counts all the way to BPM 300."), apply: (s) => { addParam(s, "T", 4); setPracticeBuff(s, 1.5, 1); } },
   { id: "bloodLetter", name: L("血まみれのファンレター", "Bloodstained Fan Letter"), tier: "A", effect: L("使用するとパフォーマンス+10、ただし体力が20減る", "Performance +10, but stamina -20"), desc: L("ボロボロの紙に血でこう書かれている。「一生推します」", "Scrawled in blood on tattered paper: \"I'll stan you for life.\""), appearReq: (s) => bandAvg(s, "V") >= 50 && s.totalFans >= 4000, apply: (s) => { addParam(s, "P", 10); addStamina(s, -20); } },
   { id: "silentGuitar", name: L("サイレントギター", "Silent Guitar"), tier: "A", effect: L("使用するとそのターンから3ターンの間練習効果が2倍", "Doubles practice gains for 3 turns starting this one"), desc: L("これで夜中も練習し放題！", "Now you can practice all night long!"), apply: (s) => setPracticeBuff(s, 2, 3) },
@@ -1689,7 +1689,7 @@ const LEADER_INTRO: Record<string, (s: GameState, lead: string, nm: string) => S
     solo(s, "studio", lead, "fired", L("「メタルなんて」と親族は眉をひそめる。……上等だ。速弾きで黙らせてやる。有名になんてならなくていい。俺は、俺の理想の音を追う。", "\"Metal, of all things,\" my relatives sneer. ...Fine by me. I'll shut them up with my shredding. I don't need to be famous. I chase my own ideal sound.")),
   ],
   Ba: (s, lead, nm) => [
-    solo(s, "studio", lead, "normal", L(`——軽音部で組んだバンド。人が足りなくて、ギター志望だった${nm}が渋々握ったのがベースだった。`, `——A band thrown together in the light-music club. Short on people, ${nm} — who'd wanted to play guitar — reluctantly picked up the bass.`), "flash"),
+    solo(s, "studio", lead, "normal", L(`——軽音部で組んだバンド。人が足りなくて、ギター志望だった${nm}が渋々引き受けたのがベースだった。`, `——A band thrown together in the light-music club. Short on people, ${nm} — who'd wanted to play guitar — reluctantly picked up the bass.`), "flash"),
     solo(s, "studio", lead, "happy", L("……なのに今は、この低音がたまらなく愛おしい。売れなくてもいい。ただ、この仲間と、ずっと長くバンドを続けたい。それだけ。", "...And yet now, I adore this low end more than anything. I don't need to make it big. I just want to keep this band going with these people, for a long, long time. That's all.")),
   ],
   Dr: (s, lead) => [
@@ -1717,7 +1717,7 @@ const LEADER_ARC: Record<string, Record<string, (s: GameState, lead: string, nm:
       solo(s, "backstage", lead, "happy", L("大事なライブ前だってのに、RISAはご機嫌で酒瓶を掲げている。「かたいこと言うなって〜！」……止める？", "Big show coming up, and RISA's in high spirits, hoisting a bottle. \"Don't be so uptight~!\" ...Stop her?")),
       {
         bg: "backstage", chars: [{ member: lead, pos: "center", mood: "normal" }],
-        text: L("Voはコンディションが命。でも、酒は彼女の相棒でもある——どうする？", "For a vocalist, condition is everything. But the drink is her companion too——what do you do?"),
+        text: L("ボーカルはコンディションが命。でも、酒は彼女の相棒でもある——どうする？", "For a vocalist, condition is everything. But the drink is her companion too——what do you do?"),
         choices: [
           { label: L("「今日は喉を守れ」と止める", "\"Protect your voice today\" — stop her"), apply: (st) => { addStamina(st, 8); addLove(st, lead, 2); pushLog(st, L("個別STORY：RISAの喉を守った（体力+8・愛情度+2）", "Personal STORY: protected RISA's voice (stamina +8 / affection +2)")); },
             next: [solo(s, "backstage", lead, "normal", L("「ちぇ〜っ、真面目か。……まあ、あんたがそう言うなら。」渋々ボトルを置いた。（体力+8・愛情度+2）", "\"Tch~, such a stiff. ...Well, if you say so.\" She reluctantly set the bottle down. (stamina +8 / affection +2)"), "flash")] },
@@ -1733,21 +1733,21 @@ const LEADER_ARC: Record<string, Record<string, (s: GameState, lead: string, nm:
         text: L("RISAがこちらを見る。「……あんたは、どう思う？」——バンドの、リーダーとして。", "RISA looks over at you. \"...What do you think?\"——as the band's leader."),
         choices: [
           { label: L("「お前の居場所はここだ」と引き止める", "\"Your place is here\" — hold her back"), apply: (st) => { st.bond = Math.min(100, st.bond + 12); addLove(st, lead, 8); pushLog(st, L("個別STORY：RISAはバンドを選んだ（結束+12・愛情度+8）", "Personal STORY: RISA chose the band (unity +12 / affection +8)")); },
-            next: [solo(s, "backstage", lead, "happy", L("「……だよな。あたしもそう思ってた。」名刺を破り捨て、にっと笑う。「あたしの声は、この四人のためにある。」（結束+12・愛情度+8）", "\"...Yeah. I thought so too.\" She rips up the card and grins. \"My voice belongs to these four.\" (unity +12 / affection +8)"), "flash")] },
+            next: [solo(s, "backstage", lead, "happy", L("「……だよな。あたしもそう思ってた。」名刺を破り捨て、にっと笑う。「あたしの声は、お前らのためにある。」（結束+12・愛情度+8）", "\"...Yeah. I thought so too.\" She rips up the card and grins. \"My voice belongs to you.\" (unity +12 / affection +8)"), "flash")] },
           { label: L("「翼を広げてみろ」と背中を押す", "\"Spread your wings\" — give her a push"), apply: (st) => { st.fame = Math.min(100, st.fame + 3); addLove(st, lead, 5); st.bond = Math.max(0, st.bond - 6); pushLog(st, L("個別STORY：RISAはソロも少し経験（知名度+3・愛情度+5・結束-6）", "Personal STORY: RISA tried a bit of solo work (fame +3 / affection +5 / unity -6)")); },
             next: [solo(s, "street", lead, "normal", L("「……ちょっとだけ、外の風も浴びてくる。でも、帰る場所はここだからな。」少しの寂しさと、確かな信頼。（知名度+3・愛情度+5・結束-6）", "\"...I'll go catch a little outside air. But this is where I come home to.\" A touch of loneliness, and unmistakable trust. (fame +3 / affection +5 / unity -6)"), "flash")] },
         ],
       },
     ],
     bigfes: (s, lead) => [
-      solo(s, "venueBig", lead, "happy", L("満員の大観衆を前に、RISAはふと笑った。「……昔のあたしに教えてやりたいよ。お前、ちゃんと居場所を見つけるぞって。」\n\n寂しがり屋のフロントウーマンは、もう一人じゃない。", "Facing a sold-out crowd, RISA suddenly smiled. \"...I wish I could tell my old self — hey, you're gonna find where you belong.\"\n\nThe lonely frontwoman isn't alone anymore."), "flash"),
+      solo(s, "venueBig", lead, "happy", L("満員の大観衆を前に、RISAはふと笑った。「……昔のあたしに教えてやりたいよ。お前、ちゃんと居場所を見つけるぞって。」\n\n寂しがり屋のフロントウーマンは、もう一人じゃない。", "Facing a sold-out crowd, RISA suddenly smiled. \"...I wish I could tell my old self — hey, you're gonna find where you belong.\"\n\nThe lonely front-woman isn't alone anymore."), "flash"),
     ],
   },
   Gt: {
     gateway: (s, lead) => [
       {
         bg: "backstage", chars: [{ member: lead, pos: "center", mood: "sad" }],
-        text: L("初勝利のあとの取材。NAOはマイクを向けられ、露骨に固まっている。（……人前で喋るのは、苦手なんだ）どうする？", "An interview after the first win. A mic is thrust at NAO and she visibly freezes up. (...She's terrible at speaking in public.) What do you do?"),
+        text: L("初めての大手雑誌の取材。NAOはマイクを向けられ、露骨に固まっている。（……人前で喋るのは、苦手なんだ）どうする？", "A first interview by popular magazine. A mic is thrust at NAO and she visibly freezes up. (...She's terrible at speaking in public.) What do you do?"),
         choices: [
           { label: L("代わりに前へ出て、支える", "Step up in her place and back her up"), apply: (st) => { addLove(st, lead, 6); pushLog(st, L("個別STORY：NAOをそっと支えた（愛情度+6）", "Personal STORY: quietly supported NAO (affection +6)")); },
             next: [solo(s, "backstage", lead, "normal", L("「……助かった。」ぼそりと、でも確かに。人見知りの天才が、少しだけ肩の力を抜いた。（愛情度+6）", "\"...You saved me.\" Muttered, but she meant it. The shy genius let the tension drain from her shoulders, just a little. (affection +6)"), "flash")] },
@@ -1757,7 +1757,7 @@ const LEADER_ARC: Record<string, Record<string, (s: GameState, lead: string, nm:
       },
     ],
     indiefes: (s, lead) => [
-      solo(s, "studio", lead, "sad", L("楽屋にNAO宛ての手紙。差出人は親族——「いつまでそんな騒音を。そろそろ目を覚ましなさい」。NAOの手が、微かに震えている。", "A letter for NAO in the green room. From her relatives——\"How long will you keep at that noise? It's time to wake up.\" NAO's hand is trembling faintly.")),
+      solo(s, "studio", lead, "sad", L("楽屋にNAO宛ての手紙。差出人は親族——「いつまでそんな騒音を。そろそろ目を覚ましなさい」。NAOの手が、微かに震えている。", "A letter for NAO in the backstage. From her relatives——\"How long will you keep at that noise? It's time to wake up.\" NAO's hand is trembling faintly.")),
       {
         bg: "studio", chars: [{ member: lead, pos: "center", mood: "normal" }],
         text: L("音楽一家に生まれ、メタルを選んだことがずっと彼女のコンプレックスだ。どう声をかける？", "Born into a family of musicians, choosing metal has always been her private complex. What do you say?"),
@@ -1777,7 +1777,7 @@ const LEADER_ARC: Record<string, Record<string, (s: GameState, lead: string, nm:
         choices: [
           { label: L("「理想を貫け。それがお前だ」", "\"Stick to your ideal. That's who you are.\""), apply: (st) => { addParam(st, "S", 2); addLove(st, lead, 8); pushLog(st, L("個別STORY：NAOは理想を貫いた（センス+2・愛情度+8）", "Personal STORY: NAO held to her ideal (Songcraft +2 / affection +8)")); },
             next: [solo(s, "studio", lead, "fired", L("「……ありがとう。俺は、俺の音でてっぺんを獲る。」迷いが消えた指先が、加速する。（センス+2・愛情度+8）", "\"...Thank you. I'll take the top with my own sound.\" Doubt gone, her fingers accelerate. (Songcraft +2 / affection +8)"), "flash")] },
-          { label: L("「売れ線も、武器のうちだ」", "\"Commercial appeal is a weapon too.\""), apply: (st) => { st.fame = Math.min(100, st.fame + 4); addLove(st, lead, 2); st.bond = Math.max(0, st.bond - 3); pushLog(st, L("個別STORY：NAOは折り合いをつけた（知名度+4・愛情度+2・結束-3）", "Personal STORY: NAO found a compromise (fame +4 / affection +2 / unity -3)")); },
+          { label: L("「売れる曲を作ることも大切だ」", "\"Commercial appeal is also important.\""), apply: (st) => { st.fame = Math.min(100, st.fame + 4); addLove(st, lead, 2); st.bond = Math.max(0, st.bond - 3); pushLog(st, L("個別STORY：NAOは折り合いをつけた（知名度+4・愛情度+2・結束-3）", "Personal STORY: NAO found a compromise (fame +4 / affection +2 / unity -3)")); },
             next: [solo(s, "studio", lead, "normal", L("「……一理ある。理想も、届かなきゃ意味がない、か。」複雑な顔で、新しい譜面を睨む。（知名度+4・愛情度+2・結束-3）", "\"...You've got a point. An ideal means nothing if it doesn't reach anyone, huh.\" Conflicted, she glares at the new sheet music. (fame +4 / affection +2 / unity -3)"), "flash")] },
         ],
       },
@@ -1794,7 +1794,7 @@ const LEADER_ARC: Record<string, Record<string, (s: GameState, lead: string, nm:
       { bg: "street", chars: [{ member: lead, pos: "center", mood: "normal" }], text: L("地味だが、彼女の愛と知識がバンドを一歩前へ進めた。", "Understated, but her love and knowledge moved the band one step forward."), fx: "flash", choices: undefined },
     ],
     indiefes: (s, lead) => [
-      solo(s, "studio", lead, "sad", L("ふとしたとき、MAKOがぽつりと零す。「……あたし、売れなくてもいい。ただ、このバンドが、いつか終わっちゃうのが、こわい」", "Out of nowhere, MAKO murmurs. \"...I don't care about making it big. I'm just scared this band will end someday.\"")),
+      solo(s, "studio", lead, "sad", L("ふとしたとき、MAKOがぽつりとこぼす。「……あたし、売れなくてもいい。ただ、このバンドが、いつか終わっちゃうのが、こわい」", "Out of nowhere, MAKO murmurs. \"...I don't care about making it big. I'm just scared this band will end someday.\"")),
       {
         bg: "studio", chars: [{ member: lead, pos: "center", mood: "normal" }],
         text: L("一番バンドにかける思いが強い、内気なベーシスト。何と返す？", "The shy bassist who cares about the band more than anyone. What do you say back?"),
@@ -1820,7 +1820,7 @@ const LEADER_ARC: Record<string, Record<string, (s: GameState, lead: string, nm:
       },
     ],
     bigfes: (s, lead) => [
-      solo(s, "venueBig", lead, "happy", L("大観衆の中、MAKOがはにかんで叫んだ。「あたし、このバンドが世界で一番好き——ッ！」\n\n内気な彼女の、精一杯の愛の告白。四人の音が、一つに溶けていく。", "Amid the huge crowd, MAKO shyly cried out. \"I love this band more than anything in the world——!\"\n\nThe shy girl's all-out confession of love. The four of their sounds melt into one."), "flash"),
+      solo(s, "venueBig", lead, "happy", L(`大観衆の中、MAKOがはにかんで叫んだ。「あたし、このバンドが世界で一番好き——ッ！」\n\n内気な彼女の、精一杯の愛の告白。${memberCountLabel(s)}の音が、一つに溶けていく。`, `Amid the huge crowd, MAKO shyly cried out. "I love this band more than anything in the world——!"\n\nThe shy girl's all-out confession of love. The ${memberCountLabel(s)} of their sounds melt into one.`), "flash"),
     ],
   },
   Dr: {
@@ -1832,7 +1832,7 @@ const LEADER_ARC: Record<string, Record<string, (s: GameState, lead: string, nm:
         choices: [
           { label: L("深呼吸させて、落ち着かせる", "Have her breathe deep and calm down"), apply: (st) => { addStamina(st, 6); addLove(st, lead, 6); pushLog(st, L("個別STORY：TOMOを落ち着かせた（体力+6・愛情度+6）", "Personal STORY: calmed TOMO down (stamina +6 / affection +6)")); },
             next: [solo(s, "backstage", lead, "happy", L("「……すぅ、はぁ。……うん、いける気がしてきた！ ありがと！」いつもの笑顔が戻った。（体力+6・愛情度+6）", "\"...Innn, ouut. ...Yeah, I think I've got this! Thanks!\" Her usual smile came back. (stamina +6 / affection +6)"), "flash")] },
-          { label: L("「陸上の本番と同じだ、走れ！」", "\"Same as a track meet — now run!\""), apply: (st) => { addParam(st, "P", 2); addLove(st, lead, 3); pushLog(st, L("個別STORY：TOMOに気合が入った（パフォーマンス+2・愛情度+3）", "Personal STORY: pumped TOMO up (Performance +2 / affection +3)")); },
+          { label: L("「陸上の大会と同じだ、走れ！」", "\"Same as a track meet — now run!\""), apply: (st) => { addParam(st, "P", 2); addLove(st, lead, 3); pushLog(st, L("個別STORY：TOMOに気合が入った（パフォーマンス+2・愛情度+3）", "Personal STORY: pumped TOMO up (Performance +2 / affection +3)")); },
             next: [solo(s, "backstage", lead, "fired", L("「……っ、そうだ、スタートの合図と同じ！ よぉし、走るよ——ッ!!」スティックを握り直す。（パフォーマンス+2・愛情度+3）", "\"...Ngh, right, it's just like the starting gun! Okay, here I gooo——!!\" She regrips her sticks. (Performance +2 / affection +3)"), "flash")] },
         ],
       },
@@ -1841,7 +1841,7 @@ const LEADER_ARC: Record<string, Record<string, (s: GameState, lead: string, nm:
       solo(s, "venueSmall", lead, "happy", L("客席にTOMOの友達がぎっしり。「TOMO——ッ！」の声援が飛ぶ。誰とでも仲良くなれる彼女の人徳が、会場を温めた。（知名度が広がった）", "The crowd is packed with TOMO's friends. Cheers of \"TOMO——!\" fly out. Her gift for befriending anyone warmed up the whole venue. (fame spread wider)"), "flash"),
     ],
     major: (s, lead) => [
-      solo(s, "street", "RYO", "normal", L("陸上のコーチがTOMOを訪ねてきた。「君、まだ間に合う。オリンピックを本気で狙わないか」——TOMOの夢は、メダルだ。", "TOMO's old track coach came to see her. \"There's still time for you. What do you say to seriously going for the Olympics?\"——TOMO's dream was a medal.")),
+      solo(s, "street", "RYO", "normal", L("陸上のコーチがTOMOを訪ねてきた。「君、まだ間に合う。オリンピックを本気で狙わないか」——TOMOの夢は、金メダルだ。", "TOMO's old track coach came to see her. \"There's still time for you. What do you say to seriously going for the Olympics?\"——TOMO's dream was a gold medal.")),
       {
         bg: "studio", chars: [{ member: lead, pos: "center", mood: "normal" }],
         text: L("（そういえば、あたし『走るためにドラム』始めたんだっけ…）バンドか、陸上か。彼女の背中を、どう押す？", "(Come to think of it, I started drumming 'to run faster'...) The band, or track. How do you nudge her forward?"),
@@ -1872,7 +1872,7 @@ export function buildLeaderStoryBeat(state: GameState, clearedId: string): Scene
 // — adapting each character's would-be big-festival payoff to the debut moment.
 const SHORT_FINALE: Record<string, (s: GameState, lead: string, nm: string) => Scene[]> = {
   Vo: (s, lead) => [
-    solo(s, "venueBig", lead, "happy", L("大観衆のうねりの中、RISAがふっと笑う。「路上で燻ってたあたしが、メジャーのステージに立ってる。……昔のあたしに教えてやりたいよ。お前、ちゃんと居場所を見つけるぞって」\n\n寂しがり屋のフロントウーマンは、もう一人じゃない。", "In the surging crowd, RISA quietly smiles. \"The girl who was smoldering on the streets is standing on a major stage. ...I wish I could tell my old self — hey, you're gonna find where you belong.\"\n\nThe lonely frontwoman isn't alone anymore."), "flash"),
+    solo(s, "venueBig", lead, "happy", L("大観衆のうねりの中、RISAがふっと笑う。「路上で燻ってたあたしが、メジャーのステージに立ってる。……昔のあたしに教えてやりたいよ。お前、ちゃんと居場所を見つけるぞって」\n\n寂しがり屋のフロントウーマンは、もう一人じゃない。", "In the surging crowd, RISA quietly smiles. \"The girl who was smoldering on the streets is standing on a major stage. ...I wish I could tell my old self — hey, you're gonna find where you belong.\"\n\nThe lonely front-woman isn't alone anymore."), "flash"),
   ],
   Gt: (s, lead) => [
     solo(s, "venueBig", lead, "fired", L("メジャーの看板の下、NAOが静かに弦を鳴らす。「『メタルなんて』と眉をひそめた奴らに、これが答えだ。……俺の音は、間違ってなかった」\n\n理想を曲げなかった速弾きが、確かに夢の舞台まで届いた。", "Under the major-label banner, NAO quietly sounds a string. \"To everyone who sneered 'metal, of all things' — this is my answer. ...My sound wasn't wrong.\"\n\nThe shredding she never compromised carried her all the way to the stage of her dreams."), "flash"),
@@ -1890,7 +1890,7 @@ const SHORT_FINALE: Record<string, (s: GameState, lead: string, nm: string) => S
 export function buildShortFinale(state: GameState): Scene[] {
   const lead = leaderArt(state);
   const beat = SHORT_FINALE[state.leaderPart];
-  const closing = scene("venueBig", ["RYO", "KEN", "MIO", "GO"], L("四人で顔を見合わせ、どちらからともなく吹き出す。「……メジャー、獲っちゃったね」「ここからが本番だろ！」\n\n路上から始まった轟音は、確かに夢の舞台まで届いた。Metal Road の物語は、まだ終わらない——。", "The four of them catch each other's eyes and burst out laughing. \"...We actually took the majors, huh.\" \"The real show starts here!\"\n\nThe roar that started on the streets reached the stage of their dreams. The story of Metal Road is far from over——."), { fx: "flash" });
+  const closing = scene("venueBig", ["RYO", "KEN", "MIO", "GO"], L("全員で顔を見合わせ、どちらからともなく吹き出す。「……メジャー、獲っちゃったね」「ここからが本番だろ！」\n\n路上から始まった轟音は、確かに夢の舞台まで届いた。Metal Road の物語は、まだ終わらない——。", "The four of them catch each other's eyes and burst out laughing. \"...We actually took the majors, huh.\" \"The real show starts here!\"\n\nThe roar that started on the streets reached the stage of their dreams. The story of Metal Road is far from over——."), { fx: "flash" });
   return beat ? [...beat(state, lead, nameOf(state, lead)), closing] : [closing];
 }
 
@@ -1934,7 +1934,7 @@ export function buildFormationScenes(state: GameState): Scene[] {
 
 /** Per-member intro: part, personality, and the crowd their solo shines with. */
 const MEMBER_BLURB: Record<string, { tag: string; mood: Mood; solo: string; line: string }> = {
-  RYO: { tag: L("Vo / ボーカル", "Vo / Vocals"), mood: "fired", solo: L("喉ひとつで沸かせる魅せのボーカル", "show-stopping vocals that own the stage"), line: L("喉ひとつで会場を掌握するカリスマ・フロントウーマン。目立ちたがりで、いつも本気の一歩手前……らしい。", "A charismatic frontwoman who commands a venue with her voice alone. A born show-off, always one step short of full seriousness... supposedly.") },
+  RYO: { tag: L("Vo / ボーカル", "Vo / Vocals"), mood: "fired", solo: L("喉ひとつで沸かせる魅せのボーカル", "show-stopping vocals that own the stage"), line: L("喉ひとつで会場を掌握するカリスマ・フロントウーマン。目立ちたがりで、いつも本気の一歩手前……らしい。", "A charismatic front-woman who commands a venue with her voice alone. A born show-off, always one step short of full seriousness... supposedly.") },
   KEN: { tag: L("Gt / ギター", "Gt / Guitar"), mood: "normal", solo: L("鋭いリフと速弾きのギター", "razor riffs and blistering guitar solos"), line: L("理想の音を追い求めるクールな職人肌。速弾きとリフ作りにかけては一切妥協しない。", "A cool, craftsman-type who chases her ideal sound. When it comes to shredding and riff-writing, she never compromises.") },
   MIO: { tag: L("Ba / ベース", "Ba / Bass"), mood: "normal", solo: L("地を這う重低音のベース", "low end that crawls along the ground"), line: L("無口だが芯は誰より熱い。地を這う低音で、バンドの土台を静かに支える。", "Quiet, but hotter at the core than anyone. With low end that crawls along the ground, she quietly holds up the band's foundation.") },
   GO: { tag: L("Dr / ドラム", "Dr / Drums"), mood: "happy", solo: L("手数で押し切るパワフルなドラム", "a relentless barrage of powerful drumming"), line: L("元・陸上部のパワフルドラマー。とにかく元気で、手数の暴力でバンドを前へ引っぱる。", "An ex-track-team powerhouse drummer. Relentlessly energetic, she drags the band forward with sheer barrages of hits.") },

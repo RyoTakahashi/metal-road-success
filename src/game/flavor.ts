@@ -42,7 +42,7 @@ function lineup(members: string[], mood?: Mood): SceneChar[] {
 const QUIP: Record<string, readonly string[]> = {
   RYO: [L("「フフ、悪くないじゃない」", '"Heh, not bad at all."'), L("「あたしについてきな！」", '"Just follow my lead!"'), L("「客を沸かせてナンボでしょ」", '"It\'s all about firing up the crowd."'), L("「まだ本気じゃないけどね」", '"Not even going full-throttle yet, though."')],
   KEN: [L("「まだだ、もっと詰められる」", '"Not yet. We can tighten this up more."'), L("「この程度で満足すんなよ」", '"Don\'t you dare settle for this."'), L("「次はもっと速く、もっと邪悪に」", '"Next time, faster and more evil."'), L("「悪くない。だが完璧じゃない」", '"Not bad. But not perfect."')],
-  MIO: [L("「……悪くない」", '"...Not bad."'), L("「ん、いい感じ」", '"Mm, feels good."'), L("「…続けよ」", '"...Keep going."'), L("「静かに燃えてる」", '"Quietly on fire."')],
+  MIO: [L("「……悪くない」", '"...Not bad."'), L("「ん、いい感じ」", '"Mm, feels good."'), L("「…続けよう」", '"...Keep going."'), L("（静かに燃えてる）", '"(Quietly on fire.)"')],
   GO: [L("「うおー楽しいーっ！」", '"Whoa, this is so much fun!"'), L("「みんなサイコーッ！」", '"You guys are the best!"'), L("「次いこ次っ！」", '"Next one, next one!"'), L("「あたし、まだまだいけるよっ！」", '"I\'ve still got way more in me!"')],
 };
 const quip = (rng: Rng, m: string): string => pick(rng, QUIP[m] ?? [""]);
@@ -102,7 +102,7 @@ export function composeScenes(songName: string, Q: number, rng: Rng): Scene[] {
 export function performScenes(resultText: string, rng: Rng): Scene[] {
   const front = pick(rng, ["RYO", "GO"]);
   const line = pick(rng, [
-    L("路上でゲリラ演奏。足を止める人が、じわじわ人だかりに。", "A guerrilla set out on the street. People stop, and slowly a crowd forms."),
+    L("路上でゲリラライブ。足を止める人が、じわじわ人だかりに。", "A guerrilla set out on the street. People stop, and slowly a crowd forms."),
     L("駅前でいきなりの生演奏。ざわつく街に音をねじ込む。", "A sudden live show by the station. Cramming our sound into the buzzing streets."),
     L("アンプ片手に路上ライブ。通行人が振り返り、輪ができる。", "Street gig, amp in hand. Passersby turn to look, and a ring gathers."),
   ]);
@@ -116,7 +116,7 @@ export function promoScenes(resultText: string, rng: Rng): Scene[] {
     L("SNSにライブ映像を投下。バズるかは運次第、でも撒かなきゃ始まらない。", "Dropped live footage on social. Whether it goes viral is luck, but you gotta put it out there."),
     L("手描きのフライヤーを刷って街に貼って回る。地道が一番効く。", "Printed hand-drawn flyers and plastered them around town. Grinding it out works best."),
     L("深夜の生配信で新曲を弾き語り。少しずつ、確かに広がっていく。", "Late-night livestream, playing the new song solo. Slowly but surely, the word spreads."),
-    L("告知ポスト、連投。エゴサして反応を噛みしめる。", "Spammed the announcement posts. Then vanity-searched and savored every reaction."),
+    L("告知ポスト、連投。エゴサして反応を確かめる。", "Spammed the announcement posts. Then vanity-searched and savored every reaction."),
   ]);
   return [mk("studio", [c(who, "center", "normal")], `${line}\n\n${resultText}`, { fx: "flash" })];
 }
@@ -128,7 +128,7 @@ export function contactScenes(resultText: string, rng: Rng): Scene[] {
     IS_SHORT
       ? L("対バン相手やハコの店長と繋がった。顔が広がれば、宣伝の伝手も増えていく。", "Connected with fellow acts and venue owners. A wider circle means more ways to get the word out.")
       : L("対バン相手やハコの店長と繋がった。人脈は将来サポート陣を招く鍵になる。", "Connected with fellow acts and venue owners. Contacts are the key to landing support crew down the line."),
-    L("打ち上げで隣り合った他バンドと意気投合。名刺代わりに音源を交換。", "Hit it off with another band at the after-party. Swapped tracks instead of business cards."),
+    L("打ち上げで出会った他バンドと意気投合。名刺代わりに音源を交換。", "Hit it off with another band at the after-party. Swapped tracks instead of business cards."),
     L("顔なじみの店長に次を約束してもらえた。少しずつ地盤が固まる。", "A familiar venue owner promised us a next gig. The groundwork is slowly firming up."),
   ]);
   return [mk("street", [c(who, "center", "happy")], `${line}\n\n${resultText}`, { fx: "flash" })];
@@ -163,7 +163,7 @@ const COACH: Record<Param, { who: string; quote: string }[]> = {
   T: [
     { who: "KEN", quote: L("「BPMあげてけ！走らず、遅れず、喰らいつけ！」", '"Push the BPM! Don\'t rush, don\'t drag, hang on tight!"') },
     { who: "MIO", quote: L("「土台がブレたら全部崩れる。淡々といくよ」", '"If the foundation wobbles, it all falls apart. Nice and steady."') },
-    { who: "GO", quote: L("「あたしのキック、置いてかないでねーっ！」", '"Don\'t leave my kick drum behind!"') },
+    { who: "GO", quote: L("「あたしのリズムに遅れないでねーっ！」", '"Keep up with my beat, okay?"') },
   ],
   P: [
     { who: "RYO", quote: L("「客を煽って巻き込め！もっと声出していけぇ！」", '"Work the crowd, pull them in! Give me more voice!"') },
@@ -193,7 +193,7 @@ const PRACTICE_INTRO: Record<Param, readonly string[]> = {
   ],
   S: [
     L("曲作りとアレンジの研究。名盤を聴き込み、フレーズの引き出しを増やす。", "Studying songwriting and arrangement. Soaking in classic albums, stocking up on phrases."),
-    L("コード進行と理論をひたすら分解・再構築。感性を研ぎ澄ます。", "Breaking down and rebuilding chord progressions and theory endlessly. Sharpening the instincts."),
+    L("学び続けている理論からコード進行を再構築。感性を研ぎ澄ます。", "Rebuilding chord progressions through theory, sharpening my musical intuition."),
     L("スタジオの隅で作曲ノートと睨めっこ。センスは地道に磨くものだ。", "Staring down the songwriting notebook in the corner of the studio. Songcraft is honed the hard way."),
   ],
   V: [
@@ -236,7 +236,7 @@ const GIFT_B = [
   L("馴染みのハコの店長が「持ってきな」と、そっと何かをくれた。", 'The venue owner we know slipped us something — "Take it."'),
 ] as const;
 const GIFT_A = [
-  L("対バンの大先輩がニヤリと笑って「これ、お前らに貸してやるよ」と差し出した。", 'A big-name veteran from the bill grinned and held it out — "I\'ll lend this to you kids."'),
+  L("対バンの大先輩がニヤリと笑って「これ、お前らにやるよ」と差し出した。", 'A big-name veteran from the bill grinned and held it out — "I\'ll give this to you kids."'),
   L("打ち上げで意気投合した音楽関係者が「見込みがあるね」と手土産をくれた。", 'A music-industry contact we clicked with at the after-party gave us a gift — "You\'ve got potential."'),
   L("常連のファンが「どうしても渡したくて」と、特別な一品を持ってきてくれた。", 'A regular fan brought us something special — "I just had to give you this."'),
 ] as const;
