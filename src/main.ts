@@ -27,6 +27,8 @@ import {
   useItem,
 } from "./game/state";
 import { tutorialStepFor } from "./game/tutorial";
+import { applyRhythmResult, rhythmGrade } from "./game/rhythm";
+import { runRhythm } from "./ui/rhythm";
 import type { ActionKind, GameState, Param, StaffRole } from "./game/types";
 import { getLang, langChosen, setLang, L } from "./game/i18n";
 import * as bgm from "./ui/audio";
@@ -87,19 +89,7 @@ function finishSlides(): void {
   }
   if (afterSlides === "liveResolve") {
     // Pre-show MC/performance choices are locked in; now resolve the live.
-    const result = resolveLive(state, ui.liveDecision);
-    applyLiveResult(state, ui.liveDecision, result);
-    ui.liveResult = result;
-    pushLog(state, L(`ライブ実施：動員${result.draw} / 満足度${result.satisfaction} / 新規ファン+${result.newFans}`, `Live show: draw ${result.draw} / satisfaction ${result.satisfaction} / new fans +${result.newFans}`));
-    // An S rating (satisfaction ≥ 80) evolves the band's look to that layer's style.
-    const evo = registerLiveEvolution(state, ui.liveDecision.target, result.satisfaction);
-    // A strong targeted show pushes that segment's rival band back.
-    applyLiveToMarket(state, ui.liveDecision.target, result.satisfaction);
-    afterSlides = "result";
-    ui.sceneSeq = [...buildLiveScenes(state, ui.liveDecision, result), ...evo];
-    ui.sceneIndex = 0;
-    ui.mode = "slides";
-    redraw();
+    resolveLiveNow();
     return;
   }
   if (afterSlides === "month") {
@@ -136,6 +126,24 @@ function finishSlides(): void {
     }
   }
   ui.mode = next === "live" ? "live" : "board";
+  redraw();
+}
+
+// Resolve the live once the performance (rhythm game or menu choices) has banked
+// its satisfaction into buffs.liveSat, then roll into the result slides.
+function resolveLiveNow(): void {
+  const result = resolveLive(state, ui.liveDecision);
+  applyLiveResult(state, ui.liveDecision, result);
+  ui.liveResult = result;
+  pushLog(state, L(`ライブ実施：動員${result.draw} / 満足度${result.satisfaction} / 新規ファン+${result.newFans}`, `Live show: draw ${result.draw} / satisfaction ${result.satisfaction} / new fans +${result.newFans}`));
+  // An S rating (satisfaction ≥ 80) evolves the band's look to that layer's style.
+  const evo = registerLiveEvolution(state, ui.liveDecision.target, result.satisfaction);
+  // A strong targeted show pushes that segment's rival band back.
+  applyLiveToMarket(state, ui.liveDecision.target, result.satisfaction);
+  afterSlides = "result";
+  ui.sceneSeq = [...buildLiveScenes(state, ui.liveDecision, result), ...evo];
+  ui.sceneIndex = 0;
+  ui.mode = "slides";
   redraw();
 }
 
@@ -317,12 +325,23 @@ const handlers: Handlers = {
     redraw();
   },
   onConfirmLive() {
-    // The live is resolved only after the in-the-moment MC/performance choices.
-    afterSlides = "liveResolve";
-    ui.sceneSeq = buildLivePreScenes(state, ui.liveDecision);
-    ui.sceneIndex = 0;
-    ui.mode = "slides";
-    redraw();
+    // Auto/test-play can't drum: fall back to the menu-based performance (also
+    // what the headless simulator drives). Real players get the rhythm game.
+    if (ui.auto) {
+      afterSlides = "liveResolve";
+      ui.sceneSeq = buildLivePreScenes(state, ui.liveDecision);
+      ui.sceneIndex = 0;
+      ui.mode = "slides";
+      redraw();
+      return;
+    }
+    // Real-time performance: right hand = rhythm, left hand = staging. The
+    // overlay owns the screen until it finishes, then we resolve the live.
+    runRhythm(state, ui.liveDecision, (res) => {
+      const sat = applyRhythmResult(state, res);
+      pushLog(state, L(`パフォーマンス評価：${rhythmGrade(res)}（満足度+${sat}／最大コンボ${res.maxCombo}）`, `Performance: ${rhythmGrade(res)} (satisfaction +${sat} / max combo ${res.maxCombo})`));
+      resolveLiveNow();
+    });
   },
   onNextMonth() {
     // Leaving the result screen: a rating-specific reaction, then the after-party

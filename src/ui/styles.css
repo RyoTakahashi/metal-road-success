@@ -608,3 +608,67 @@ body {
   .hdr-btn { min-width: 34px; height: 34px; font-size: 13px; }
   .hdr-btn.hdr-bgm { width: 34px; font-size: 16px; }
 }
+
+/* ===== Live rhythm mini-game overlay ===================================== */
+.rg-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #0b0e18; overflow: hidden;
+  font-family: system-ui, sans-serif; color: #fff;
+  touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.rg-canvas { position: absolute; inset: 0; display: block; }
+.rg-hud {
+  position: absolute; top: 10px; left: 0; right: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  pointer-events: none; text-shadow: 0 2px 6px #000;
+}
+.rg-combo { font-weight: 900; font-size: 22px; color: var(--accent); min-height: 24px; }
+.rg-judge {
+  font-weight: 900; font-size: 26px; opacity: 0; transition: opacity .12s;
+}
+.rg-judge.perfect { color: #ffe14d; }
+.rg-judge.good { color: #54c7ff; }
+.rg-judge.miss { color: #ff5577; }
+.rg-target {
+  position: absolute; top: 10px; left: 12px; font-size: 13px;
+  background: #0009; padding: 5px 10px; border-radius: 8px; pointer-events: none;
+}
+.rg-target b { color: var(--accent); }
+.rg-chance {
+  position: absolute; left: 6%; top: 30%; width: 38%;
+  text-align: center; font-weight: 800; font-size: clamp(16px, 4.5vw, 26px);
+  color: #fff; background: linear-gradient(180deg, #ff5577cc, #ff557700);
+  padding: 14px 8px; border-radius: 14px; pointer-events: none;
+  animation: rg-pulse .5s ease-in-out infinite alternate;
+}
+.rg-chance b { color: var(--accent); }
+@keyframes rg-pulse { from { transform: scale(1); } to { transform: scale(1.06); } }
+.rg-cmds {
+  position: absolute; left: 0; bottom: 0; width: 50%;
+  display: flex; gap: 10px; padding: 14px; box-sizing: border-box;
+}
+.rg-cmd {
+  flex: 1; min-height: 84px; border-radius: 16px; border: 2px solid #ffffff2e;
+  background: #1a2540; color: #fff; font-size: 18px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+}
+.rg-cmd small { opacity: .6; font-size: 12px; }
+.rg-cmd[data-style="hype"] { border-color: #ff557788; }
+.rg-cmd[data-style="show"] { border-color: #54c7ff88; }
+.rg-cmd.live { box-shadow: 0 0 0 3px var(--accent), 0 0 24px #ffcf3a66; transform: translateY(-2px); }
+.rg-cmd:active { transform: scale(.97); }
+.rg-start[hidden], .rg-chance[hidden] { display: none; }
+.rg-start {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; gap: 10px;
+  background: #0b0e18ee; padding: 24px; box-sizing: border-box;
+}
+.rg-start h2 { margin: 0 0 6px; }
+.rg-start p { margin: 2px 0; font-size: 14px; max-width: 520px; color: #cfe; }
+.rg-start .rg-hint { color: var(--muted); font-size: 12px; }
+.rg-start .rg-go { margin-top: 14px; font-size: 18px; padding: 12px 28px; }
+.rg-count {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: clamp(48px, 16vw, 120px); font-weight: 900; color: var(--accent);
+  text-shadow: 0 4px 16px #000; pointer-events: none;
+}
