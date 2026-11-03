@@ -27,8 +27,7 @@ import {
   useItem,
 } from "./game/state";
 import { tutorialStepFor } from "./game/tutorial";
-import { applyRhythmResult, rhythmGrade } from "./game/rhythm";
-import { runRhythm } from "./ui/rhythm";
+import { runLiveStage, applyStageResult, stageGrade } from "./ui/livestage";
 import type { ActionKind, GameState, Param, StaffRole } from "./game/types";
 import { getLang, langChosen, setLang, L } from "./game/i18n";
 import * as bgm from "./ui/audio";
@@ -335,11 +334,11 @@ const handlers: Handlers = {
       redraw();
       return;
     }
-    // Real-time performance: right hand = rhythm, left hand = staging. The
-    // overlay owns the screen until it finishes, then we resolve the live.
-    runRhythm(state, ui.liveDecision, (res) => {
-      const sat = applyRhythmResult(state, res);
-      pushLog(state, L(`パフォーマンス評価：${rhythmGrade(res)}（満足度+${sat}／最大コンボ${res.maxCombo}）`, `Performance: ${rhythmGrade(res)} (satisfaction +${sat} / max combo ${res.maxCombo})`));
+    // Real-time live stage: read the crowd and the band, HYPE and catch wobbles.
+    // The overlay owns the screen until it finishes, then we resolve the live.
+    runLiveStage(state, ui.liveDecision, (res) => {
+      const sat = applyStageResult(state, res);
+      pushLog(state, L(`パフォーマンス評価：${stageGrade(res)}（満足度+${sat}／平均ヒート${Math.round(res.avgHeat)}）`, `Performance: ${stageGrade(res)} (satisfaction +${sat} / avg heat ${Math.round(res.avgHeat)})`));
       resolveLiveNow();
     });
   },

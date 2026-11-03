@@ -36,6 +36,9 @@ export const setEvolution = (evo: string): void => { currentEvo = evo; };
 
 export const bgSrc = (k: BgKey): string => BG_SRC[k] ?? BG_SRC.studio;
 
+/** Audience art for the live-stage screen, by crowd-heat level (crossfaded). */
+export const crowdSrc = (level: "low" | "mid" | "high"): string => `${base}assets/stage/crowd.${level}.webp`;
+
 /** Resolve a member's standing art for a mood (evolution-aware, fusion-aware). */
 export const charSrc = (member: string, mood: Mood = "normal"): string => {
   const key = member in CHAR_VER ? member : "RYO";
