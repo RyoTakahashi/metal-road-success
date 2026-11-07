@@ -630,17 +630,17 @@ body {
   background: linear-gradient(180deg, #43356e 0%, #2a1e4a 45%, #180f2e 100%);
   box-shadow: inset 0 3px 0 #ffffff2e; }
 /* drum riser (a raised platform the kit & drummer sit on, set back = smaller) */
-.ls-riser { position: absolute; left: 37%; bottom: 60%; width: 30%; height: 11%; z-index: 1;
+.ls-riser { position: absolute; left: 37%; bottom: 62%; width: 22%; height: 9%; z-index: 1;
   transform: translateX(-50%); clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
   background: linear-gradient(180deg, #2c2450 0%, #140c28 100%); box-shadow: inset 0 2px 0 #ffffff33; }
 /* bass amp (orange, tall) upstage-left; guitar amp upstage-right — smaller = farther */
-.ls-amp-l { left: 15%; bottom: 62%; width: 8%; }
-.ls-amp-r { left: 85%; bottom: 62%; width: 10.5%; }
+.ls-amp-l { left: 15%; bottom: 70%; width: 7.5%; }
+.ls-amp-r { left: 85%; bottom: 70%; width: 9.5%; }
 /* PA stacks at the front corners — larger = closer */
 .ls-pa-l { left: 4%; bottom: 46%; width: 11%; }
 .ls-pa-r { left: 96%; bottom: 46%; width: 11%; }
 /* drum kit IN FRONT of the drummer (she plays from behind it) */
-.ls-drumkit { position: absolute; left: 37%; bottom: 55%; width: 25%; transform: translateX(-50%);
+.ls-drumkit { position: absolute; left: 37%; bottom: 59%; width: 17%; transform: translateX(-50%);
   z-index: 5; filter: drop-shadow(0 8px 10px #000a); pointer-events: none; }
 /* four columns: member on top, its lane below, its pad at the bottom */
 .ls-cols { position: absolute; left: 0; right: 0; top: 7%; bottom: 0; z-index: 4;
