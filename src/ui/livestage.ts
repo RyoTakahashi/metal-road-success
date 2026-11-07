@@ -35,12 +35,12 @@ export function runLiveStage(
   overlay.innerHTML = `
     <div class="ls-stage">
       <div class="ls-gear">
+        <div class="ls-floor"></div>
+        <div class="ls-riser"></div>
         <img class="ls-pa ls-pa-l" src="${gearSrc("pa")}" alt="">
         <img class="ls-pa ls-pa-r" src="${gearSrc("pa")}" alt="">
-        <img class="ls-amp ls-amp-l" src="${gearSrc("amp")}" alt="">
+        <img class="ls-amp ls-amp-l" src="${gearSrc("bassamp")}" alt="">
         <img class="ls-amp ls-amp-r" src="${gearSrc("amp")}" alt="">
-        <img class="ls-drumkit" src="${gearSrc("drumkit")}" alt="">
-        <div class="ls-floor"></div>
       </div>
       <div class="ls-cols">${keys.map((k) => `
         <div class="ls-col" data-key="${k}" style="--pc:${PART_COLOR[k]}">
@@ -49,6 +49,7 @@ export function runLiveStage(
           <button class="ls-pad" data-key="${k}"><b>${locStr(PART_LABEL[k])}</b><span class="ls-padname">${nameOf(k)}</span><small>${PART_KEYCAP[k]}</small></button>
         </div>`).join("")}
       </div>
+      <img class="ls-drumkit" src="${gearSrc("drumkit")}" alt="">
       <img class="ls-crowd ls-crowd-mid" src="${crowdSrc("mid")}" alt="">
       <img class="ls-crowd ls-crowd-low" src="${crowdSrc("low")}" alt="">
       <img class="ls-crowd ls-crowd-high" src="${crowdSrc("high")}" alt="">

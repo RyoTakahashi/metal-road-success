@@ -40,7 +40,7 @@ export const bgSrc = (k: BgKey): string => BG_SRC[k] ?? BG_SRC.studio;
 export const crowdSrc = (level: "low" | "mid" | "high"): string => `${base}assets/stage/crowd.${level}.webp`;
 
 /** Stage equipment art (amps / drum kit / PA) for the live-stage backdrop. */
-export const gearSrc = (name: "amp" | "drumkit" | "pa"): string => `${base}assets/stage/gear-${name}.webp`;
+export const gearSrc = (name: "amp" | "bassamp" | "drumkit" | "pa"): string => `${base}assets/stage/gear-${name}.webp`;
 
 /** Resolve a member's standing art for a mood (evolution-aware, fusion-aware). */
 export const charSrc = (member: string, mood: Mood = "normal"): string => {
