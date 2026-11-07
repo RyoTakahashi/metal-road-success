@@ -59,7 +59,6 @@ export function runLiveStage(
       <div class="ls-topline"><span class="ls-beatno"></span><span class="ls-targetlabel">${L("客層", "Crowd")}: <b>${segLabel(decision.target)}</b></span></div>
     </div>
     <div class="ls-cmdtag" hidden></div>
-    <div class="ls-preview" hidden></div>
     <div class="ls-fx"></div>
 
     <div class="ls-choice" hidden>
@@ -80,7 +79,6 @@ export function runLiveStage(
   const heatFill = q<HTMLElement>(".ls-heatbar > i");
   const beatNoEl = q<HTMLElement>(".ls-beatno");
   const cmdTagEl = q<HTMLElement>(".ls-cmdtag");
-  const previewEl = q<HTMLElement>(".ls-preview");
   const fxEl = q<HTMLElement>(".ls-fx");
   const lowImg = q<HTMLElement>(".ls-crowd-low");
   const highImg = q<HTMLElement>(".ls-crowd-high");
@@ -158,16 +156,6 @@ export function runLiveStage(
     cmdTagEl.hidden = false;
     cmdTagEl.textContent = L(`コマンド（${cmd.steps.length}打）— 落ちてくるノーツをタイミングよく！`, `Command (${cmd.steps.length} hits) — tap each note as it lands!`);
     keys.forEach((k) => { col.get(k)!.notes.innerHTML = ""; });
-    // full command, in order, shown up-front (highlights the next one to press)
-    previewEl.hidden = false;
-    previewEl.innerHTML = "";
-    const chips = cmd.steps.map((s) => {
-      const c = document.createElement("div");
-      c.className = "ls-chip"; c.style.setProperty("--pc", PART_COLOR[s.part]);
-      c.textContent = PART_KEYCAP[s.part];
-      previewEl.appendChild(c);
-      return c;
-    });
     const leadMs = Math.max(1350, cmd.stepMs * 2.6); // fall time (slow & readable)
     interface N { el: HTMLElement; idx: number; part: PartKey; hitT: number; spawnT: number; judged: boolean; shown: boolean; launched: boolean }
     const notes: N[] = cmd.steps.map((s, i) => {
@@ -193,7 +181,6 @@ export function runLiveStage(
       }
       if (!best || bestDt > HIT.goodMs) { flash(L("ミス", "Miss"), "small"); return; }
       best.judged = true; best.el.classList.add("got");
-      chips[best.idx].classList.add("done");
       launch(part);
       hits++; stepHits++;
       if (bestDt <= HIT.perfectMs) { perfects++; stepPerf++; laneFlash(part, "flash"); flash("PERFECT", "big"); }
@@ -218,9 +205,6 @@ export function runLiveStage(
       function frame(ts: number): void {
         if (!start) start = ts;
         const now = ts - start;
-        let nextIdx = -1;
-        for (const n of notes) if (!n.judged) { nextIdx = n.idx; break; }
-        chips.forEach((c, i) => c.classList.toggle("now", i === nextIdx));
         for (const n of notes) {
           if (now < n.spawnT) continue;
           if (!n.launched) { n.launched = true; launch(n.part); } // member fires it
@@ -232,7 +216,7 @@ export function runLiveStage(
           n.el.style.transform = `translateY(${y}px)`;
           n.el.classList.toggle("near", !n.judged && Math.abs(dt) <= HIT.goodMs);
           n.el.style.opacity = n.judged ? "0.2" : dt < -HIT.goodMs ? "0.15" : "1";
-          if (!n.judged && dt < -HIT.goodMs) { n.judged = true; chips[n.idx].classList.add("miss"); }
+          if (!n.judged && dt < -HIT.goodMs) { n.judged = true; }
         }
         if (now >= cmd.totalMs + leadMs && !done) {
           done = true;
@@ -241,7 +225,6 @@ export function runLiveStage(
           pads.forEach((p) => p.removeEventListener("pointerdown", padHandler));
           overlay.classList.remove("cmd");
           cmdTagEl.hidden = true;
-          previewEl.hidden = true;
           steps += total;
           resolve(total ? (stepPerf + (stepHits - stepPerf) * 0.5) / total : 0);
           return;
