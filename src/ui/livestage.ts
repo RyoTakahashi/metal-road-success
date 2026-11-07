@@ -1,10 +1,11 @@
-// Live-stage mini-game — on-screen player. Flow: over a stage backdrop (the band
-// + the silhouette crowd), each beat shows a CHOICE (like the old MC/song
-// prompts); picking one reveals a COMMAND — a sequence of the four part-buttons
-// (Vo/Gt/Ba/Dr) whose tempo & length depend on the choice — which the player
-// inputs in time. A beat's payoff = choice crowd-fit × input accuracy. The crowd
-// is pure feedback (brighter/livelier with a better run). PC keys D/F/J/K +
-// mobile taps. Mounts a full-screen overlay on document.body.
+// Live-stage mini-game — on-screen player. Over a stage backdrop (the band on
+// stage + the silhouette crowd), each beat shows a CHOICE (MC line / solo /
+// song); picking one reveals a COMMAND whose tempo & length depend on the choice.
+// The command plays as a 4-LANE, top-down rhythm input: the four members stand
+// each above their own lane (L→R: Gt, Vo, Dr, Ba = keys D F J K), and each member
+// "launches" notes that fall down their lane to the hit line at the pad. A beat's
+// payoff = choice crowd-fit × input accuracy. Crowd is pure feedback. PC keys +
+// mobile taps. Full-screen overlay on document.body.
 
 import { L } from "../game/i18n";
 import { charSrc, crowdSrc, setEvolution, type Mood } from "./assets";
@@ -20,15 +21,6 @@ import {
 
 const PART_COLOR: Record<PartKey, string> = { RYO: "#ff5577", KEN: "#54c7ff", MIO: "#b98cff", GO: "#4fd08a" };
 
-// Stage placement (audience's view): Bass 下手(left), Vocal center-front,
-// Drums center-back (smaller/raised, behind), Guitar 上手(right).
-const LAYOUT: Record<PartKey, { left: number; bottom: number; sc: number; z: number }> = {
-  MIO: { left: 19, bottom: 2, sc: 1, z: 2 }, // Ba — 下手
-  RYO: { left: 50, bottom: 0, sc: 1.08, z: 3 }, // Vo — 中央前
-  GO: { left: 41, bottom: 24, sc: 0.72, z: 1 }, // Dr — 中央奥
-  KEN: { left: 81, bottom: 2, sc: 1, z: 2 }, // Gt — 上手
-};
-
 export function runLiveStage(
   state: GameState,
   decision: LiveDecision,
@@ -42,12 +34,12 @@ export function runLiveStage(
   overlay.className = "ls-overlay";
   overlay.innerHTML = `
     <div class="ls-stage">
-      <div class="ls-band">${keys.map((k) => {
-        const p = LAYOUT[k];
-        return `<div class="ls-member" data-key="${k}" style="left:${p.left}%;bottom:${p.bottom}%;height:calc(46% * ${p.sc});z-index:${p.z}">
-          <img class="ls-sprite" alt="${nameOf(k)}" src="${charSrc(k, "normal")}">
-        </div>`;
-      }).join("")}
+      <div class="ls-cols">${keys.map((k) => `
+        <div class="ls-col" data-key="${k}" style="--pc:${PART_COLOR[k]}">
+          <div class="ls-member"><img class="ls-sprite" alt="${nameOf(k)}" src="${charSrc(k, "normal")}"></div>
+          <div class="ls-lane"><div class="ls-notes"></div><div class="ls-hitline"></div></div>
+          <button class="ls-pad" data-key="${k}"><b>${locStr(PART_LABEL[k])}</b><span class="ls-padname">${nameOf(k)}</span><small>${PART_KEYCAP[k]}</small></button>
+        </div>`).join("")}
       </div>
       <img class="ls-crowd ls-crowd-mid" src="${crowdSrc("mid")}" alt="">
       <img class="ls-crowd ls-crowd-low" src="${crowdSrc("low")}" alt="">
@@ -57,6 +49,8 @@ export function runLiveStage(
       <div class="ls-heatwrap"><span class="ls-heatlabel">${L("客席", "Crowd")}</span><div class="ls-heatbar"><i></i></div></div>
       <div class="ls-topline"><span class="ls-beatno"></span><span class="ls-targetlabel">${L("客層", "Crowd")}: <b>${segLabel(decision.target)}</b></span></div>
     </div>
+    <div class="ls-cmdtag" hidden></div>
+    <div class="ls-preview" hidden></div>
     <div class="ls-fx"></div>
 
     <div class="ls-choice" hidden>
@@ -64,22 +58,11 @@ export function runLiveStage(
       <div class="ls-options"></div>
     </div>
 
-    <div class="ls-cmd" hidden>
-      <div class="ls-cmdtag"></div>
-      <div class="ls-preview"></div>
-      <div class="ls-lane"><div class="ls-hitline"></div><div class="ls-notes"></div></div>
-      <div class="ls-pads">${keys.map((k) => `
-        <button class="ls-pad" data-key="${k}" style="--pc:${PART_COLOR[k]}">
-          <b>${locStr(PART_LABEL[k])}</b><span class="ls-padname">${nameOf(k)}</span><small>${PART_KEYCAP[k]}</small>
-        </button>`).join("")}
-      </div>
-    </div>
-
     <div class="ls-start">
       <h2>🎤 ${L("ライブ本番！", "Showtime!")}</h2>
-      <p>${L("まず<b>選択肢</b>を選ぶ（煽り方や曲）。選ぶと<b>コマンド</b>が流れてくる。", "Pick a <b>choice</b> (how to hype / which song). It reveals a <b>command</b>.")}</p>
-      <p>${L("ノーツがラインに来たら、その<b>パート（Vo/Gt/Ba/Dr）</b>のボタンをタイミングよく！", "As each note hits the line, tap its <b>part button (Vo/Gt/Ba/Dr)</b> in time!")}</p>
-      <p class="ls-hint">${L("客層に合う選択×正確な入力で、satisfaction が上がる。", "Match the crowd and nail the input for a better show.")}</p>
+      <p>${L("まず<b>選択肢</b>（煽り方／曲）を選ぶ。選ぶと<b>コマンド</b>が始まる。", "Pick a <b>choice</b> (how to hype / which song). It starts a <b>command</b>.")}</p>
+      <p>${L("各メンバーの<b>レーンにノーツが落ちてくる</b>。下のボタン（<b>D F J K</b>／タップ）でタイミングよく！", "Notes <b>fall down each member's lane</b>. Hit the pad below (<b>D F J K</b> / tap) in time!")}</p>
+      <p class="ls-hint">${L("左から ギター・ボーカル・ドラム・ベース。客層に合う選択×正確な入力で満足度UP。", "L→R: Gt · Vo · Dr · Ba. Match the crowd and nail the input for a better show.")}</p>
       <button class="ls-go btn">▶ ${L("スタート", "Start")}</button>
     </div>`;
   document.body.appendChild(overlay);
@@ -87,20 +70,26 @@ export function runLiveStage(
   const q = <T extends Element>(s: string): T => overlay.querySelector<T>(s)!;
   const heatFill = q<HTMLElement>(".ls-heatbar > i");
   const beatNoEl = q<HTMLElement>(".ls-beatno");
+  const cmdTagEl = q<HTMLElement>(".ls-cmdtag");
+  const previewEl = q<HTMLElement>(".ls-preview");
   const fxEl = q<HTMLElement>(".ls-fx");
   const lowImg = q<HTMLElement>(".ls-crowd-low");
   const highImg = q<HTMLElement>(".ls-crowd-high");
   const choiceEl = q<HTMLElement>(".ls-choice");
   const promptEl = q<HTMLElement>(".ls-prompt");
   const optionsEl = q<HTMLElement>(".ls-options");
-  const cmdEl = q<HTMLElement>(".ls-cmd");
-  const cmdTagEl = q<HTMLElement>(".ls-cmdtag");
-  const notesEl = q<HTMLElement>(".ls-notes");
   const startEl = q<HTMLElement>(".ls-start");
-  const spriteOf = new Map<string, HTMLImageElement>();
+
+  const col = new Map<PartKey, { member: HTMLElement; sprite: HTMLImageElement; notes: HTMLElement; lane: HTMLElement }>();
   const moodNow = new Map<string, Mood>();
   keys.forEach((k) => {
-    spriteOf.set(k, overlay.querySelector<HTMLImageElement>(`.ls-member[data-key="${k}"] .ls-sprite`)!);
+    const c = overlay.querySelector<HTMLElement>(`.ls-col[data-key="${k}"]`)!;
+    col.set(k, {
+      member: c.querySelector<HTMLElement>(".ls-member")!,
+      sprite: c.querySelector<HTMLImageElement>(".ls-sprite")!,
+      notes: c.querySelector<HTMLElement>(".ls-notes")!,
+      lane: c.querySelector<HTMLElement>(".ls-lane")!,
+    });
     moodNow.set(k, "normal");
   });
 
@@ -112,7 +101,7 @@ export function runLiveStage(
   function setMood(k: string, mood: Mood): void {
     if (moodNow.get(k) === mood) return;
     moodNow.set(k, mood);
-    spriteOf.get(k)!.src = charSrc(k, mood);
+    col.get(k as PartKey)!.sprite.src = charSrc(k, mood);
   }
   function renderCrowd(): void {
     heatFill.style.width = heat + "%";
@@ -126,9 +115,9 @@ export function runLiveStage(
     fxEl.textContent = txt; fxEl.className = "ls-fx " + cls; fxEl.style.opacity = "1";
     setTimeout(() => { fxEl.style.opacity = "0"; }, 300);
   }
-  function pulse(k: string): void {
-    const el = spriteOf.get(k); if (!el) return;
-    el.classList.remove("ls-hit"); void el.offsetWidth; el.classList.add("ls-hit");
+  function launch(k: PartKey): void {
+    const m = col.get(k)!.member;
+    m.classList.remove("launch"); void m.offsetWidth; m.classList.add("launch");
   }
   const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
@@ -149,31 +138,32 @@ export function runLiveStage(
     });
   }
 
-  // --- command (QTE) phase ------------------------------------------------
-  const previewEl = q<HTMLElement>(".ls-preview");
+  // --- command (4-lane, top-down) -----------------------------------------
   function runCommand(cmd: Command): Promise<number> {
-    cmdEl.hidden = false;
-    cmdTagEl.textContent = L(`コマンド（${cmd.steps.length}打）— 流れてくるボタンを順に！`, `Command (${cmd.steps.length} hits) — press each button as it arrives!`);
-    notesEl.innerHTML = "";
+    overlay.classList.add("cmd");
+    cmdTagEl.hidden = false;
+    cmdTagEl.textContent = L(`コマンド（${cmd.steps.length}打）— 落ちてくるノーツをタイミングよく！`, `Command (${cmd.steps.length} hits) — tap each note as it lands!`);
+    keys.forEach((k) => { col.get(k)!.notes.innerHTML = ""; });
+    // full command, in order, shown up-front (highlights the next one to press)
+    previewEl.hidden = false;
     previewEl.innerHTML = "";
-    // Full command shown up-front, in order (points to each button to press).
-    const previewChips = cmd.steps.map((s) => {
+    const chips = cmd.steps.map((s) => {
       const c = document.createElement("div");
-      c.className = "ls-chip";
-      c.style.setProperty("--pc", PART_COLOR[s.part]);
+      c.className = "ls-chip"; c.style.setProperty("--pc", PART_COLOR[s.part]);
       c.textContent = PART_KEYCAP[s.part];
       previewEl.appendChild(c);
       return c;
     });
-    // Generous lead so the whole (slow) command is readable before the first hit.
-    const leadMs = Math.max(1600, cmd.stepMs * 3);
-    const noteEls = cmd.steps.map((s, i) => {
+    const leadMs = Math.max(1350, cmd.stepMs * 2.6); // fall time (slow & readable)
+    interface N { el: HTMLElement; idx: number; part: PartKey; hitT: number; spawnT: number; judged: boolean; shown: boolean; launched: boolean }
+    const notes: N[] = cmd.steps.map((s, i) => {
       const el = document.createElement("div");
       el.className = "ls-note";
       el.style.background = PART_COLOR[s.part];
-      el.textContent = PART_KEYCAP[s.part]; // the BUTTON to press, not the part name
-      notesEl.appendChild(el);
-      return { el, idx: i, part: s.part, hitT: s.t + leadMs, judged: false };
+      el.textContent = PART_KEYCAP[s.part];
+      el.style.visibility = "hidden";
+      col.get(s.part)!.notes.appendChild(el);
+      return { el, idx: i, part: s.part, hitT: s.t + leadMs, spawnT: s.t, judged: false, shown: false, launched: false };
     });
     let stepHits = 0, stepPerf = 0;
     const total = cmd.steps.length;
@@ -181,17 +171,16 @@ export function runLiveStage(
 
     function judge(part: PartKey): void {
       const now = performance.now() - start;
-      let best: typeof noteEls[0] | null = null, bestDt = Infinity;
-      for (const n of noteEls) {
+      let best: N | null = null, bestDt = Infinity;
+      for (const n of notes) {
         if (n.judged || n.part !== part) continue;
         const dt = Math.abs(n.hitT - now);
         if (dt < bestDt) { bestDt = dt; best = n; }
       }
       if (!best || bestDt > HIT.goodMs) { flash(L("ミス", "Miss"), "small"); return; }
-      best.judged = true;
-      best.el.classList.add("got");
-      previewChips[best.idx].classList.add("done");
-      pulse(part);
+      best.judged = true; best.el.classList.add("got");
+      chips[best.idx].classList.add("done");
+      launch(part);
       hits++; stepHits++;
       if (bestDt <= HIT.perfectMs) { perfects++; stepPerf++; flash("PERFECT", "big"); }
       else { flash("GOOD", "big"); }
@@ -203,7 +192,7 @@ export function runLiveStage(
     }
     const padHandler = (e: Event): void => {
       e.preventDefault();
-      const b = (e.currentTarget as HTMLElement);
+      const b = e.currentTarget as HTMLElement;
       b.classList.remove("tap"); void b.offsetWidth; b.classList.add("tap");
       judge(b.dataset.key as PartKey);
     };
@@ -215,29 +204,32 @@ export function runLiveStage(
       function frame(ts: number): void {
         if (!start) start = ts;
         const now = ts - start;
-        const laneW = notesEl.clientWidth || overlay.clientWidth;
-        const hitX = laneW * 0.14;
-        // highlight the next note to press (earliest unjudged)
         let nextIdx = -1;
-        for (const n of noteEls) if (!n.judged) { nextIdx = n.idx; break; }
-        previewChips.forEach((c, i) => c.classList.toggle("now", i === nextIdx));
-        for (const n of noteEls) {
-          const dt = n.hitT - now; // >0 approaching
-          const x = hitX + (dt / leadMs) * (laneW - hitX);
-          n.el.style.transform = `translateX(${x}px)`;
+        for (const n of notes) if (!n.judged) { nextIdx = n.idx; break; }
+        chips.forEach((c, i) => c.classList.toggle("now", i === nextIdx));
+        for (const n of notes) {
+          if (now < n.spawnT) continue;
+          if (!n.launched) { n.launched = true; launch(n.part); } // member fires it
+          if (!n.shown) { n.shown = true; n.el.style.visibility = "visible"; }
+          const laneH = col.get(n.part)!.lane.clientHeight || 300;
+          const hitY = laneH * 0.86;
+          const dt = n.hitT - now; // >0 falling
+          const y = (1 - dt / leadMs) * hitY;
+          n.el.style.transform = `translateY(${y}px)`;
           n.el.classList.toggle("near", !n.judged && Math.abs(dt) <= HIT.goodMs);
-          n.el.style.opacity = n.judged ? "0.22" : dt < -HIT.goodMs ? "0.2" : "1";
-          if (!n.judged && dt < -HIT.goodMs) { n.judged = true; previewChips[n.idx].classList.add("miss"); }
+          n.el.style.opacity = n.judged ? "0.2" : dt < -HIT.goodMs ? "0.15" : "1";
+          if (!n.judged && dt < -HIT.goodMs) { n.judged = true; chips[n.idx].classList.add("miss"); }
         }
         if (now >= cmd.totalMs + leadMs && !done) {
           done = true;
           cancelAnimationFrame(raf);
           window.removeEventListener("keydown", onKey);
           pads.forEach((p) => p.removeEventListener("pointerdown", padHandler));
-          cmdEl.hidden = true;
+          overlay.classList.remove("cmd");
+          cmdTagEl.hidden = true;
+          previewEl.hidden = true;
           steps += total;
-          const exec = total ? (stepPerf + (stepHits - stepPerf) * 0.5) / total : 0;
-          resolve(exec);
+          resolve(total ? (stepPerf + (stepHits - stepPerf) * 0.5) / total : 0);
           return;
         }
         raf = requestAnimationFrame(frame);
@@ -249,7 +241,7 @@ export function runLiveStage(
   // --- orchestration ------------------------------------------------------
   async function play(): Promise<void> {
     for (let bi = 0; bi < BEATS.length; bi++) {
-      beatNoEl.textContent = L(`${bi + 1} / ${BEATS.length}`, `${bi + 1} / ${BEATS.length}`);
+      beatNoEl.textContent = `${bi + 1} / ${BEATS.length}`;
       renderCrowd();
       const tiers = optionTiers(BEATS[bi], decision.target);
       const pick = await askChoice(bi);
@@ -264,7 +256,7 @@ export function runLiveStage(
       heat = excitement(scores);
       renderCrowd();
       flash(sc >= 0.85 ? L("大歓声！", "ROAR!") : sc >= 0.5 ? L("盛り上がり！", "Nice!") : L("うーん…", "Hmm…"), sc >= 0.5 ? "big" : "small");
-      await wait(700);
+      await wait(720);
     }
     finish();
   }
@@ -272,12 +264,6 @@ export function runLiveStage(
     overlay.remove();
     onDone(finalize(outcomes, perfects, hits, steps));
   }
-
-  // tap a band member also works as that part's button during a command
-  q<HTMLElement>(".ls-stage").addEventListener("pointerdown", (e) => {
-    const m = (e.target as HTMLElement).closest<HTMLElement>(".ls-member");
-    if (m && !cmdEl.hidden) overlay.querySelector<HTMLElement>(`.ls-pad[data-key="${m.dataset.key}"]`)?.dispatchEvent(new PointerEvent("pointerdown"));
-  });
 
   renderCrowd();
   q<HTMLButtonElement>(".ls-go").addEventListener("click", () => { startEl.hidden = true; void play(); });
