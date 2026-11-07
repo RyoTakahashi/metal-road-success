@@ -8,7 +8,7 @@
 // mobile taps. Full-screen overlay on document.body.
 
 import { L } from "../game/i18n";
-import { charSrc, crowdSrc, setEvolution, type Mood } from "./assets";
+import { charSrc, crowdSrc, gearSrc, setEvolution, type Mood } from "./assets";
 import { evolutionInfix } from "../game/evolution";
 import type { GameState, LiveDecision } from "../game/types";
 import { segLabel } from "../game/types";
@@ -34,6 +34,14 @@ export function runLiveStage(
   overlay.className = "ls-overlay";
   overlay.innerHTML = `
     <div class="ls-stage">
+      <div class="ls-gear">
+        <img class="ls-pa ls-pa-l" src="${gearSrc("pa")}" alt="">
+        <img class="ls-pa ls-pa-r" src="${gearSrc("pa")}" alt="">
+        <img class="ls-amp ls-amp-l" src="${gearSrc("amp")}" alt="">
+        <img class="ls-amp ls-amp-r" src="${gearSrc("amp")}" alt="">
+        <img class="ls-drumkit" src="${gearSrc("drumkit")}" alt="">
+        <div class="ls-floor"></div>
+      </div>
       <div class="ls-cols">${keys.map((k) => `
         <div class="ls-col" data-key="${k}" style="--pc:${PART_COLOR[k]}">
           <div class="ls-member"><img class="ls-sprite" alt="${nameOf(k)}" src="${charSrc(k, "normal")}"></div>
@@ -119,6 +127,11 @@ export function runLiveStage(
     const m = col.get(k)!.member;
     m.classList.remove("launch"); void m.offsetWidth; m.classList.add("launch");
   }
+  function laneFlash(k: PartKey, cls: string): void {
+    const lane = col.get(k)!.lane;
+    lane.classList.remove("flash", "flash-good"); void lane.offsetWidth;
+    lane.classList.add(cls);
+  }
   const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
   // --- choice phase -------------------------------------------------------
@@ -182,8 +195,8 @@ export function runLiveStage(
       chips[best.idx].classList.add("done");
       launch(part);
       hits++; stepHits++;
-      if (bestDt <= HIT.perfectMs) { perfects++; stepPerf++; flash("PERFECT", "big"); }
-      else { flash("GOOD", "big"); }
+      if (bestDt <= HIT.perfectMs) { perfects++; stepPerf++; laneFlash(part, "flash"); flash("PERFECT", "big"); }
+      else { laneFlash(part, "flash-good"); flash("GOOD", "big"); }
     }
     function onKey(e: KeyboardEvent): void {
       if (e.repeat) return;

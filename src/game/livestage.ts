@@ -15,17 +15,16 @@ export const locStr = (l: Loc): string => l[getLang()];
 
 // The four part-buttons map to the four members (Vo / Gt / Ba / Dr).
 export type PartKey = "RYO" | "KEN" | "MIO" | "GO";
-// Stage order, left→right: Guitar, Vocal, Drums, Bass (so from the right it reads
-// Bass, Drums, Vocal, Guitar). Lanes & keys follow this same order.
-export const PART_ORDER: PartKey[] = ["KEN", "RYO", "GO", "MIO"];
+// Stage order, left→right: Bass, Drums, Vocal, Guitar. Lanes & keys follow it.
+export const PART_ORDER: PartKey[] = ["MIO", "GO", "RYO", "KEN"];
 export const PART_LABEL: Record<PartKey, Loc> = {
   RYO: t("Vo", "Vo"), KEN: t("Gt", "Gt"), MIO: t("Ba", "Ba"), GO: t("Dr", "Dr"),
 };
-// Desktop keys, left→right under the four lanes: Gt=D, Vo=F, Dr=J, Ba=K.
+// Desktop keys, left→right under the four lanes: Ba=D, Dr=F, Vo=J, Gt=K.
 export const PART_KEY: Record<string, PartKey> = {
-  d: "KEN", f: "RYO", j: "GO", k: "MIO", D: "KEN", F: "RYO", J: "GO", K: "MIO",
+  d: "MIO", f: "GO", j: "RYO", k: "KEN", D: "MIO", F: "GO", J: "RYO", K: "KEN",
 };
-export const PART_KEYCAP: Record<PartKey, string> = { KEN: "D", RYO: "F", GO: "J", MIO: "K" };
+export const PART_KEYCAP: Record<PartKey, string> = { MIO: "D", GO: "F", RYO: "J", KEN: "K" };
 // The part that "aces" each crowd (reverse of the solo affinity) — featured more
 // in that option's command so the combo feels themed to the choice.
 const ACE_PART: Record<Segment, PartKey> = { visual: "RYO", core: "KEN", expert: "MIO", light: "GO" };
