@@ -1,10 +1,10 @@
-// Live-stage mini-game — the on-screen, real-time player. Pure simulation lives
-// in src/game/livestage.ts. The band (existing standing art) plays up top, the
-// audience crowd (silhouette + penlights, 3 heat states crossfaded) cheers below.
-// The player watches and reacts in real time: HYPE the crowd when it's receptive
-// (big button / tap the crowd / Space), and lock in with a bandmate the instant
-// their rhythm wobbles (tap that member / press F). Crowd heat drives the score,
-// which converts to the live's satisfaction bonus. PC + mobile. Overlay on body.
+// Live-stage mini-game — on-screen player. Flow: over a stage backdrop (the band
+// + the silhouette crowd), each beat shows a CHOICE (like the old MC/song
+// prompts); picking one reveals a COMMAND — a sequence of the four part-buttons
+// (Vo/Gt/Ba/Dr) whose tempo & length depend on the choice — which the player
+// inputs in time. A beat's payoff = choice crowd-fit × input accuracy. The crowd
+// is pure feedback (brighter/livelier with a better run). PC keys D/F/J/K +
+// mobile taps. Mounts a full-screen overlay on document.body.
 
 import { L } from "../game/i18n";
 import { charSrc, crowdSrc, setEvolution, type Mood } from "./assets";
@@ -12,15 +12,13 @@ import { evolutionInfix } from "../game/evolution";
 import type { GameState, LiveDecision } from "../game/types";
 import { segLabel } from "../game/types";
 import {
-  StageSim,
-  LS,
-  heatLevel,
-  applyStageResult,
-  stageGrade,
-  type StageResult,
+  BEATS, optionTiers, buildCommand, HIT, finalize, beatScore, excitement, heatLevel,
+  stageGrade, applyStageResult, locStr, INTENSITY,
+  PART_ORDER, PART_LABEL, PART_KEY, PART_KEYCAP,
+  type PartKey, type Command, type BeatOutcome, type StageResult,
 } from "../game/livestage";
 
-const ORDER = ["RYO", "KEN", "MIO", "GO"]; // Vo / Gt / Ba / Dr across the stage
+const PART_COLOR: Record<PartKey, string> = { RYO: "#ff5577", KEN: "#54c7ff", MIO: "#b98cff", GO: "#4fd08a" };
 
 export function runLiveStage(
   state: GameState,
@@ -28,7 +26,7 @@ export function runLiveStage(
   onDone: (res: StageResult) => void,
 ): void {
   setEvolution(evolutionInfix(state.evoUnlocked));
-  const keys = ORDER.filter((k) => state.members.some((m) => m.artKey === k));
+  const keys = PART_ORDER.filter((k) => state.members.some((m) => m.artKey === k));
   const nameOf = (k: string): string => state.members.find((m) => m.artKey === k)?.name ?? k;
 
   const overlay = document.createElement("div");
@@ -37,145 +35,222 @@ export function runLiveStage(
     <div class="ls-stage">
       <div class="ls-band">${keys.map((k) => `
         <div class="ls-member" data-key="${k}">
-          <div class="ls-warn">⚠ ${L("乱れてる！", "Off-beat!")}</div>
           <img class="ls-sprite" alt="${nameOf(k)}" src="${charSrc(k, "normal")}">
-          <div class="ls-mname">${nameOf(k)}</div>
         </div>`).join("")}
       </div>
       <img class="ls-crowd ls-crowd-mid" src="${crowdSrc("mid")}" alt="">
       <img class="ls-crowd ls-crowd-low" src="${crowdSrc("low")}" alt="">
       <img class="ls-crowd ls-crowd-high" src="${crowdSrc("high")}" alt="">
-      <div class="ls-chance" hidden>⚡ ${L("受けてる！ 今だ、煽れ！", "They're into it! HYPE now!")}</div>
     </div>
     <div class="ls-hud">
-      <div class="ls-heatwrap">
-        <span class="ls-heatlabel">${L("客席ヒート", "Crowd Heat")}</span>
-        <div class="ls-heatbar"><i></i></div>
-      </div>
-      <div class="ls-time"><i></i></div>
-      <div class="ls-targetlabel">${L("客層", "Crowd")}: <b>${segLabel(decision.target)}</b></div>
+      <div class="ls-heatwrap"><span class="ls-heatlabel">${L("客席", "Crowd")}</span><div class="ls-heatbar"><i></i></div></div>
+      <div class="ls-topline"><span class="ls-beatno"></span><span class="ls-targetlabel">${L("客層", "Crowd")}: <b>${segLabel(decision.target)}</b></span></div>
     </div>
     <div class="ls-fx"></div>
-    <button class="ls-hype">🔥<b>${L("煽る", "HYPE")}</b></button>
+
+    <div class="ls-choice" hidden>
+      <div class="ls-prompt"></div>
+      <div class="ls-options"></div>
+    </div>
+
+    <div class="ls-cmd" hidden>
+      <div class="ls-cmdtag"></div>
+      <div class="ls-lane"><div class="ls-hitline"></div><div class="ls-notes"></div></div>
+      <div class="ls-pads">${keys.map((k) => `
+        <button class="ls-pad" data-key="${k}" style="--pc:${PART_COLOR[k]}">
+          <b>${locStr(PART_LABEL[k])}</b><span class="ls-padname">${nameOf(k)}</span><small>${PART_KEYCAP[k]}</small>
+        </button>`).join("")}
+      </div>
+    </div>
+
     <div class="ls-start">
       <h2>🎤 ${L("ライブ本番！", "Showtime!")}</h2>
-      <p>${L("客席を見て、盛り上がってる時に <b>煽る</b>（下のボタン／客席タップ／Space）", "Watch the crowd — hit <b>HYPE</b> when they're into it (button / tap the crowd / Space)")}</p>
-      <p>${L("メンバーのリズムが <b>乱れたら</b>、そのメンバーを<b>タップして合わせる</b>（またはF）", "When a bandmate goes <b>off-beat</b>, <b>tap them to lock in</b> (or press F)")}</p>
-      <p class="ls-hint">${L("ヒートを高く保つほど満足度が上がる！", "Keep the heat high for a better show!")}</p>
+      <p>${L("まず<b>選択肢</b>を選ぶ（煽り方や曲）。選ぶと<b>コマンド</b>が流れてくる。", "Pick a <b>choice</b> (how to hype / which song). It reveals a <b>command</b>.")}</p>
+      <p>${L("ノーツがラインに来たら、その<b>パート（Vo/Gt/Ba/Dr）</b>のボタンをタイミングよく！", "As each note hits the line, tap its <b>part button (Vo/Gt/Ba/Dr)</b> in time!")}</p>
+      <p class="ls-hint">${L("客層に合う選択×正確な入力で、satisfaction が上がる。", "Match the crowd and nail the input for a better show.")}</p>
       <button class="ls-go btn">▶ ${L("スタート", "Start")}</button>
     </div>`;
   document.body.appendChild(overlay);
 
   const q = <T extends Element>(s: string): T => overlay.querySelector<T>(s)!;
   const heatFill = q<HTMLElement>(".ls-heatbar > i");
-  const timeFill = q<HTMLElement>(".ls-time > i");
-  const chanceEl = q<HTMLElement>(".ls-chance");
+  const beatNoEl = q<HTMLElement>(".ls-beatno");
   const fxEl = q<HTMLElement>(".ls-fx");
-  const hypeBtn = q<HTMLButtonElement>(".ls-hype");
   const lowImg = q<HTMLElement>(".ls-crowd-low");
   const highImg = q<HTMLElement>(".ls-crowd-high");
+  const choiceEl = q<HTMLElement>(".ls-choice");
+  const promptEl = q<HTMLElement>(".ls-prompt");
+  const optionsEl = q<HTMLElement>(".ls-options");
+  const cmdEl = q<HTMLElement>(".ls-cmd");
+  const cmdTagEl = q<HTMLElement>(".ls-cmdtag");
+  const notesEl = q<HTMLElement>(".ls-notes");
   const startEl = q<HTMLElement>(".ls-start");
-  const memberEls = new Map<string, HTMLElement>();
-  const spriteEls = new Map<string, HTMLImageElement>();
+  const spriteOf = new Map<string, HTMLImageElement>();
   const moodNow = new Map<string, Mood>();
   keys.forEach((k) => {
-    const el = overlay.querySelector<HTMLElement>(`.ls-member[data-key="${k}"]`)!;
-    memberEls.set(k, el);
-    spriteEls.set(k, el.querySelector<HTMLImageElement>(".ls-sprite")!);
+    spriteOf.set(k, overlay.querySelector<HTMLImageElement>(`.ls-member[data-key="${k}"] .ls-sprite`)!);
     moodNow.set(k, "normal");
   });
 
-  const sim = new StageSim(keys);
-  let raf = 0, last = 0, running = false;
+  let heat = 45;
+  const scores: number[] = [];
+  const outcomes: BeatOutcome[] = [];
+  let perfects = 0, hits = 0, steps = 0;
 
+  function setMood(k: string, mood: Mood): void {
+    if (moodNow.get(k) === mood) return;
+    moodNow.set(k, mood);
+    spriteOf.get(k)!.src = charSrc(k, mood);
+  }
+  function renderCrowd(): void {
+    heatFill.style.width = heat + "%";
+    heatFill.style.background = heat >= 68 ? "linear-gradient(90deg,#ff5577,#ffcf3a)" : heat >= 40 ? "linear-gradient(90deg,#54c7ff,#ff5577)" : "#54c7ff";
+    lowImg.style.opacity = String(Math.max(0, Math.min(1, 1 - heat / 42)));
+    highImg.style.opacity = String(Math.max(0, Math.min(1, (heat - 62) / 30)));
+    const lvl = heatLevel(heat);
+    keys.forEach((k) => setMood(k, lvl === "high" ? "fired" : lvl === "low" ? "sad" : "normal"));
+  }
   function flash(txt: string, cls: string): void {
-    fxEl.textContent = txt;
-    fxEl.className = "ls-fx " + cls;
-    fxEl.style.opacity = "1";
-    setTimeout(() => { fxEl.style.opacity = "0"; }, 320);
+    fxEl.textContent = txt; fxEl.className = "ls-fx " + cls; fxEl.style.opacity = "1";
+    setTimeout(() => { fxEl.style.opacity = "0"; }, 300);
   }
-  function doHype(): void {
-    if (!running) return;
-    const r = sim.hype();
-    if (r === "big") flash(L("大歓声！", "ROAR!"), "big");
-    else if (r === "small") flash(L("まあまあ", "meh"), "small");
+  function pulse(k: string): void {
+    const el = spriteOf.get(k); if (!el) return;
+    el.classList.remove("ls-hit"); void el.offsetWidth; el.classList.add("ls-hit");
   }
-  function doRecover(key: string): void {
-    if (!running) return;
-    if (sim.recover(key)) flash(L("立て直した！", "Locked in!"), "big");
+  const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+
+  // --- choice phase -------------------------------------------------------
+  function askChoice(beatIdx: number): Promise<number> {
+    const beat = BEATS[beatIdx];
+    promptEl.textContent = locStr(beat.prompt);
+    optionsEl.innerHTML = "";
+    choiceEl.hidden = false;
+    return new Promise((resolve) => {
+      beat.options.forEach((opt, i) => {
+        const b = document.createElement("button");
+        b.className = "ls-option";
+        b.innerHTML = `<span class="ls-optlabel">${locStr(opt.label)}</span><span class="ls-optmeta">${locStr(INTENSITY[opt.intensity].tag)} · ${"♪".repeat(INTENSITY[opt.intensity].steps <= 4 ? 1 : INTENSITY[opt.intensity].steps <= 6 ? 2 : 3)}</span>`;
+        b.addEventListener("click", () => { choiceEl.hidden = true; resolve(i); }, { once: true });
+        optionsEl.appendChild(b);
+      });
+    });
   }
 
-  // input
-  hypeBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); doHype(); });
+  // --- command (QTE) phase ------------------------------------------------
+  function runCommand(cmd: Command): Promise<number> {
+    cmdEl.hidden = false;
+    cmdTagEl.textContent = L(`コマンド：${cmd.steps.length}打 / ${locStr(INTENSITY[cmd.intensity].tag)}`, `Command: ${cmd.steps.length} hits / ${locStr(INTENSITY[cmd.intensity].tag)}`);
+    notesEl.innerHTML = "";
+    const leadMs = Math.max(950, cmd.stepMs * 2.3);
+    const noteEls: { el: HTMLElement; part: PartKey; hitT: number; judged: boolean }[] = cmd.steps.map((s) => {
+      const el = document.createElement("div");
+      el.className = "ls-note";
+      el.style.background = PART_COLOR[s.part];
+      el.textContent = locStr(PART_LABEL[s.part]);
+      notesEl.appendChild(el);
+      return { el, part: s.part, hitT: s.t + leadMs, judged: false };
+    });
+    let stepHits = 0, stepPerf = 0;
+    const total = cmd.steps.length;
+    let start = 0, raf = 0, done = false;
+
+    function judge(part: PartKey): void {
+      const now = performance.now() - start;
+      let best: typeof noteEls[0] | null = null, bestDt = Infinity;
+      for (const n of noteEls) {
+        if (n.judged || n.part !== part) continue;
+        const dt = Math.abs(n.hitT - now);
+        if (dt < bestDt) { bestDt = dt; best = n; }
+      }
+      if (!best || bestDt > HIT.goodMs) { flash(L("ミス", "Miss"), "small"); return; }
+      best.judged = true;
+      best.el.classList.add("got");
+      pulse(part);
+      hits++; stepHits++;
+      if (bestDt <= HIT.perfectMs) { perfects++; stepPerf++; flash("PERFECT", "big"); }
+      else { flash("GOOD", "big"); }
+    }
+    function onKey(e: KeyboardEvent): void {
+      if (e.repeat) return;
+      const p = PART_KEY[e.key];
+      if (p) { judge(p); e.preventDefault(); }
+    }
+    const padHandler = (e: Event): void => {
+      e.preventDefault();
+      const b = (e.currentTarget as HTMLElement);
+      b.classList.remove("tap"); void b.offsetWidth; b.classList.add("tap");
+      judge(b.dataset.key as PartKey);
+    };
+    const pads = Array.from(overlay.querySelectorAll<HTMLElement>(".ls-pad"));
+    window.addEventListener("keydown", onKey);
+    pads.forEach((p) => p.addEventListener("pointerdown", padHandler));
+
+    return new Promise<number>((resolve) => {
+      function frame(ts: number): void {
+        if (!start) start = ts;
+        const now = ts - start;
+        const laneW = notesEl.clientWidth || overlay.clientWidth;
+        const hitX = laneW * 0.16;
+        for (const n of noteEls) {
+          const dt = n.hitT - now; // >0 approaching
+          const x = hitX + (dt / leadMs) * (laneW - hitX);
+          n.el.style.transform = `translateX(${x}px)`;
+          n.el.style.opacity = n.judged ? "0.25" : dt < -HIT.goodMs ? "0.2" : "1";
+          if (!n.judged && dt < -HIT.goodMs) { n.judged = true; }
+        }
+        if (now >= cmd.totalMs + leadMs && !done) {
+          done = true;
+          cancelAnimationFrame(raf);
+          window.removeEventListener("keydown", onKey);
+          pads.forEach((p) => p.removeEventListener("pointerdown", padHandler));
+          cmdEl.hidden = true;
+          steps += total;
+          const exec = total ? (stepPerf + (stepHits - stepPerf) * 0.5) / total : 0;
+          resolve(exec);
+          return;
+        }
+        raf = requestAnimationFrame(frame);
+      }
+      raf = requestAnimationFrame(frame);
+    });
+  }
+
+  // --- orchestration ------------------------------------------------------
+  async function play(): Promise<void> {
+    for (let bi = 0; bi < BEATS.length; bi++) {
+      beatNoEl.textContent = L(`${bi + 1} / ${BEATS.length}`, `${bi + 1} / ${BEATS.length}`);
+      renderCrowd();
+      const tiers = optionTiers(BEATS[bi], decision.target);
+      const pick = await askChoice(bi);
+      const opt = BEATS[bi].options[pick];
+      const cmd = buildCommand(opt, (bi * 2654435761 + pick * 40503 + Date.now()) >>> 0);
+      await wait(260);
+      const exec = await runCommand(cmd);
+      const outcome: BeatOutcome = { tier: tiers[pick], exec, intensity: opt.intensity };
+      outcomes.push(outcome);
+      const sc = beatScore(outcome);
+      scores.push(sc);
+      heat = excitement(scores);
+      renderCrowd();
+      flash(sc >= 0.85 ? L("大歓声！", "ROAR!") : sc >= 0.5 ? L("盛り上がり！", "Nice!") : L("うーん…", "Hmm…"), sc >= 0.5 ? "big" : "small");
+      await wait(700);
+    }
+    finish();
+  }
+  function finish(): void {
+    overlay.remove();
+    onDone(finalize(outcomes, perfects, hits, steps));
+  }
+
+  // tap a band member also works as that part's button during a command
   q<HTMLElement>(".ls-stage").addEventListener("pointerdown", (e) => {
     const m = (e.target as HTMLElement).closest<HTMLElement>(".ls-member");
-    if (m) { doRecover(m.dataset.key!); return; }
-    // tapping the lower (crowd) part of the stage also hypes
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    if (e.clientY - rect.top > rect.height * 0.5) doHype();
+    if (m && !cmdEl.hidden) overlay.querySelector<HTMLElement>(`.ls-pad[data-key="${m.dataset.key}"]`)?.dispatchEvent(new PointerEvent("pointerdown"));
   });
-  function onKey(e: KeyboardEvent): void {
-    if (e.repeat) return;
-    if (e.code === "Space" || e.key === "j" || e.key === "J") { doHype(); e.preventDefault(); }
-    else if (e.key === "f" || e.key === "F") {
-      const w = sim.currentWobbler(); if (w) doRecover(w); e.preventDefault();
-    }
-  }
-  window.addEventListener("keydown", onKey);
 
-  function render(v: ReturnType<StageSim["tick"]>): void {
-    const h = v.heat;
-    heatFill.style.width = h + "%";
-    heatFill.style.background = h >= 70 ? "linear-gradient(90deg,#ff5577,#ffcf3a)" : h >= 38 ? "linear-gradient(90deg,#54c7ff,#ff5577)" : "#54c7ff";
-    timeFill.style.width = (100 * v.timeLeftMs / LS.durationMs) + "%";
-    lowImg.style.opacity = String(Math.max(0, Math.min(1, 1 - h / 42)));
-    highImg.style.opacity = String(Math.max(0, Math.min(1, (h - 62) / 30)));
-    chanceEl.hidden = !v.windowOpen;
-    hypeBtn.classList.toggle("ready", v.windowOpen);
-    const lvl = heatLevel(h);
-    for (const m of v.members) {
-      const el = memberEls.get(m.key)!;
-      el.classList.toggle("wobbling", m.wobbling);
-      const mood: Mood = m.wobbling ? "sad" : lvl === "high" ? "fired" : "normal";
-      if (moodNow.get(m.key) !== mood) {
-        moodNow.set(m.key, mood);
-        spriteEls.get(m.key)!.src = charSrc(m.key, mood);
-      }
-    }
-  }
-
-  function loop(ts: number): void {
-    if (!last) last = ts;
-    const dt = ts - last; last = ts;
-    const v = sim.tick(dt);
-    render(v);
-    if (sim.done) { finish(); return; }
-    raf = requestAnimationFrame(loop);
-  }
-  function begin(): void { running = true; last = 0; raf = requestAnimationFrame(loop); }
-  function finish(): void {
-    running = false;
-    cancelAnimationFrame(raf);
-    window.removeEventListener("keydown", onKey);
-    overlay.remove();
-    onDone(sim.finish());
-  }
-
-  function countdownThenStart(): void {
-    startEl.hidden = true;
-    const cd = document.createElement("div");
-    cd.className = "ls-count";
-    overlay.appendChild(cd);
-    let n = 3;
-    const tick = (): void => {
-      cd.textContent = n > 0 ? String(n) : "GO!";
-      if (n < 0) { cd.remove(); begin(); return; }
-      n -= 1; setTimeout(tick, 600);
-    };
-    tick();
-  }
-  q<HTMLButtonElement>(".ls-go").addEventListener("click", countdownThenStart);
+  renderCrowd();
+  q<HTMLButtonElement>(".ls-go").addEventListener("click", () => { startEl.hidden = true; void play(); });
 }
 
-// re-export so main.ts can log the grade
 export { applyStageResult, stageGrade };

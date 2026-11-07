@@ -338,7 +338,7 @@ const handlers: Handlers = {
     // The overlay owns the screen until it finishes, then we resolve the live.
     runLiveStage(state, ui.liveDecision, (res) => {
       const sat = applyStageResult(state, res);
-      pushLog(state, L(`パフォーマンス評価：${stageGrade(res)}（満足度+${sat}／平均ヒート${Math.round(res.avgHeat)}）`, `Performance: ${stageGrade(res)} (satisfaction +${sat} / avg heat ${Math.round(res.avgHeat)})`));
+      pushLog(state, L(`パフォーマンス評価：${stageGrade(res)}（満足度+${sat}／入力精度${Math.round(res.avgExec * 100)}%）`, `Performance: ${stageGrade(res)} (satisfaction +${sat} / input ${Math.round(res.avgExec * 100)}%)`));
       resolveLiveNow();
     });
   },
