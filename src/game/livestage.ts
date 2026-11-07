@@ -29,10 +29,13 @@ export const PART_KEYCAP: Record<PartKey, string> = { RYO: "D", KEN: "F", MIO: "
 const ACE_PART: Record<Segment, PartKey> = { visual: "RYO", core: "KEN", expert: "MIO", light: "GO" };
 
 export type Intensity = "calm" | "mid" | "wild";
-export const INTENSITY: Record<Intensity, { steps: number; stepMs: number; tag: Loc }> = {
-  calm: { steps: 4, stepMs: 560, tag: t("静", "Calm") },
-  mid: { steps: 6, stepMs: 440, tag: t("中", "Mid") },
-  wild: { steps: 8, stepMs: 330, tag: t("激", "Wild") },
+// stepMs is the gap between notes (= the minimum interval; the chart is uniform,
+// so even "wild" never clusters tighter than this). Kept comfortably slow so the
+// command is easy to read and follow.
+export const INTENSITY: Record<Intensity, { steps: number; stepMs: number; beats: number; tag: Loc }> = {
+  calm: { steps: 4, stepMs: 720, beats: 1, tag: t("静", "Calm") },
+  mid: { steps: 5, stepMs: 600, beats: 2, tag: t("中", "Mid") },
+  wild: { steps: 6, stepMs: 500, beats: 3, tag: t("激", "Wild") },
 };
 
 export interface BeatOption {
@@ -116,8 +119,9 @@ export function buildCommand(opt: BeatOption, seed: number): Command {
   return { steps, stepMs: cfg.stepMs, totalMs: cfg.steps * cfg.stepMs + cfg.stepMs, intensity: opt.intensity };
 }
 
-// Hit-timing windows for the command QTE.
-export const HIT = { perfectMs: 70, goodMs: 150 };
+// Hit-timing windows for the command QTE (lenient — this is a management sim,
+// not a hardcore rhythm game).
+export const HIT = { perfectMs: 95, goodMs: 200 };
 
 // --- scoring -----------------------------------------------------------------
 export interface BeatOutcome { tier: number; exec: number; intensity: Intensity } // exec 0..1

@@ -617,15 +617,16 @@ body {
   touch-action: none; user-select: none; -webkit-user-select: none;
 }
 .ls-stage { position: absolute; inset: 0; }
-/* Band row — all four fully visible (no side/bottom clipping), above the crowd. */
-.ls-band {
-  position: absolute; left: 0; right: 0; top: 11%; height: 46%;
-  display: flex; justify-content: center; align-items: flex-end; gap: 1.5%; padding: 0 3%;
+/* Band placed on stage (positions set inline per part; all fully visible). The
+   ls-band spans the upper area; members anchor their feet at `bottom`. */
+.ls-band { position: absolute; left: 0; right: 0; top: 8%; height: 56%; }
+.ls-member {
+  position: absolute; width: 30%; transform: translateX(-50%);
+  display: flex; align-items: flex-end; justify-content: center; cursor: pointer;
 }
-.ls-member { flex: 1 1 0; min-width: 0; height: 100%; display: flex; align-items: flex-end; justify-content: center; cursor: pointer; }
-.ls-sprite { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 6px 10px #0008); }
-.ls-sprite.ls-hit { animation: ls-hit .22s ease-out; }
-@keyframes ls-hit { 0%{transform:translateY(0) scale(1)} 35%{transform:translateY(-10px) scale(1.06)} 100%{transform:translateY(0) scale(1)} }
+.ls-sprite { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 8px 12px #0009); }
+.ls-sprite.ls-hit { animation: ls-hit .24s ease-out; }
+@keyframes ls-hit { 0%{transform:translateY(0) scale(1)} 35%{transform:translateY(-12px) scale(1.05)} 100%{transform:translateY(0) scale(1)} }
 .ls-crowd { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: auto; pointer-events: none; }
 .ls-hud { position: absolute; top: 10px; left: 12px; right: 12px; pointer-events: none; z-index: 4; }
 .ls-heatwrap { display: flex; align-items: center; gap: 8px; }
@@ -659,17 +660,29 @@ body {
 .ls-optmeta { font-size: 12px; color: var(--muted); white-space: nowrap; }
 /* command QTE */
 .ls-cmd { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; padding: 12px; box-sizing: border-box; }
-.ls-cmdtag { text-align: center; font-size: 12px; color: #cfe; margin-bottom: 8px; text-shadow: 0 1px 3px #000; }
-.ls-lane { position: relative; height: 72px; border-radius: 12px; background: #0009; overflow: hidden; box-shadow: inset 0 0 0 1px #ffffff1a; }
-.ls-hitline { position: absolute; left: 16%; top: 0; bottom: 0; width: 3px; background: #fff; box-shadow: 0 0 10px #fff; transform: translateX(-50%); }
+.ls-cmdtag { text-align: center; font-size: 12px; color: #cfe; margin-bottom: 6px; text-shadow: 0 1px 3px #000; }
+/* full command, shown up-front and in order */
+.ls-preview { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-bottom: 8px; }
+.ls-chip {
+  width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--pc);
+  color: var(--pc); background: #0008; display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 14px; transition: transform .1s, opacity .2s;
+}
+.ls-chip.now { background: var(--pc); color: #000; box-shadow: 0 0 12px var(--pc); transform: scale(1.18); }
+.ls-chip.done { opacity: .35; }
+.ls-chip.miss { opacity: .35; border-style: dashed; }
+.ls-lane { position: relative; height: 84px; border-radius: 12px; background: #0009; overflow: hidden; box-shadow: inset 0 0 0 1px #ffffff1a; }
+.ls-hitline { position: absolute; left: 14%; top: 0; bottom: 0; width: 4px; background: #fff; box-shadow: 0 0 12px #fff; transform: translateX(-50%); }
+.ls-hitline::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 56px; transform: translateX(-50%); background: radial-gradient(closest-side, #ffffff22, #fff0); }
 .ls-notes { position: absolute; inset: 0; }
 .ls-note {
-  position: absolute; top: 50%; left: 0; margin-top: -22px; width: 44px; height: 44px;
-  border-radius: 10px; display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 13px; color: #000c; will-change: transform;
+  position: absolute; top: 50%; left: 0; margin-top: -26px; width: 52px; height: 52px;
+  border-radius: 12px; display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 20px; color: #000d; will-change: transform;
   box-shadow: 0 2px 8px #0008;
 }
-.ls-note.got { box-shadow: 0 0 0 3px #fff, 0 0 16px #fff; }
+.ls-note.near { box-shadow: 0 0 0 3px #fff8, 0 0 18px #fff8; }
+.ls-note.got { box-shadow: 0 0 0 3px #fff, 0 0 18px #fff; }
 .ls-pads { display: flex; gap: 8px; margin-top: 10px; }
 .ls-pad {
   flex: 1; min-height: 72px; border-radius: 14px; border: 2px solid var(--pc);

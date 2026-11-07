@@ -20,6 +20,15 @@ import {
 
 const PART_COLOR: Record<PartKey, string> = { RYO: "#ff5577", KEN: "#54c7ff", MIO: "#b98cff", GO: "#4fd08a" };
 
+// Stage placement (audience's view): Bass 下手(left), Vocal center-front,
+// Drums center-back (smaller/raised, behind), Guitar 上手(right).
+const LAYOUT: Record<PartKey, { left: number; bottom: number; sc: number; z: number }> = {
+  MIO: { left: 19, bottom: 2, sc: 1, z: 2 }, // Ba — 下手
+  RYO: { left: 50, bottom: 0, sc: 1.08, z: 3 }, // Vo — 中央前
+  GO: { left: 41, bottom: 24, sc: 0.72, z: 1 }, // Dr — 中央奥
+  KEN: { left: 81, bottom: 2, sc: 1, z: 2 }, // Gt — 上手
+};
+
 export function runLiveStage(
   state: GameState,
   decision: LiveDecision,
@@ -33,10 +42,12 @@ export function runLiveStage(
   overlay.className = "ls-overlay";
   overlay.innerHTML = `
     <div class="ls-stage">
-      <div class="ls-band">${keys.map((k) => `
-        <div class="ls-member" data-key="${k}">
+      <div class="ls-band">${keys.map((k) => {
+        const p = LAYOUT[k];
+        return `<div class="ls-member" data-key="${k}" style="left:${p.left}%;bottom:${p.bottom}%;height:calc(46% * ${p.sc});z-index:${p.z}">
           <img class="ls-sprite" alt="${nameOf(k)}" src="${charSrc(k, "normal")}">
-        </div>`).join("")}
+        </div>`;
+      }).join("")}
       </div>
       <img class="ls-crowd ls-crowd-mid" src="${crowdSrc("mid")}" alt="">
       <img class="ls-crowd ls-crowd-low" src="${crowdSrc("low")}" alt="">
@@ -55,6 +66,7 @@ export function runLiveStage(
 
     <div class="ls-cmd" hidden>
       <div class="ls-cmdtag"></div>
+      <div class="ls-preview"></div>
       <div class="ls-lane"><div class="ls-hitline"></div><div class="ls-notes"></div></div>
       <div class="ls-pads">${keys.map((k) => `
         <button class="ls-pad" data-key="${k}" style="--pc:${PART_COLOR[k]}">
@@ -130,7 +142,7 @@ export function runLiveStage(
       beat.options.forEach((opt, i) => {
         const b = document.createElement("button");
         b.className = "ls-option";
-        b.innerHTML = `<span class="ls-optlabel">${locStr(opt.label)}</span><span class="ls-optmeta">${locStr(INTENSITY[opt.intensity].tag)} · ${"♪".repeat(INTENSITY[opt.intensity].steps <= 4 ? 1 : INTENSITY[opt.intensity].steps <= 6 ? 2 : 3)}</span>`;
+        b.innerHTML = `<span class="ls-optlabel">${locStr(opt.label)}</span><span class="ls-optmeta">${locStr(INTENSITY[opt.intensity].tag)} · ${"♪".repeat(INTENSITY[opt.intensity].beats)} · ${INTENSITY[opt.intensity].steps}${L("打", "")}</span>`;
         b.addEventListener("click", () => { choiceEl.hidden = true; resolve(i); }, { once: true });
         optionsEl.appendChild(b);
       });
@@ -138,18 +150,30 @@ export function runLiveStage(
   }
 
   // --- command (QTE) phase ------------------------------------------------
+  const previewEl = q<HTMLElement>(".ls-preview");
   function runCommand(cmd: Command): Promise<number> {
     cmdEl.hidden = false;
-    cmdTagEl.textContent = L(`コマンド：${cmd.steps.length}打 / ${locStr(INTENSITY[cmd.intensity].tag)}`, `Command: ${cmd.steps.length} hits / ${locStr(INTENSITY[cmd.intensity].tag)}`);
+    cmdTagEl.textContent = L(`コマンド（${cmd.steps.length}打）— 流れてくるボタンを順に！`, `Command (${cmd.steps.length} hits) — press each button as it arrives!`);
     notesEl.innerHTML = "";
-    const leadMs = Math.max(950, cmd.stepMs * 2.3);
-    const noteEls: { el: HTMLElement; part: PartKey; hitT: number; judged: boolean }[] = cmd.steps.map((s) => {
+    previewEl.innerHTML = "";
+    // Full command shown up-front, in order (points to each button to press).
+    const previewChips = cmd.steps.map((s) => {
+      const c = document.createElement("div");
+      c.className = "ls-chip";
+      c.style.setProperty("--pc", PART_COLOR[s.part]);
+      c.textContent = PART_KEYCAP[s.part];
+      previewEl.appendChild(c);
+      return c;
+    });
+    // Generous lead so the whole (slow) command is readable before the first hit.
+    const leadMs = Math.max(1600, cmd.stepMs * 3);
+    const noteEls = cmd.steps.map((s, i) => {
       const el = document.createElement("div");
       el.className = "ls-note";
       el.style.background = PART_COLOR[s.part];
-      el.textContent = locStr(PART_LABEL[s.part]);
+      el.textContent = PART_KEYCAP[s.part]; // the BUTTON to press, not the part name
       notesEl.appendChild(el);
-      return { el, part: s.part, hitT: s.t + leadMs, judged: false };
+      return { el, idx: i, part: s.part, hitT: s.t + leadMs, judged: false };
     });
     let stepHits = 0, stepPerf = 0;
     const total = cmd.steps.length;
@@ -166,6 +190,7 @@ export function runLiveStage(
       if (!best || bestDt > HIT.goodMs) { flash(L("ミス", "Miss"), "small"); return; }
       best.judged = true;
       best.el.classList.add("got");
+      previewChips[best.idx].classList.add("done");
       pulse(part);
       hits++; stepHits++;
       if (bestDt <= HIT.perfectMs) { perfects++; stepPerf++; flash("PERFECT", "big"); }
@@ -191,13 +216,18 @@ export function runLiveStage(
         if (!start) start = ts;
         const now = ts - start;
         const laneW = notesEl.clientWidth || overlay.clientWidth;
-        const hitX = laneW * 0.16;
+        const hitX = laneW * 0.14;
+        // highlight the next note to press (earliest unjudged)
+        let nextIdx = -1;
+        for (const n of noteEls) if (!n.judged) { nextIdx = n.idx; break; }
+        previewChips.forEach((c, i) => c.classList.toggle("now", i === nextIdx));
         for (const n of noteEls) {
           const dt = n.hitT - now; // >0 approaching
           const x = hitX + (dt / leadMs) * (laneW - hitX);
           n.el.style.transform = `translateX(${x}px)`;
-          n.el.style.opacity = n.judged ? "0.25" : dt < -HIT.goodMs ? "0.2" : "1";
-          if (!n.judged && dt < -HIT.goodMs) { n.judged = true; }
+          n.el.classList.toggle("near", !n.judged && Math.abs(dt) <= HIT.goodMs);
+          n.el.style.opacity = n.judged ? "0.22" : dt < -HIT.goodMs ? "0.2" : "1";
+          if (!n.judged && dt < -HIT.goodMs) { n.judged = true; previewChips[n.idx].classList.add("miss"); }
         }
         if (now >= cmd.totalMs + leadMs && !done) {
           done = true;
