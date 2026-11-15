@@ -723,3 +723,74 @@ body {
 .ls-start p { margin: 2px 0; font-size: 14px; max-width: 540px; color: #cfe; }
 .ls-start .ls-hint { color: var(--muted); font-size: 12px; }
 .ls-start .ls-go { margin-top: 14px; font-size: 18px; padding: 12px 28px; }
+
+/* ===== LIVE feel: reactive crowd, set-arc banners, climax (キメ所) ===== */
+/* crowd wrapper so all three heat layers bounce / jump together */
+.ls-crowdwrap { position: absolute; left: 0; right: 0; bottom: 0; height: 60%; z-index: 3;
+  pointer-events: none; transform-origin: bottom center; will-change: transform; }
+.ls-crowdwrap .ls-crowd { height: auto; }
+.ls-crowdwrap.pop { animation: ls-crowdpop .32s cubic-bezier(.3,1.6,.5,1); }
+@keyframes ls-crowdpop { 0%{transform:translateY(0) scaleY(1)} 40%{transform:translateY(-10px) scaleY(1.04)} 100%{transform:translateY(0) scaleY(1)} }
+.ls-crowdwrap.jump { animation: ls-crowdjump .62s cubic-bezier(.25,1.4,.4,1); }
+@keyframes ls-crowdjump {
+  0%{transform:translateY(0) scaleY(1)}
+  22%{transform:translateY(4px) scaleY(.94)}
+  50%{transform:translateY(-46px) scaleY(1.1)}
+  70%{transform:translateY(-24px) scaleY(1.05)}
+  100%{transform:translateY(0) scaleY(1)}
+}
+/* penlights: a crowd of glow sticks over the audience that flare on good play */
+.ls-penlights { position: absolute; left: 0; right: 0; bottom: 30%; height: 26%; z-index: 3;
+  pointer-events: none; overflow: visible; }
+.ls-pen { position: absolute; bottom: 0; width: 4px; height: 44px; border-radius: 3px;
+  transform-origin: bottom center; opacity: var(--base, .12); will-change: transform, opacity;
+  background: linear-gradient(180deg, var(--pc, #fff) 0%, #ffffff00 100%);
+  box-shadow: 0 0 7px var(--pc, #fff); }
+.ls-penlights.sway .ls-pen { animation: ls-pensway var(--dur,1.4s) ease-in-out infinite alternate; animation-delay: var(--delay, 0s); }
+@keyframes ls-pensway { 0%{transform:rotate(-13deg)} 100%{transform:rotate(13deg)} }
+.ls-penlights.surge .ls-pen { animation: ls-pensurge .5s ease-out; }
+@keyframes ls-pensurge { 0%{opacity:1; transform:translateY(-10px) scaleY(1.25)} 100%{opacity:var(--base,.12); transform:translateY(0) scaleY(1)} }
+
+/* screen shake on big moments */
+.ls-stage.shake-s { animation: ls-shakeS .22s ease-in-out; }
+.ls-stage.shake-b { animation: ls-shakeB .5s ease-in-out; }
+@keyframes ls-shakeS { 0%,100%{transform:translate(0,0)} 25%{transform:translate(-4px,2px)} 50%{transform:translate(3px,-2px)} 75%{transform:translate(-2px,1px)} }
+@keyframes ls-shakeB { 0%,100%{transform:translate(0,0)} 10%{transform:translate(-9px,4px)} 25%{transform:translate(8px,-5px)} 40%{transform:translate(-7px,3px)} 60%{transform:translate(6px,-3px)} 80%{transform:translate(-4px,2px)} }
+
+/* full-screen white flash (crossfade pop for drops / the climax) */
+.ls-flash { position: absolute; inset: 0; z-index: 20; pointer-events: none;
+  background: radial-gradient(70% 55% at 50% 60%, #ffffffcc, #ffffff00 70%); opacity: 0; }
+.ls-flash.go { animation: ls-flashgo .5s ease-out; }
+@keyframes ls-flashgo { 0%{opacity:0} 12%{opacity:1} 100%{opacity:0} }
+
+/* section banner: slides in to open each part of the set */
+.ls-banner { position: absolute; top: 34%; left: 0; right: 0; z-index: 9; text-align: center;
+  pointer-events: none; opacity: 0; }
+.ls-banner.show { animation: ls-bannerin 1.25s ease-out; }
+.ls-banner .ls-bn-kick { font-size: 12px; letter-spacing: .3em; color: #ffd36a; text-shadow: 0 2px 6px #000; }
+.ls-banner .ls-bn-title { font-size: clamp(26px, 8vw, 54px); font-weight: 900; margin-top: 4px;
+  background: linear-gradient(90deg,#ff5577,#ffd36a,#54c7ff); -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: 0 4px 18px #000a; filter: drop-shadow(0 2px 2px #0008); }
+@keyframes ls-bannerin {
+  0%{opacity:0; transform:translateY(16px) scale(.9)}
+  18%{opacity:1; transform:translateY(0) scale(1)}
+  78%{opacity:1; transform:translateY(0) scale(1)}
+  100%{opacity:0; transform:translateY(-10px) scale(1.02)}
+}
+
+/* the climax cue ("キメ所"): a big central tap target with a shrinking ring */
+.ls-kime { position: absolute; inset: 0; z-index: 12; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px; background: radial-gradient(60% 50% at 50% 50%, #3a0f2cbb, #0a0612dd);
+  text-align: center; }
+.ls-kime[hidden] { display: none; }
+.ls-kime .ls-kime-cue { font-size: clamp(22px, 6vw, 40px); font-weight: 900; color: #fff; text-shadow: 0 3px 14px #000; max-width: 92%; }
+.ls-kime .ls-kime-ring { position: relative; width: 168px; height: 168px; display: flex; align-items: center; justify-content: center; }
+.ls-kime .ls-kime-btn { width: 128px; height: 128px; border-radius: 50%; border: none; cursor: pointer;
+  background: radial-gradient(circle at 50% 38%, #ff8bb0, #ff2f6e); color: #fff; font-weight: 900; font-size: 26px;
+  box-shadow: 0 0 40px #ff2f6eaa, inset 0 -6px 14px #0004; }
+.ls-kime .ls-kime-btn:active { transform: scale(.94); }
+.ls-kime-ring::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 5px solid #fff; opacity: .9; }
+.ls-kime.armed .ls-kime-ring::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 6px solid #ffd36a;
+  box-shadow: 0 0 18px #ffd36a; animation: ls-kimering var(--kime-dur,1.5s) linear forwards; }
+@keyframes ls-kimering { 0%{transform:scale(2.3); opacity:0} 70%{opacity:1} 100%{transform:scale(1); opacity:1} }
+.ls-kime .ls-kime-hint { font-size: 13px; color: #ffd9e6; }

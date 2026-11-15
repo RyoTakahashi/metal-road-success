@@ -14,7 +14,7 @@ import type { GameState, LiveDecision } from "../game/types";
 import { segLabel } from "../game/types";
 import {
   BEATS, optionTiers, buildCommand, HIT, finalize, beatScore, excitement, heatLevel,
-  stageGrade, applyStageResult, locStr, INTENSITY,
+  stageGrade, applyStageResult, locStr, INTENSITY, SECTIONS, KIME, applyKime,
   PART_ORDER, PART_LABEL, PART_KEY, PART_KEYCAP,
   type PartKey, type Command, type BeatOutcome, type StageResult,
 } from "../game/livestage";
@@ -50,9 +50,20 @@ export function runLiveStage(
         </div>`).join("")}
       </div>
       <img class="ls-drumkit" src="${gearSrc("drumkit")}" alt="">
-      <img class="ls-crowd ls-crowd-mid" src="${crowdSrc("mid")}" alt="">
-      <img class="ls-crowd ls-crowd-low" src="${crowdSrc("low")}" alt="">
-      <img class="ls-crowd ls-crowd-high" src="${crowdSrc("high")}" alt="">
+      <div class="ls-crowdwrap">
+        <img class="ls-crowd ls-crowd-mid" src="${crowdSrc("mid")}" alt="">
+        <img class="ls-crowd ls-crowd-low" src="${crowdSrc("low")}" alt="">
+        <img class="ls-crowd ls-crowd-high" src="${crowdSrc("high")}" alt="">
+      </div>
+      <div class="ls-penlights"></div>
+      <div class="ls-flash"></div>
+    </div>
+    <div class="ls-banner"><div class="ls-bn-kick"></div><div class="ls-bn-title"></div></div>
+
+    <div class="ls-kime" hidden>
+      <div class="ls-kime-cue"></div>
+      <div class="ls-kime-ring"><button class="ls-kime-btn">JUMP!</button></div>
+      <div class="ls-kime-hint">${L("リングが重なった瞬間にタップ／スペース！", "Tap / Space the moment the ring snaps in!")}</div>
     </div>
     <div class="ls-hud">
       <div class="ls-heatwrap"><span class="ls-heatlabel">${L("客席", "Crowd")}</span><div class="ls-heatbar"><i></i></div></div>
@@ -86,6 +97,31 @@ export function runLiveStage(
   const promptEl = q<HTMLElement>(".ls-prompt");
   const optionsEl = q<HTMLElement>(".ls-options");
   const startEl = q<HTMLElement>(".ls-start");
+  const stageEl = q<HTMLElement>(".ls-stage");
+  const crowdWrap = q<HTMLElement>(".ls-crowdwrap");
+  const penBox = q<HTMLElement>(".ls-penlights");
+  const flashEl = q<HTMLElement>(".ls-flash");
+  const bannerEl = q<HTMLElement>(".ls-banner");
+  const bnKick = q<HTMLElement>(".ls-bn-kick");
+  const bnTitle = q<HTMLElement>(".ls-bn-title");
+
+  // Build a field of penlights over the crowd; they sway, flare on good play.
+  const PEN_HUES = ["#ff5577", "#54c7ff", "#b98cff", "#ffd36a", "#4fd08a", "#ffffff"];
+  const penEls: HTMLElement[] = [];
+  const PEN_N = 30;
+  for (let i = 0; i < PEN_N; i++) {
+    const p = document.createElement("span");
+    p.className = "ls-pen";
+    const x = 3 + (i / (PEN_N - 1)) * 94 + (Math.random() * 3 - 1.5);
+    p.style.left = x + "%";
+    p.style.setProperty("--pc", PEN_HUES[i % PEN_HUES.length]);
+    p.style.height = 30 + Math.random() * 26 + "px";
+    p.style.setProperty("--dur", (1.1 + Math.random() * 0.9).toFixed(2) + "s");
+    p.style.setProperty("--delay", (-Math.random() * 1.4).toFixed(2) + "s");
+    penBox.appendChild(p);
+    penEls.push(p);
+  }
+  penBox.classList.add("sway");
 
   const col = new Map<PartKey, { member: HTMLElement; sprite: HTMLImageElement; notes: HTMLElement; lane: HTMLElement }>();
   const moodNow = new Map<string, Mood>();
@@ -117,6 +153,32 @@ export function runLiveStage(
     highImg.style.opacity = String(Math.max(0, Math.min(1, (heat - 62) / 30)));
     const lvl = heatLevel(heat);
     keys.forEach((k) => setMood(k, lvl === "high" ? "fired" : lvl === "low" ? "sad" : "normal"));
+    // hotter crowd = brighter, denser penlights held up
+    const base = (0.1 + (heat / 100) * 0.62).toFixed(2);
+    penEls.forEach((p) => p.style.setProperty("--base", base));
+  }
+  // --- live reactions: the crowd answers the player -----------------------
+  function crowdPop(): void {
+    crowdWrap.classList.remove("pop"); void crowdWrap.offsetWidth; crowdWrap.classList.add("pop");
+  }
+  function penSurge(): void {
+    penBox.classList.remove("surge"); void penBox.offsetWidth; penBox.classList.add("surge");
+  }
+  function shake(big = false): void {
+    const cls = big ? "shake-b" : "shake-s";
+    stageEl.classList.remove("shake-s", "shake-b"); void stageEl.offsetWidth; stageEl.classList.add(cls);
+  }
+  function whiteFlash(): void {
+    flashEl.classList.remove("go"); void flashEl.offsetWidth; flashEl.classList.add("go");
+  }
+  function crowdJump(): void {
+    crowdWrap.classList.remove("jump"); void crowdWrap.offsetWidth; crowdWrap.classList.add("jump");
+  }
+  function showBanner(i: number): Promise<void> {
+    bnKick.textContent = L(`PART ${i + 1}`, `PART ${i + 1}`);
+    bnTitle.textContent = locStr(SECTIONS[i] ?? SECTIONS[SECTIONS.length - 1]);
+    bannerEl.classList.remove("show"); void bannerEl.offsetWidth; bannerEl.classList.add("show");
+    return wait(1250);
   }
   function flash(txt: string, cls: string): void {
     fxEl.textContent = txt; fxEl.className = "ls-fx " + cls; fxEl.style.opacity = "1";
@@ -183,7 +245,8 @@ export function runLiveStage(
       best.judged = true; best.el.classList.add("got");
       launch(part);
       hits++; stepHits++;
-      if (bestDt <= HIT.perfectMs) { perfects++; stepPerf++; laneFlash(part, "flash"); flash("PERFECT", "big"); }
+      penSurge();
+      if (bestDt <= HIT.perfectMs) { perfects++; stepPerf++; laneFlash(part, "flash"); flash("PERFECT", "big"); crowdPop(); }
       else { laneFlash(part, "flash-good"); flash("GOOD", "big"); }
     }
     function onKey(e: KeyboardEvent): void {
@@ -235,11 +298,76 @@ export function runLiveStage(
     });
   }
 
+  // After a beat, the crowd answers in proportion to how it went: a roar + a
+  // penlight surge + a heat lurch, screen shake when it really lands.
+  async function crowdAnswer(sc: number): Promise<void> {
+    renderCrowd();
+    penSurge();
+    if (sc >= 0.85) { flash(L("大・歓・声！！", "HUGE ROAR!!"), "big"); crowdPop(); shake(true); whiteFlash(); }
+    else if (sc >= 0.5) { flash(L("盛り上がり！", "Nice!"), "big"); crowdPop(); shake(false); }
+    else flash(L("うーん…", "Hmm…"), "small");
+    await wait(820);
+  }
+
+  // The climax "キメ所": a single, wide-window all-in jump cue after the last
+  // beat. Land it and the whole crowd leaps — screen shake, flash, penlights up.
+  function runKime(): Promise<boolean> {
+    const kimeEl = q<HTMLElement>(".ls-kime");
+    const cueEl = q<HTMLElement>(".ls-kime-cue");
+    const btn = q<HTMLButtonElement>(".ls-kime-btn");
+    cueEl.textContent = locStr(KIME.cue);
+    kimeEl.hidden = false;
+    kimeEl.style.setProperty("--kime-dur", "1500ms");
+    return new Promise<boolean>((resolve) => {
+      let dropAt = 0, done = false, raf = 0;
+      const start = performance.now();
+      // arm the shrinking ring; it "snaps in" (scale→1) at dropAt
+      kimeEl.classList.add("armed");
+      dropAt = 1500;
+      function settle(hit: boolean): void {
+        if (done) return; done = true;
+        cancelAnimationFrame(raf);
+        window.removeEventListener("keydown", onKey);
+        btn.removeEventListener("pointerdown", onTap);
+        kimeEl.classList.remove("armed");
+        if (hit) {
+          keys.forEach((k) => { setMood(k, "fired"); launch(k); });
+          heat = 100; renderCrowd();
+          crowdJump(); penSurge(); shake(true); whiteFlash();
+          flash(locStr(KIME.hit), "big");
+        } else {
+          flash(locStr(KIME.miss), "small"); shake(false);
+        }
+        setTimeout(() => { kimeEl.hidden = true; resolve(hit); }, hit ? 1100 : 700);
+      }
+      function tryHit(): void {
+        if (done) return;
+        const dt = Math.abs((performance.now() - start) - dropAt);
+        if (dt <= KIME.window) settle(true);
+        else { // too early/late: one shot — flag a miss once the window passes
+          if ((performance.now() - start) > dropAt + KIME.window) settle(false);
+          else { shake(false); } // early tap: a little rumble, still live
+        }
+      }
+      const onKey = (e: KeyboardEvent): void => { if (e.repeat) return; if (e.key === " " || PART_KEY[e.key]) { e.preventDefault(); tryHit(); } };
+      const onTap = (e: Event): void => { e.preventDefault(); tryHit(); };
+      window.addEventListener("keydown", onKey);
+      btn.addEventListener("pointerdown", onTap);
+      function frame(): void {
+        if (done) return;
+        if ((performance.now() - start) > dropAt + KIME.window) { settle(false); return; }
+        raf = requestAnimationFrame(frame);
+      }
+      raf = requestAnimationFrame(frame);
+    });
+  }
+
   // --- orchestration ------------------------------------------------------
   async function play(): Promise<void> {
     for (let bi = 0; bi < BEATS.length; bi++) {
       beatNoEl.textContent = `${bi + 1} / ${BEATS.length}`;
       renderCrowd();
+      await showBanner(bi);
       const tiers = optionTiers(BEATS[bi], decision.target);
       const pick = await askChoice(bi);
       const opt = BEATS[bi].options[pick];
@@ -251,15 +379,14 @@ export function runLiveStage(
       const sc = beatScore(outcome);
       scores.push(sc);
       heat = excitement(scores);
-      renderCrowd();
-      flash(sc >= 0.85 ? L("大歓声！", "ROAR!") : sc >= 0.5 ? L("盛り上がり！", "Nice!") : L("うーん…", "Hmm…"), sc >= 0.5 ? "big" : "small");
-      await wait(720);
+      await crowdAnswer(sc);
     }
-    finish();
+    const kimeHit = await runKime();
+    finish(kimeHit);
   }
-  function finish(): void {
+  function finish(kimeHit: boolean): void {
     overlay.remove();
-    onDone(finalize(outcomes, perfects, hits, steps));
+    onDone(applyKime(finalize(outcomes, perfects, hits, steps), kimeHit));
   }
 
   renderCrowd();

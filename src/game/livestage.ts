@@ -83,6 +83,31 @@ export const BEATS: Beat[] = [
   },
 ];
 
+// Set arc: each beat belongs to a named section, shown as a banner before it.
+// The set builds opening → main → encore → finale (the climax "キメ所").
+export const SECTIONS: Loc[] = [
+  t("開演 — 掴み", "Opening — Grab them"),
+  t("本編 — ソロ回し", "Main Set — Solos"),
+  t("アンコール", "Encore"),
+  t("大団円 — フィナーレ", "Grand Finale"),
+];
+
+// The climax "キメ所": after the final beat, one big all-in jump cue. A wide
+// timing window (it's a payoff, not a trap); nailing it erupts the crowd and
+// adds a flat satisfaction bonus on top of the set.
+export const KIME = {
+  window: 460, // ± ms around the drop that counts as a hit
+  bonus: 6, // flat liveSat added when the jump lands
+  grades: 0.06, // avgScore nudge on a hit (helps the final grade)
+  cue: t("最後に——全員で、跳べェ!!", "Now — everyone, JUMP!!"),
+  hit: t("大・歓・声ッ!!", "The crowd ERUPTS!!"),
+  miss: t("……あと一歩！", "...So close!"),
+};
+export function applyKime(res: StageResult, hit: boolean): StageResult {
+  if (hit) { res.sat += KIME.bonus; res.avgScore = Math.min(1.2, res.avgScore + KIME.grades); }
+  return res;
+}
+
 // --- crowd fit (shared with the rest of the game's affinity model) -----------
 const SEG_ALLY: Record<Segment, Segment> = { visual: "light", light: "visual", core: "expert", expert: "core" };
 const OPPOSED: Record<Segment, Segment> = { visual: "core", core: "visual", light: "expert", expert: "light" };
