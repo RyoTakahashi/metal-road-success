@@ -609,188 +609,168 @@ body {
   .hdr-btn.hdr-bgm { width: 34px; font-size: 16px; }
 }
 
-/* ===== Live-stage mini-game overlay (4-lane) ============================ */
+/* ===== Live-stage mini-game (band-front, tap-the-member) =============== */
 .ls-overlay {
   position: fixed; inset: 0; z-index: 9999; overflow: hidden;
-  background: radial-gradient(130% 95% at 50% 0%, #2a1a4d 0%, #140b26 52%, #0a0612 100%);
+  background: radial-gradient(120% 80% at 50% -8%, #3a1d5e 0%, #1a0f30 45%, #0a0616 100%);
   font-family: system-ui, sans-serif; color: #fff;
   touch-action: none; user-select: none; -webkit-user-select: none;
 }
 .ls-stage { position: absolute; inset: 0; }
-/* audience: sits BEHIND the (translucent) lanes */
-.ls-crowd { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: auto; pointer-events: none; z-index: 3; opacity: .72; }
-/* audience sits BEHIND the (translucent) lanes */
-/* --- stage: a receding floor + risered gear for depth --- */
-.ls-gear { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.ls-gear img { position: absolute; transform: translateX(-50%); filter: drop-shadow(0 8px 10px #000a); }
-/* perspective stage floor (trapezoid: narrower at the back, wide at the front).
-   Its top edge sits just above the band's feet so they're grounded, not floating. */
-.ls-floor { position: absolute; left: 0; right: 0; bottom: 38%; height: 38%; z-index: 0;
-  clip-path: polygon(9% 0, 91% 0, 100% 100%, 0 100%);
-  background: linear-gradient(180deg, #43356e 0%, #2a1e4a 45%, #180f2e 100%);
-  box-shadow: inset 0 3px 0 #ffffff2e; }
-/* drum riser (a raised platform the kit & drummer sit on, set back = smaller) */
-.ls-riser { position: absolute; left: 37%; bottom: 62%; width: 22%; height: 9%; z-index: 1;
-  transform: translateX(-50%); clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
-  background: linear-gradient(180deg, #2c2450 0%, #140c28 100%); box-shadow: inset 0 2px 0 #ffffff33; }
-/* bass amp (orange, tall) upstage-left; guitar amp upstage-right — smaller = farther */
-.ls-amp-l { left: 15%; bottom: 70%; width: 7.5%; }
-.ls-amp-r { left: 85%; bottom: 70%; width: 9.5%; }
-/* PA stacks at the front corners — larger = closer */
-.ls-pa-l { left: 4%; bottom: 46%; width: 11%; }
-.ls-pa-r { left: 96%; bottom: 46%; width: 11%; }
-/* drum kit IN FRONT of the drummer (she plays from behind it) */
-.ls-drumkit { position: absolute; left: 37%; bottom: 59%; width: 17%; transform: translateX(-50%);
-  z-index: 5; filter: drop-shadow(0 8px 10px #000a); pointer-events: none; }
-/* four columns: member on top, its lane below, its pad at the bottom */
-.ls-cols { position: absolute; left: 0; right: 0; top: 7%; bottom: 0; z-index: 4;
-  display: flex; gap: 1%; padding: 0 2% 10px; box-sizing: border-box; }
-.ls-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; }
-.ls-member { height: 26%; display: flex; align-items: flex-end; justify-content: center; }
-.ls-sprite { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; filter: drop-shadow(0 6px 10px #0009); transform-origin: bottom center; }
-/* launch = a quick "playing" lunge: dip + lean + a flash halo behind */
-.ls-member.launch .ls-sprite { animation: ls-launch .34s cubic-bezier(.3,1.5,.5,1); }
-@keyframes ls-launch {
-  0% { transform: translateY(0) scale(1) rotate(0); }
-  28% { transform: translateY(5px) scale(1.1, .92) rotate(-2deg); }
-  55% { transform: translateY(-14px) scale(.96, 1.08) rotate(2deg); }
-  100% { transform: translateY(0) scale(1) rotate(0); }
-}
-.ls-member.launch::after {
-  content: ""; position: absolute; left: 50%; bottom: 10%; width: 70%; height: 70%;
-  transform: translateX(-50%); border-radius: 50%;
-  background: radial-gradient(closest-side, var(--pc, #fff8), #fff0);
-  opacity: .0; animation: ls-halo .34s ease-out;
-}
-@keyframes ls-halo { 0%{opacity:.0; transform:translateX(-50%) scale(.5)} 40%{opacity:.6} 100%{opacity:0; transform:translateX(-50%) scale(1.3)} }
-.ls-member { position: relative; }
-.ls-lane {
-  flex: 1; width: 80%; position: relative; margin-top: 6px; border-radius: 12px;
-  background: #0b0e1855; box-shadow: inset 0 0 0 1px #ffffff1f; overflow: hidden;
-  visibility: hidden;
-}
-.ls-overlay.cmd .ls-lane { visibility: visible; }
-/* hit flash sweeping the lane */
-.ls-lane.flash { animation: ls-laneflash .26s ease-out; }
-.ls-lane.flash-good { animation: ls-laneflashg .26s ease-out; }
-@keyframes ls-laneflash { 0%{box-shadow: inset 0 0 0 2px var(--pc), inset 0 -60px 50px -20px var(--pc);} 100%{box-shadow: inset 0 0 0 1px #ffffff1f;} }
-@keyframes ls-laneflashg { 0%{box-shadow: inset 0 0 0 2px #fff8, inset 0 -50px 40px -24px #fff6;} 100%{box-shadow: inset 0 0 0 1px #ffffff1f;} }
-.ls-notes { position: absolute; inset: 0; }
-.ls-note {
-  position: absolute; left: 50%; top: 0; margin-left: -26px; margin-top: -26px;
-  width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-  font-weight: 900; font-size: 20px; color: #000d; box-shadow: 0 2px 8px #0008; will-change: transform;
-}
-.ls-note.near { box-shadow: 0 0 0 3px #fff, 0 0 18px #fff; }
-.ls-note.got { animation: ls-noteburst .24s ease-out forwards; }
-@keyframes ls-noteburst { 0%{box-shadow:0 0 0 4px #fff,0 0 26px #fff;} 100%{box-shadow:0 0 0 0 #fff0, 0 0 2px #fff0;} }
-.ls-hitline { position: absolute; left: 6%; right: 6%; bottom: 14%; height: 4px; border-radius: 3px; background: var(--pc); box-shadow: 0 0 12px var(--pc); opacity: .9; }
-.ls-pad {
-  width: 100%; height: 16%; min-height: 54px; margin-top: 8px; border-radius: 14px;
-  border: 2px solid var(--pc); background: #141c30; color: #fff; cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
-  visibility: hidden;
-}
-.ls-overlay.cmd .ls-pad { visibility: visible; }
-.ls-pad b { font-size: 18px; color: var(--pc); }
-.ls-pad .ls-padname { font-size: 10px; color: #cfe; }
-.ls-pad small { font-size: 10px; color: var(--muted); }
-.ls-pad.tap { box-shadow: 0 0 0 3px var(--pc), 0 0 20px var(--pc); transform: scale(.97); }
-/* HUD */
-.ls-hud { position: absolute; top: 10px; left: 12px; right: 12px; pointer-events: none; z-index: 5; }
-.ls-heatwrap { display: flex; align-items: center; gap: 8px; }
-.ls-heatlabel { font-size: 12px; color: #cfe; text-shadow: 0 1px 3px #000; }
-.ls-heatbar { flex: 1; height: 14px; border-radius: 9px; background: #0007; overflow: hidden; box-shadow: inset 0 0 0 1px #ffffff22; }
-.ls-heatbar > i { display: block; height: 100%; width: 45%; background: #54c7ff; transition: width .5s ease, background .5s; }
-.ls-topline { display: flex; justify-content: space-between; font-size: 11px; color: #cfe; margin-top: 5px; text-shadow: 0 1px 3px #000; }
-.ls-targetlabel b, .ls-beatno { color: var(--accent); }
-.ls-cmdtag { position: absolute; top: 50px; left: 0; right: 0; text-align: center; font-size: 12px; color: #cfe; z-index: 5; text-shadow: 0 1px 3px #000; }
-.ls-cmdtag[hidden] { display: none; }
-.ls-fx { position: absolute; top: 40%; left: 0; right: 0; text-align: center; z-index: 6; font-weight: 900; font-size: clamp(24px, 7vw, 46px); opacity: 0; transition: opacity .1s; pointer-events: none; text-shadow: 0 3px 12px #000; }
-.ls-fx.big { color: #ffe14d; } .ls-fx.small { color: #9fb3d1; }
-/* choice panel (hidden during command) */
-.ls-choice { position: absolute; left: 0; right: 0; bottom: 0; z-index: 7; padding: 16px; box-sizing: border-box; background: linear-gradient(0deg,#0b0e18f2 72%,#0b0e1800); display: flex; flex-direction: column; gap: 10px; }
-.ls-choice[hidden], .ls-start[hidden] { display: none; }
-.ls-prompt { font-weight: 800; font-size: clamp(15px, 4vw, 20px); text-align: center; text-shadow: 0 2px 6px #000; }
-.ls-options { display: flex; flex-direction: column; gap: 8px; max-width: 640px; width: 100%; margin: 0 auto; }
-.ls-option { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 13px 16px; border-radius: 12px; border: 2px solid #ffffff2a; background: #1a2540; color: #fff; font-size: 15px; text-align: left; cursor: pointer; }
-.ls-option:active { transform: scale(.98); }
-.ls-optlabel { font-weight: 700; }
-.ls-optmeta { font-size: 12px; color: var(--muted); white-space: nowrap; }
-/* intro */
-.ls-start { position: absolute; inset: 0; z-index: 8; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; background: #0b0e18ee; padding: 24px; box-sizing: border-box; }
-.ls-start h2 { margin: 0 0 6px; }
-.ls-start p { margin: 2px 0; font-size: 14px; max-width: 540px; color: #cfe; }
-.ls-start .ls-hint { color: var(--muted); font-size: 12px; }
-.ls-start .ls-go { margin-top: 14px; font-size: 18px; padding: 12px 28px; }
 
-/* ===== LIVE feel: reactive crowd, set-arc banners, climax (キメ所) ===== */
-/* crowd wrapper so all three heat layers bounce / jump together */
-.ls-crowdwrap { position: absolute; left: 0; right: 0; bottom: 0; height: 60%; z-index: 3;
+/* stage lighting rig: colored beams + haze */
+.ls-rig { position: absolute; inset: 0; z-index: 2; pointer-events: none; mix-blend-mode: screen; filter: blur(2px); }
+.ls-beam { position: absolute; top: -6%; left: 50%; width: 30%; height: 92%; transform-origin: top center;
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%); opacity: .5; }
+.ls-beam.b1 { transform: translateX(-50%) rotate(-30deg); background: linear-gradient(#ff5577cc, #ff557700 72%); }
+.ls-beam.b2 { transform: translateX(-50%) rotate(-11deg); background: linear-gradient(#54c7ffcc, #54c7ff00 72%); }
+.ls-beam.b3 { transform: translateX(-50%) rotate(11deg); background: linear-gradient(#ffd36acc, #ffd36a00 72%); }
+.ls-beam.b4 { transform: translateX(-50%) rotate(30deg); background: linear-gradient(#b98cffcc, #b98cff00 72%); }
+.ls-haze { position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: radial-gradient(60% 40% at 50% 26%, #ffffff18, #fff0 70%); }
+
+/* floor + gear (depth) */
+.ls-floor { position: absolute; left: 0; right: 0; bottom: 30%; height: 34%; z-index: 1;
+  clip-path: polygon(12% 0, 88% 0, 100% 100%, 0 100%);
+  background: linear-gradient(180deg, #3a2c63 0%, #231746 50%, #140c29 100%); box-shadow: inset 0 3px 0 #ffffff26; }
+.ls-riser { position: absolute; left: 37%; bottom: 50%; width: 22%; height: 7%; z-index: 1; transform: translateX(-50%);
+  clip-path: polygon(16% 0, 84% 0, 100% 100%, 0 100%); background: linear-gradient(#2c2450, #140c28); }
+.ls-gear { position: absolute; transform: translateX(-50%); filter: drop-shadow(0 8px 10px #000a); z-index: 2; pointer-events: none; }
+.ls-amp-l { left: 17%; bottom: 56%; width: 8%; } .ls-amp-r { left: 83%; bottom: 56%; width: 9%; }
+.ls-pa-l { left: 5%; bottom: 36%; width: 11%; } .ls-pa-r { left: 95%; bottom: 36%; width: 11%; }
+.ls-drumkit { left: 37%; bottom: 46%; width: 16%; z-index: 5; }
+
+/* the band — the stage focus; each member is a tap target */
+.ls-band { position: absolute; left: 0; right: 0; top: 14%; bottom: 30%; z-index: 4;
+  display: flex; align-items: flex-end; justify-content: center; gap: 2%; padding: 0 4%; }
+.ls-mem { position: relative; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-end; height: 80%; cursor: pointer;
+  transition: transform .18s, filter .18s; filter: brightness(.72) saturate(.85); }
+.ls-sprite { max-width: 100%; max-height: 100%; width: auto; object-fit: contain;
+  filter: drop-shadow(0 8px 10px #0009); transform-origin: bottom center; }
+.ls-mem.launch .ls-sprite { animation: ls-launch .34s cubic-bezier(.3,1.5,.5,1); }
+@keyframes ls-launch { 0%{transform:translateY(0) scale(1)} 30%{transform:translateY(6px) scale(1.08,.93)}
+  58%{transform:translateY(-16px) scale(.96,1.08)} 100%{transform:translateY(0) scale(1)} }
+.ls-badge { margin-top: 5px; font-size: 12px; font-weight: 800; color: #cbd6f0; opacity: .6;
+  white-space: nowrap; text-align: center; line-height: 1.15; }
+.ls-badge small { display: block; font-size: 9px; opacity: .7; letter-spacing: .08em; }
+.ls-badge kbd { display: inline-block; margin-top: 2px; font-size: 10px; font-family: inherit;
+  background: #ffffff1c; border: 1px solid #ffffff33; border-radius: 4px; padding: 0 5px; color: #fff; }
+
+/* the member being "called" right now: lit, forward, spotlit */
+.ls-mem.call { filter: brightness(1.18) saturate(1.1) drop-shadow(0 0 24px var(--c)); transform: translateY(-10px) scale(1.06); z-index: 6; }
+.ls-mem.call .ls-badge { opacity: 1; color: #fff; text-shadow: 0 0 10px var(--c); }
+.ls-mem.call::before { content: ""; position: absolute; bottom: -4%; left: 50%; transform: translateX(-50%);
+  width: 150%; height: 120%; border-radius: 50%; z-index: -1;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--c) 55%, transparent), transparent 72%); }
+.ls-mem.call::after { content: ""; position: absolute; top: -120%; left: 50%; transform: translateX(-50%);
+  width: 120%; height: 220%; z-index: -2; clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+  background: linear-gradient(var(--c) 0%, transparent 70%); opacity: .4; mix-blend-mode: screen; filter: blur(3px); }
+/* hit feedback on the member */
+.ls-mem.fx-perfect { animation: ls-fxperf .42s ease-out; }
+.ls-mem.fx-good { animation: ls-fxgood .42s ease-out; }
+.ls-mem.fx-miss { animation: ls-fxmiss .32s ease-out; }
+@keyframes ls-fxperf { 0%{filter:brightness(2.6) saturate(1.3) drop-shadow(0 0 34px var(--c))} 100%{filter:brightness(1.18) saturate(1.1)} }
+@keyframes ls-fxgood { 0%{filter:brightness(1.9) drop-shadow(0 0 22px #fff)} 100%{filter:brightness(1.18)} }
+@keyframes ls-fxmiss { 0%,100%{transform:translateY(-10px) scale(1.06)} 25%{transform:translateY(-10px) scale(1.06) rotate(-3deg)} 75%{transform:translateY(-10px) scale(1.06) rotate(3deg)} }
+
+/* cue: a ring that collapses onto the called member = "tap now" */
+.ls-ring { position: absolute; top: 40%; left: 50%; width: 46%; aspect-ratio: 1;
+  transform: translate(-50%,-50%) scale(1); border: 6px solid #fff; border-radius: 50%;
+  box-shadow: 0 0 22px var(--c), inset 0 0 18px var(--c); z-index: 7; pointer-events: none; opacity: 0; }
+.ls-ring.near { border-color: #fff; box-shadow: 0 0 30px #fff, inset 0 0 22px var(--c); }
+.ls-cue { position: absolute; top: 40%; left: 50%; transform: translate(-50%,-50%); z-index: 8;
+  font-size: clamp(22px, 5vw, 38px); font-weight: 900; color: #fff;
+  text-shadow: 0 0 16px var(--c), 0 3px 8px #000; pointer-events: none; opacity: 0; }
+.ls-taphint { position: absolute; top: -7%; left: 50%; transform: translateX(-50%); z-index: 8;
+  font-size: 13px; font-weight: 800; color: #fff; background: var(--c); padding: 3px 11px; border-radius: 999px;
+  box-shadow: 0 4px 14px #0007; white-space: nowrap; pointer-events: none; opacity: 0; }
+.ls-mem.call .ls-taphint { opacity: 1; }
+
+/* crowd + penlights (behind the band row) */
+.ls-crowdwrap { position: absolute; left: 0; right: 0; bottom: 0; height: 56%; z-index: 3;
   pointer-events: none; transform-origin: bottom center; will-change: transform; }
-.ls-crowdwrap .ls-crowd { height: auto; }
+.ls-crowd { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: auto; opacity: .9; }
 .ls-crowdwrap.pop { animation: ls-crowdpop .32s cubic-bezier(.3,1.6,.5,1); }
 @keyframes ls-crowdpop { 0%{transform:translateY(0) scaleY(1)} 40%{transform:translateY(-10px) scaleY(1.04)} 100%{transform:translateY(0) scaleY(1)} }
 .ls-crowdwrap.jump { animation: ls-crowdjump .62s cubic-bezier(.25,1.4,.4,1); }
-@keyframes ls-crowdjump {
-  0%{transform:translateY(0) scaleY(1)}
-  22%{transform:translateY(4px) scaleY(.94)}
-  50%{transform:translateY(-46px) scaleY(1.1)}
-  70%{transform:translateY(-24px) scaleY(1.05)}
-  100%{transform:translateY(0) scaleY(1)}
-}
-/* penlights: a crowd of glow sticks over the audience that flare on good play */
-.ls-penlights { position: absolute; left: 0; right: 0; bottom: 30%; height: 26%; z-index: 3;
-  pointer-events: none; overflow: visible; }
-.ls-pen { position: absolute; bottom: 0; width: 4px; height: 44px; border-radius: 3px;
-  transform-origin: bottom center; opacity: var(--base, .12); will-change: transform, opacity;
-  background: linear-gradient(180deg, var(--pc, #fff) 0%, #ffffff00 100%);
-  box-shadow: 0 0 7px var(--pc, #fff); }
+@keyframes ls-crowdjump { 0%{transform:translateY(0) scaleY(1)} 22%{transform:translateY(4px) scaleY(.94)}
+  50%{transform:translateY(-46px) scaleY(1.1)} 70%{transform:translateY(-24px) scaleY(1.05)} 100%{transform:translateY(0) scaleY(1)} }
+.ls-penlights { position: absolute; left: 0; right: 0; bottom: 12%; height: 22%; z-index: 3; pointer-events: none; }
+.ls-pen { position: absolute; bottom: 0; width: 4px; border-radius: 3px; transform-origin: bottom center;
+  opacity: var(--base, .3); will-change: transform, opacity;
+  background: linear-gradient(180deg, var(--pc, #fff) 0%, #ffffff00 100%); box-shadow: 0 0 7px var(--pc, #fff); }
 .ls-penlights.sway .ls-pen { animation: ls-pensway var(--dur,1.4s) ease-in-out infinite alternate; animation-delay: var(--delay, 0s); }
 @keyframes ls-pensway { 0%{transform:rotate(-13deg)} 100%{transform:rotate(13deg)} }
 .ls-penlights.surge .ls-pen { animation: ls-pensurge .5s ease-out; }
-@keyframes ls-pensurge { 0%{opacity:1; transform:translateY(-10px) scaleY(1.25)} 100%{opacity:var(--base,.12); transform:translateY(0) scaleY(1)} }
+@keyframes ls-pensurge { 0%{opacity:1; transform:translateY(-10px) scaleY(1.25)} 100%{opacity:var(--base,.3); transform:translateY(0) scaleY(1)} }
 
-/* screen shake on big moments */
+/* screen shake + white flash */
 .ls-stage.shake-s { animation: ls-shakeS .22s ease-in-out; }
 .ls-stage.shake-b { animation: ls-shakeB .5s ease-in-out; }
 @keyframes ls-shakeS { 0%,100%{transform:translate(0,0)} 25%{transform:translate(-4px,2px)} 50%{transform:translate(3px,-2px)} 75%{transform:translate(-2px,1px)} }
 @keyframes ls-shakeB { 0%,100%{transform:translate(0,0)} 10%{transform:translate(-9px,4px)} 25%{transform:translate(8px,-5px)} 40%{transform:translate(-7px,3px)} 60%{transform:translate(6px,-3px)} 80%{transform:translate(-4px,2px)} }
-
-/* full-screen white flash (crossfade pop for drops / the climax) */
 .ls-flash { position: absolute; inset: 0; z-index: 20; pointer-events: none;
-  background: radial-gradient(70% 55% at 50% 60%, #ffffffcc, #ffffff00 70%); opacity: 0; }
+  background: radial-gradient(70% 55% at 50% 56%, #ffffffcc, #ffffff00 70%); opacity: 0; }
 .ls-flash.go { animation: ls-flashgo .5s ease-out; }
 @keyframes ls-flashgo { 0%{opacity:0} 12%{opacity:1} 100%{opacity:0} }
 
-/* section banner: slides in to open each part of the set */
-.ls-banner { position: absolute; top: 34%; left: 0; right: 0; z-index: 9; text-align: center;
-  pointer-events: none; opacity: 0; }
+/* HUD: a lighting-style hype meter + setlist */
+.ls-hud { position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+  display: flex; justify-content: space-between; align-items: flex-start; padding: 14px 18px; pointer-events: none; }
+.ls-hype { display: flex; flex-direction: column; gap: 5px; }
+.ls-hlab { font-size: 11px; letter-spacing: .3em; color: #ffd36a; text-shadow: 0 1px 3px #000; }
+.ls-segs { display: flex; gap: 3px; }
+.ls-seg { width: 16px; height: 11px; border-radius: 2px; background: #ffffff22; box-shadow: inset 0 0 0 1px #ffffff1a; transition: background .3s, box-shadow .3s; }
+.ls-seg.on { background: linear-gradient(#ffd36a, #ff5577); box-shadow: 0 0 8px #ff7a9e; }
+.ls-setlist { text-align: right; font-weight: 800; }
+.ls-slbig { font-size: 16px; background: linear-gradient(90deg,#ff5577,#ffd36a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ls-slsub { font-size: 11px; color: #cbd6f0; letter-spacing: .06em; }
+
+/* big centered call-out text (PERFECT / roar) */
+.ls-fx { position: absolute; top: 42%; left: 0; right: 0; text-align: center; z-index: 13; font-weight: 900;
+  font-size: clamp(24px, 7vw, 46px); opacity: 0; transition: opacity .1s; pointer-events: none; text-shadow: 0 3px 12px #000; }
+.ls-fx.big { color: #ffe14d; } .ls-fx.small { color: #9fb3d1; }
+
+/* section banner (set arc) */
+.ls-banner { position: absolute; top: 30%; left: 0; right: 0; z-index: 11; text-align: center; pointer-events: none; opacity: 0; }
 .ls-banner.show { animation: ls-bannerin 1.25s ease-out; }
-.ls-banner .ls-bn-kick { font-size: 12px; letter-spacing: .3em; color: #ffd36a; text-shadow: 0 2px 6px #000; }
-.ls-banner .ls-bn-title { font-size: clamp(26px, 8vw, 54px); font-weight: 900; margin-top: 4px;
+.ls-bn-kick { font-size: 12px; letter-spacing: .3em; color: #ffd36a; text-shadow: 0 2px 6px #000; }
+.ls-bn-title { font-size: clamp(26px, 8vw, 54px); font-weight: 900; margin-top: 4px;
   background: linear-gradient(90deg,#ff5577,#ffd36a,#54c7ff); -webkit-background-clip: text; background-clip: text; color: transparent;
   text-shadow: 0 4px 18px #000a; filter: drop-shadow(0 2px 2px #0008); }
-@keyframes ls-bannerin {
-  0%{opacity:0; transform:translateY(16px) scale(.9)}
-  18%{opacity:1; transform:translateY(0) scale(1)}
-  78%{opacity:1; transform:translateY(0) scale(1)}
-  100%{opacity:0; transform:translateY(-10px) scale(1.02)}
-}
+@keyframes ls-bannerin { 0%{opacity:0; transform:translateY(16px) scale(.9)} 18%{opacity:1; transform:translateY(0) scale(1)}
+  78%{opacity:1; transform:translateY(0) scale(1)} 100%{opacity:0; transform:translateY(-10px) scale(1.02)} }
 
-/* the climax cue ("キメ所"): a big central tap target with a shrinking ring */
-.ls-kime { position: absolute; inset: 0; z-index: 12; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 14px; background: radial-gradient(60% 50% at 50% 50%, #3a0f2cbb, #0a0612dd);
-  text-align: center; }
-.ls-kime[hidden] { display: none; }
-.ls-kime .ls-kime-cue { font-size: clamp(22px, 6vw, 40px); font-weight: 900; color: #fff; text-shadow: 0 3px 14px #000; max-width: 92%; }
-.ls-kime .ls-kime-ring { position: relative; width: 168px; height: 168px; display: flex; align-items: center; justify-content: center; }
-.ls-kime .ls-kime-btn { width: 128px; height: 128px; border-radius: 50%; border: none; cursor: pointer;
-  background: radial-gradient(circle at 50% 38%, #ff8bb0, #ff2f6e); color: #fff; font-weight: 900; font-size: 26px;
-  box-shadow: 0 0 40px #ff2f6eaa, inset 0 -6px 14px #0004; }
-.ls-kime .ls-kime-btn:active { transform: scale(.94); }
-.ls-kime-ring::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 5px solid #fff; opacity: .9; }
-.ls-kime.armed .ls-kime-ring::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 6px solid #ffd36a;
-  box-shadow: 0 0 18px #ffd36a; animation: ls-kimering var(--kime-dur,1.5s) linear forwards; }
-@keyframes ls-kimering { 0%{transform:scale(2.3); opacity:0} 70%{opacity:1} 100%{transform:scale(1); opacity:1} }
-.ls-kime .ls-kime-hint { font-size: 13px; color: #ffd9e6; }
+/* choice panel */
+.ls-choice { position: absolute; left: 0; right: 0; bottom: 0; z-index: 14; padding: 16px; box-sizing: border-box;
+  background: linear-gradient(0deg,#0b0e18f2 72%,#0b0e1800); display: flex; flex-direction: column; gap: 10px; }
+.ls-choice[hidden], .ls-start[hidden], .ls-kime[hidden] { display: none; }
+.ls-prompt { font-weight: 800; font-size: clamp(15px, 4vw, 20px); text-align: center; text-shadow: 0 2px 6px #000; }
+.ls-options { display: flex; flex-direction: column; gap: 8px; max-width: 640px; width: 100%; margin: 0 auto; }
+.ls-option { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 13px 16px;
+  border-radius: 12px; border: 2px solid #ffffff2a; background: #1a2540e6; color: #fff; font-size: 15px; text-align: left; cursor: pointer; }
+.ls-option:active { transform: scale(.98); }
+.ls-optlabel { font-weight: 700; } .ls-optmeta { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+/* climax (キメ所): a clear countdown → JUMP, tap anywhere */
+.ls-kime { position: absolute; inset: 0; z-index: 15; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1.4vh; background: radial-gradient(60% 50% at 50% 50%, #3a0f2c66, #0a0612bb); text-align: center; cursor: pointer; }
+.ls-kime-sub { font-size: 14px; letter-spacing: .4em; color: #ffd36a; text-shadow: 0 2px 8px #000; }
+.ls-kime-big { font-size: clamp(40px, 12vw, 104px); font-weight: 900; line-height: .95;
+  background: linear-gradient(90deg,#ff5577,#ffd36a 50%,#54c7ff); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 4px 2px #0009); }
+.ls-kime-count { font-size: clamp(66px, 18vw, 190px); font-weight: 900; color: #fff; text-shadow: 0 0 40px #ff2f6e, 0 6px 10px #000; line-height: 1; }
+.ls-kime-count.go { color: #ffd36a; animation: ls-kimego .4s ease-out; }
+@keyframes ls-kimego { 0%{transform:scale(1.5)} 100%{transform:scale(1)} }
+.ls-kime-tap { margin-top: 1vh; font-size: 16px; font-weight: 800; color: #07040f; background: #fff; padding: 11px 28px;
+  border-radius: 999px; box-shadow: 0 0 40px #ffffff88; animation: ls-tappulse 1s infinite; }
+@keyframes ls-tappulse { 50%{transform:scale(1.06)} }
+
+/* intro */
+.ls-start { position: absolute; inset: 0; z-index: 16; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 8px; background: #0b0e18f2; padding: 24px; box-sizing: border-box; }
+.ls-start h2 { margin: 0 0 6px; }
+.ls-start p { margin: 2px 0; font-size: 14px; max-width: 560px; color: #cfe; }
+.ls-start .ls-hint { color: var(--muted); font-size: 12px; }
+.ls-start .ls-go { margin-top: 14px; font-size: 18px; padding: 12px 28px; }
